@@ -88,7 +88,8 @@ spec:
               regexp:/mailman/var/data/postfix_domains
     fetchmail:
       enabled: true
-    # Currently broken in upstream chart. Missing template "mailu.webdav.claimName"
+    # Currently broken in upstream chart. 
+    # Uncomment once this is closed: https://github.com/Mailu/helm-charts/issues/232
     # webdav:
     #   enabled: true
     customization:
