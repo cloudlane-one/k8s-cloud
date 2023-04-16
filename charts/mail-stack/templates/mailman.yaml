@@ -68,7 +68,7 @@ spec:
     - port: 80
       targetPort: api
       name: api
-    - port: 8024
+    - port: 8025 # Avoid collision with dovecot on port 8024
       targetPort: lmtp
       name: lmtp
 ---
@@ -118,7 +118,7 @@ spec:
             - name: api
               containerPort: 8001
             - name: lmtp
-              containerPort: 8024
+              containerPort: 8025 # Avoid collision with dovecot on port 8024
           livenessProbe:
             httpGet:
               path: "/3.0/system/versions"
