@@ -172,7 +172,7 @@ data:
             "SERVERS": [
                 {
                     "id": "local-sso",  # 30 characters or less
-                    "name": {{ printf '%s SSO' .Values.org.name | quote }},
+                    "name": {{ printf "%s SSO" .Values.org.name | quote }},
                     "server_url": {{ .Values.oidcClient.idpURL | quote }},
                     "APP": {
                         "client_id": {{ .Values.oidcClient.id | quote }},
