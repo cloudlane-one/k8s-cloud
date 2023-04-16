@@ -1,0 +1,24 @@
+oidcClient:
+  idpURL: ""
+  id: ""
+  secret: ""
+
+proxyAuthURLs:
+  signin: "https://oauth2-proxy/oauth2/start"
+  auth: "https://oauth2-proxy/oauth2/auth"
+
+mailDomain: ""
+
+domains:
+  mailman: ""
+  mailu: ""
+
+org:
+  name: ""
+  logoURL: ""
+
+admin:
+  user: ""
+  email: ""
+
+clusterIssuer: "acme"

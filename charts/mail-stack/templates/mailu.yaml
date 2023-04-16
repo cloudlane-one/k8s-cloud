@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mailu-admin
+type: Opaque
+data:
+  password: {{ include "common.secrets.passwords.manage" (dict "secret" "mailu-admin" "key" "password" "providedValues" (list "") "context" $) }}
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: mailu
+spec:
+  interval: 60m
+  url: https://mailu.github.io/helm-charts/
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: mailu
+spec:
+  interval: 10m
+  chart:
+    spec:
+      chart: mailu
+      version: "^1"
+      sourceRef:
+        kind: HelmRepository
+        name: bitnami
+  values:
+    domain: {{ .Values.mailDomain }}
+    hostnames:
+      - {{ .Values.domains.mailu }}
+    initialAccount:
+      enabled: true
+      domain: {{ .Values.mailDomain }}
+      username: admin
+      existingSecret: mailu-admin
+      existingSecretPasswordKey: password
+    logLevel: INFO
+    persistence:
+      size: 20Gi
+    mariadb:
+      enabled: true
+      primary:
+        persistence:
+          enabled: true
+    front:
+      hostPort:
+        enabled: false
+      externalService:
+        enabled: true
+        type: LoadBalancer
+        externalTrafficPolicy: Local
+      extraEnvVars:
+        - name: PROXY_AUTH_WHITELIST
+          value: "10.0.0.0/8"
+        - name: PROXY_AUTH_HEADER
+          value: "X-Auth-Request-Email"
+        - name: PROXY_AUTH_CREATE
+          value: "True"
+    ingress:
+      enabled: true
+      annotations:
+        cert-manager.io/cluster-issuer: {{ .Values.clusterIssuer }}
+        {{ include "proxy_auth_annotations" . | indent 8 }}
+    postfix:
+      extraVolumes:
+        - name: mailman
+          persistentVolumeClaim:
+            claimName: mailman-core-data
+      extraVolumeMounts:
+        - name: mailman
+          mountPath: /mailman
+      overrides:
+        postfix.cf: |
+          my_variable = my_value
+          # Support the default VERP delimiter.
+          recipient_delimiter = +
+          unknown_local_recipient_reject_code = 550
+          owner_request_special = no
+
+          transport_maps =
+              regexp:/mailman/var/data/postfix_lmtp
+          local_recipient_maps =
+              regexp:/mailman/var/data/postfix_lmtp
+          relay_domains =
+              regexp:/mailman/var/data/postfix_domains
+    fetchmail:
+      enabled: true
+    webdav:
+      enabled: true
+    customization:
+      siteName: {{ printf "%s Mail" .Values.org.name }}
+      logoUrl: {{ .Values.org.logoURL }}

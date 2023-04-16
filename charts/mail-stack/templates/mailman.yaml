@@ -1,0 +1,320 @@
+{{- $pg_admin_pw := include "common.secrets.passwords.manage" (dict "secret" "mariadb-passwords" "key" "postgres-password" "providedValues" (list "") "context" $) -}}
+{{- $pg_user_pw := include "common.secrets.passwords.manage" (dict "secret" "mariadb-passwords" "key" "password" "providedValues" (list "") "context" $) -}}
+{{- $pg_repl_pw := include "common.secrets.passwords.manage" (dict "secret" "mariadb-passwords" "key" "replication-password" "providedValues" (list "") "context" $) -}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgresql-passwords
+type: Opaque
+data:
+  postgres-password: {{ $pg_admin_pw }}
+  password: {{ $pg_user_pw }}
+  replication-password: {{ $pg_repl_pw }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hyperkitty-key
+type: Opaque
+data:
+  api-key: {{ include "common.secrets.passwords.manage" (dict "secret" "hyperkitty-key" "key" "api-key" "providedValues" (list "") "context" $) }}
+---
+{{ $mailman_admin_pw := include "common.secrets.passwords.manage" (dict "secret" "mailman-admin" "key" "password" "providedValues" (list "") "context" $) -}}
+{{ $mailman_admin_auth := printf "restadmin:%s" $mailman_admin_pw | b64enc -}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mailman-admin
+type: Opaque
+data:
+  password: {{ $mailman_admin_pw }}
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: bitnami
+spec:
+  interval: 60m
+  url: https://charts.bitnami.com/bitnami
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: postgresql
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: postgresql
+      version: '^15'
+      sourceRef:
+        kind: HelmRepository
+        name: bitnami
+  values:
+    auth:
+      username: mailman
+      database: mailman
+      existingSecret: postgresql-passwords
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mailman-core
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: mailman-core
+  ports:
+    - port: http
+      targetPort: api
+      protocol: HTTP
+      name: api
+    - port: 8024
+      targetPort: lmtp
+      protocol: TCP
+      name: lmtp
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mailman-core
+  labels:
+    app: mailman-core
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mailman-core
+  template:
+    metadata:
+      labels:
+        app: mailman-core
+    spec:
+      containers:
+        - name: mailman-core
+          image: maxking/mailman-core:0.4
+          env:
+            - name: DATABASE_URL
+              value: {{ printf "postgresql://mailman:%s@postgresql/mailman" (urlquery $pg_user_pw) }}
+            - name: DATABASE_TYPE
+              value: postgres
+            - name: DATABASE_CLASS
+              value: "mailman.database.postgresql.PostgreSQLDatabase"
+            - name: HYPERKITTY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: hyperkitty-key
+                  key: api-key
+            - name: MM_HOSTNAME
+              value: mailman-core
+            - name: MAILMAN_REST_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mailman-admin
+                  key: password
+            - name: MTA
+              value: "postfix"
+            - name: SMTP_HOST
+              value: mailserver
+          ports:
+            - name: api
+              containerPort: 8001
+            - name: lmtp
+              containerPort: 8024
+          livenessProbe:
+            httpGet:
+              path: "/3.0/system/versions"
+              port: api
+            httpHeaders:
+              - name: Authorization
+                value: {{ printf "Basic %s" $mailman_admin_auth }}
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 15
+          readinessProbe:
+            httpGet:
+              path: "/3.0/system/versions"
+              port: api
+            httpHeaders:
+              - name: Authorization
+                value: {{ printf "Basic %s" $mailman_admin_auth }}
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 1
+          resources:
+            requests:
+              memory: "200Mi"
+              cpu: "200m"
+          volumeMounts:
+            - mountPath: "/opt/mailman/"
+              name: data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: mailman-core-data
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: django-secret
+type: Opaque
+data:
+  secret: {{ include "common.secrets.passwords.manage" (dict "secret" "django-secret" "key" "secret" "providedValues" (list "") "context" $) }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mailman-web-config
+data:
+  settings_local.py: |
+    SOCIALACCOUNT_PROVIDERS = {
+        "openid_connect": {
+            "SERVERS": [
+                {
+                    "id": "my-server",  # 30 characters or less
+                    "name": "My Login Server",
+                    "server_url": {{ .Values.oidcClient.idpURL | quote }},
+                    "APP": {
+                        "client_id": {{ .Values.oidcClient.id | quote }},
+                        "secret": {{ .Values.oidcClient.secret | quote }},
+                    },
+                },
+            ]
+        }
+    }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mailman-web-storage
+spec:
+  accessModes:
+    - RWX
+  resources:
+    requests:
+      storage: "2Gi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mailman-web
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: mailman-web
+  ports:
+    - port: http
+      targetPort: ui
+      protocol: HTTP
+      name: ui
+    - port: 8080
+      targetPort: uwsgi
+      protocol: TCP
+      name: uwsgi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mailman-web
+  labels:
+    app: mailman-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mailman-web
+  template:
+    metadata:
+      labels:
+        app: mailman-web
+    spec:
+      containers:
+        - name: mailman-web
+          image: maxking/mailman-web:0.4
+          env:
+            - name: SERVE_FROM_DOMAIN
+              value: {{ .Values.domains.mailman }}
+            - name: DATABASE_URL
+              value: {{ printf "postgresql://mailman:%s@postgresql/mailman" (urlquery $pg_user_pw) }}
+            - name: DATABASE_TYPE
+              value: "postgres"
+            - name: HYPERKITTY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: hyperkitty-key
+                  key: api-key
+            - name: MAILMAN_REST_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mailman-admin
+                  key: password
+            - name: MAILMAN_ADMIN_USER
+              value: {{ .Values.admin.user }}
+            - name: MAILMAN_ADMIN_EMAIL
+              value: {{ .Values.admin.email }}
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: django-secret
+                  key: secret
+            - name: SMTP_HOST
+              value: mailserver
+            - name: DJANGO_LOG_URL
+              value: "/dev/stdout"
+            - name: DISKCACHE_PATH
+              value: "/opt/mailman-web-storage/diskcache"
+          ports:
+            - name: ui
+              containerPort: 8000
+            - name: uwsgi
+              containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: "/"
+              port: ui
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 15
+          readinessProbe:
+            httpGet:
+              path: "/"
+              port: ui
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 1
+          resources:
+            requests:
+              memory: "200Mi"
+              cpu: "200m"
+          volumeMounts:
+            - mountPath: "/opt/mailman-web-data"
+              name: config
+            - mountPath: "/opt/mailman-web-storage"
+              name: storage
+      volumes:
+        - name: config
+          configMap:
+            name: mailman-web-config
+        - name: storage
+          persistentVolumeClaim:
+            claimName: mailman-web-storage
+---
+kind: Ingress
+metadata:
+  name: mailman
+spec:
+  tls:
+    - hosts:
+        - {{ .Values.domains.mailman }}
+      secretName: mailman-cert
+  rules:
+    - host: {{ .Values.domains.mailman }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mailman-web
+                port:
+                  name: ui

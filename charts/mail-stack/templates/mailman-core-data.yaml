@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mailman-core-data
+spec:
+  accessModes:
+    - RWX
+  resources:
+    requests:
+      storage: "10Gi"
