@@ -6,6 +6,29 @@ type: Opaque
 data:
   password: {{ include "common.secrets.passwords.manage" (dict "secret" "mailu-admin" "key" "password" "providedValues" (list "") "context" $) }}
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mailu-postfix-overrides
+  labels:
+    app.kubernetes.io/name: mailu
+    app.kubernetes.io/instance: mailu
+    app.kubernetes.io/component: postfix
+data:
+  postfix.cf: |
+    my_variable = my_value
+    # Support the default VERP delimiter.
+    recipient_delimiter = +
+    unknown_local_recipient_reject_code = 550
+    owner_request_special = no
+    
+    transport_maps =
+        regexp:/mailman/var/data/postfix_lmtp
+    local_recipient_maps =
+        regexp:/mailman/var/data/postfix_lmtp
+    relay_domains =
+        regexp:/mailman/var/data/postfix_domains
+---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
@@ -69,23 +92,17 @@ spec:
         - name: mailman
           persistentVolumeClaim:
             claimName: mailman-core-data
+        - name: overrides
+          configMap:
+            name: mailu-postfix-overrides
       extraVolumeMounts:
         - name: mailman
           mountPath: /mailman
-      overrides:
-        postfix.cf: |
-          my_variable = my_value
-          # Support the default VERP delimiter.
-          recipient_delimiter = +
-          unknown_local_recipient_reject_code = 550
-          owner_request_special = no
-
-          transport_maps =
-              regexp:/mailman/var/data/postfix_lmtp
-          local_recipient_maps =
-              regexp:/mailman/var/data/postfix_lmtp
-          relay_domains =
-              regexp:/mailman/var/data/postfix_domains
+        - name: overrides
+          mountPath: /overrides
+    # Currently broken in upstream chart.
+    # Move ConfigMap from above in here once this is fixed: 
+    # overrides: {}
     # Currently broken in upstream chart. 
     # Uncomment once this is closed: https://github.com/Mailu/helm-charts/issues/231
     # fetchmail:
