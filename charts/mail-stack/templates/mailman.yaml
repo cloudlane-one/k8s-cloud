@@ -93,7 +93,7 @@ spec:
           image: maxking/mailman-core:0.4
           env:
             - name: DATABASE_URL
-              value: {{ printf "postgresql://mailman:%s@postgresql/mailman" (urlquery $pg_user_pw) }}
+              value: {{ printf "postgresql://mailman:%s@postgresql/mailman" (b64dec $pg_user_pw) }}
             - name: DATABASE_TYPE
               value: postgres
             - name: DATABASE_CLASS
@@ -231,7 +231,7 @@ spec:
             - name: SERVE_FROM_DOMAIN
               value: {{ .Values.domains.mailman }}
             - name: DATABASE_URL
-              value: {{ printf "postgresql://mailman:%s@postgresql/mailman" (urlquery $pg_user_pw) }}
+              value: {{ printf "postgresql://mailman:%s@postgresql/mailman" (b64dec $pg_user_pw) }}
             - name: DATABASE_TYPE
               value: "postgres"
             - name: HYPERKITTY_API_KEY
