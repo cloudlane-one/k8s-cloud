@@ -118,22 +118,14 @@ spec:
             - name: lmtp
               containerPort: 8024
           livenessProbe:
-            httpGet:
-              path: "/3.0/system/versions"
+            tcpSocket:
               port: api
-            httpHeaders:
-              - name: Authorization
-                value: {{ printf "Basic %s" $mailman_admin_auth }}
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 15
           readinessProbe:
-            httpGet:
-              path: "/3.0/system/versions"
+            tcpSocket:
               port: api
-            httpHeaders:
-              - name: Authorization
-                value: {{ printf "Basic %s" $mailman_admin_auth }}
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 1
@@ -270,15 +262,13 @@ spec:
             - name: uwsgi
               containerPort: 8080
           livenessProbe:
-            httpGet:
-              path: "/"
+            tcpSocket:
               port: ui
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 15
           readinessProbe:
-            httpGet:
-              path: "/"
+            tcpSocket:
               port: ui
             initialDelaySeconds: 20
             periodSeconds: 20
