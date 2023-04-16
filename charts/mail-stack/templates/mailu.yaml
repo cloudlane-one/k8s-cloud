@@ -92,4 +92,4 @@ spec:
       enabled: true
     customization:
       siteName: {{ printf "%s Mail" .Values.org.name }}
-      logoUrl: {{ .Values.org.logoURL }}
+      logoUrl: {{ .Values.org.logoURL | quote }}
