@@ -4,7 +4,7 @@ metadata:
   name: mailman-core-data
 spec:
   accessModes:
-    - RWX
+    - ReadWriteMany
   resources:
     requests:
       storage: "10Gi"
