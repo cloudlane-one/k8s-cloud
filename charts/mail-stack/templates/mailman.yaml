@@ -189,7 +189,7 @@ metadata:
   name: mailman-web-storage
 spec:
   accessModes:
-    - RWX
+    - ReadWriteMany
   resources:
     requests:
       storage: "2Gi"
