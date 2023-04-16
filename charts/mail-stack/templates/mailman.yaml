@@ -299,6 +299,7 @@ spec:
           persistentVolumeClaim:
             claimName: mailman-web-storage
 ---
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: mailman
