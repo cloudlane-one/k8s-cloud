@@ -88,8 +88,9 @@ spec:
               regexp:/mailman/var/data/postfix_domains
     fetchmail:
       enabled: true
-    webdav:
-      enabled: true
+    # Currently broken in upstream chart. Missing template "mailu.webdav.claimName"
+    # webdav:
+    #   enabled: true
     customization:
       siteName: {{ printf "%s Mail" .Values.org.name }}
       logoUrl: {{ .Values.org.logoURL | quote }}
