@@ -63,7 +63,7 @@ spec:
       enabled: true
       annotations:
         cert-manager.io/cluster-issuer: {{ .Values.clusterIssuer }}
-        {{ include "proxy_auth_annotations" . | indent 8 }}
+        {{ include "proxy_auth_annotations" . | nindent 8 }}
     postfix:
       extraVolumes:
         - name: mailman
