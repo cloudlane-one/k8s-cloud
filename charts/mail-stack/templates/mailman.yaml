@@ -67,11 +67,9 @@ spec:
   ports:
     - port: 80
       targetPort: api
-      protocol: HTTP
       name: api
     - port: 8024
       targetPort: lmtp
-      protocol: TCP
       name: lmtp
 ---
 apiVersion: apps/v1
@@ -205,11 +203,9 @@ spec:
   ports:
     - port: 80
       targetPort: ui
-      protocol: HTTP
       name: ui
     - port: 8080
       targetPort: uwsgi
-      protocol: TCP
       name: uwsgi
 ---
 apiVersion: apps/v1
