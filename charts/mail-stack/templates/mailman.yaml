@@ -65,7 +65,7 @@ spec:
   selector:
     app.kubernetes.io/name: mailman-core
   ports:
-    - port: http
+    - port: 80
       targetPort: api
       protocol: HTTP
       name: api
@@ -203,7 +203,7 @@ spec:
   selector:
     app.kubernetes.io/name: mailman-web
   ports:
-    - port: http
+    - port: 80
       targetPort: ui
       protocol: HTTP
       name: ui
