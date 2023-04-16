@@ -1,6 +1,6 @@
-{{- $pg_admin_pw := include "common.secrets.passwords.manage" (dict "secret" "mariadb-passwords" "key" "postgres-password" "providedValues" (list "") "context" $) -}}
-{{- $pg_user_pw := include "common.secrets.passwords.manage" (dict "secret" "mariadb-passwords" "key" "password" "providedValues" (list "") "context" $) -}}
-{{- $pg_repl_pw := include "common.secrets.passwords.manage" (dict "secret" "mariadb-passwords" "key" "replication-password" "providedValues" (list "") "context" $) -}}
+{{- $pg_admin_pw := include "common.secrets.passwords.manage" (dict "secret" "postgresql-passwords" "key" "postgres-password" "providedValues" (list "") "context" $) -}}
+{{- $pg_user_pw := include "common.secrets.passwords.manage" (dict "secret" "postgresql-passwords" "key" "password" "providedValues" (list "") "context" $) -}}
+{{- $pg_repl_pw := include "common.secrets.passwords.manage" (dict "secret" "postgresql-passwords" "key" "replication-password" "providedValues" (list "") "context" $) -}}
 apiVersion: v1
 kind: Secret
 metadata:
