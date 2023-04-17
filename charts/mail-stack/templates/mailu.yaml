@@ -106,3 +106,6 @@ spec:
     customization:
       siteName: {{ printf "%s Mail" .Values.org.name }}
       logoUrl: {{ .Values.org.logoURL | quote }}
+    externalRelay:
+      networks:
+        - "10.0.0.0/8"
