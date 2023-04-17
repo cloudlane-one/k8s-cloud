@@ -184,6 +184,9 @@ metadata:
 data:
   settings_local.py: |
     # Configure OpenID SSO provider.
+    MAILMAN_WEB_SOCIAL_AUTH = [
+        'allauth.socialaccount.providers.openid_connect',
+    ]
     SOCIALACCOUNT_PROVIDERS = {
         "openid_connect": {
             "SERVERS": [
