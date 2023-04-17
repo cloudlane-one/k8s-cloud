@@ -183,6 +183,7 @@ metadata:
   name: mailman-web-config
 data:
   settings_local.py: |
+    # Configure OpenID SSO provider.
     SOCIALACCOUNT_PROVIDERS = {
         "openid_connect": {
             "SERVERS": [
@@ -228,6 +229,13 @@ data:
                 'format': '%(levelname)s %(asctime)s %(process)d %(name)s %(message)s'
             }
         }
+    }
+    # As recommended here: https://asynchronous.in/docker-mailman/#setting-up-search-indexing
+    HAYSTACK_CONNECTIONS = {
+        'default': {
+            'ENGINE': 'xapian_backend.XapianEngine',
+            'PATH': "/opt/mailman-web-data/fulltext_index",
+        },
     }
 ---
 apiVersion: v1
