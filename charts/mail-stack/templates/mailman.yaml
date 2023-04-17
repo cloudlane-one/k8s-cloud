@@ -333,6 +333,8 @@ spec:
                 secretKeyRef:
                   name: mailu-admin
                   key: password
+            - name: UWSGI_STATIC_MAP
+              value: "/static=/opt/mailman-web-data/static"
           ports:
             - name: ui
               containerPort: 8000
