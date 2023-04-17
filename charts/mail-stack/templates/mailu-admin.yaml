@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mailu-admin
+type: Opaque
+data:
+  password: {{ include "common.secrets.passwords.manage" (dict "secret" "mailu-admin" "key" "password" "providedValues" (list "") "context" $) }}

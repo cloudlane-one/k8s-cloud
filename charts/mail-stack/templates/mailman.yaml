@@ -63,7 +63,7 @@ metadata:
 spec:
   type: ClusterIP
   selector:
-    app.kubernetes.io/name: mailman-core
+    app: mailman-core
   ports:
     - port: 80
       targetPort: api
@@ -88,6 +88,7 @@ spec:
       labels:
         app: mailman-core
     spec:
+      hostname: mailman-core
       containers:
         - name: mailman-core
           image: maxking/mailman-core:0.4
@@ -98,6 +99,8 @@ spec:
               value: postgres
             - name: DATABASE_CLASS
               value: "mailman.database.postgresql.PostgreSQLDatabase"
+            - name: HYPERKITTY_URL
+              value: "http://mailman-web/hyperkitty"
             - name: HYPERKITTY_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -111,7 +114,7 @@ spec:
             - name: MTA
               value: "postfix"
             - name: SMTP_HOST
-              value: mailserver
+              value: mailu-front
           ports:
             - name: api
               containerPort: 8001
@@ -220,7 +223,7 @@ metadata:
 spec:
   type: ClusterIP
   selector:
-    app.kubernetes.io/name: mailman-web
+    app: mailman-web
   ports:
     - port: 80
       targetPort: ui
@@ -245,6 +248,7 @@ spec:
       labels:
         app: mailman-web
     spec:
+      hostname: mailman-web
       initContainers:
         - name: copy
           image: busybox:1
@@ -269,11 +273,15 @@ spec:
                 secretKeyRef:
                   name: hyperkitty-key
                   key: api-key
+            - name: MAILMAN_REST_URL
+              value: "http://mailman-core"
             - name: MAILMAN_REST_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: mailman-admin
                   key: password
+            - name: MAILMAN_HOSTNAME
+              value: mailman-core
             - name: MAILMAN_ADMIN_USER
               value: {{ .Values.admin.user }}
             - name: MAILMAN_ADMIN_EMAIL
@@ -284,7 +292,14 @@ spec:
                   name: django-secret
                   key: secret
             - name: SMTP_HOST
-              value: mailserver
+              value: mailu-front
+            - name: SMTP_HOST_USER
+              value: {{ printf "admin@%s" .Values.mailDomain }}
+            - name: SMTP_HOST_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mailu-admin
+                  key: password
           ports:
             - name: ui
               containerPort: 8000
