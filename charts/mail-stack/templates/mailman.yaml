@@ -329,13 +329,6 @@ spec:
                   key: secret
             - name: SMTP_HOST
               value: mailu-front
-            - name: SMTP_HOST_USER
-              value: {{ printf "admin@%s" .Values.mailDomain }}
-            - name: SMTP_HOST_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mailu-admin
-                  key: password
             - name: UWSGI_STATIC_MAP
               value: "/static=/opt/mailman-web-data/static"
           ports:
