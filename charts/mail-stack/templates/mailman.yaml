@@ -170,10 +170,37 @@ data:
             ]
         }
     }
-    LOGGING['handlers']['console']['formatter'] = "verbose"
-    LOGGING['loggers']['django']['handlers'] = ["console"]
-    LOGGING['loggers']['django.request']['handlers'] = ["mail_admins", "console"]
-    LOGGING['loggers']['postorius']['handlers'] = ["console"]
+    import sys
+    # Configure verbose logging to stdout.
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+                'formatter': 'verbose',
+                'level': 'INFO',
+                'stream': sys.stdout,
+            }
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': True,
+            },
+            'postorius': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': True
+            },
+        },
+        'formatters': {
+            'verbose': {
+                'format': '%(levelname)s %(asctime)s %(process)d %(name)s %(message)s'
+            }
+        }
+    }
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
