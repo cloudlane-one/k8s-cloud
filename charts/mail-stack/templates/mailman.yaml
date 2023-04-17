@@ -170,6 +170,10 @@ data:
             ]
         }
     }
+    LOGGING['handlers']['console']['formatter'] = "verbose"
+    LOGGING['loggers']['django']['handlers'] = ["console"]
+    LOGGING['loggers']['django.request']['handlers'] = ["mail_admins", "console"]
+    LOGGING['loggers']['postorius']['handlers'] = ["console"]
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -254,8 +258,6 @@ spec:
                   key: secret
             - name: SMTP_HOST
               value: mailserver
-            - name: DJANGO_LOG_URL
-              value: "/dev/stdout"
           ports:
             - name: ui
               containerPort: 8000
