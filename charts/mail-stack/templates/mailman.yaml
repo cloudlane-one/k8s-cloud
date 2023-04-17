@@ -29,6 +29,19 @@ type: Opaque
 data:
   password: {{ $mailman_admin_pw }}
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mailman-core-config
+data:
+  mailman-extra.cfg: |
+    [mailman]
+    # This address is the "site owner" address.  Certain messages which must be
+    # delivered to a human, but which can't be delivered to a list owner (e.g. a
+    # bounce from a list owner), will be sent to this address.  It should point to
+    # a human.
+    site_owner: {{ .Values.admin.email }}
+---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
@@ -89,6 +102,15 @@ spec:
         app: mailman-core
     spec:
       hostname: mailman-core
+      initContainers:
+        - name: copy
+          image: busybox:1
+          command: ["/bin/sh", "-c", "cp /opt/mailman-config/* /opt/mailman"]
+          volumeMounts:
+            - mountPath: "/opt/mailman-config"
+              name: config
+            - mountPath: "/opt/mailman/"
+              name: data
       containers:
         - name: mailman-core
           image: maxking/mailman-core:0.4
@@ -140,6 +162,9 @@ spec:
             - mountPath: "/opt/mailman/"
               name: data
       volumes:
+        - name: config
+          configMap:
+            name: mailman-core-config
         - name: data
           persistentVolumeClaim:
             claimName: mailman-core-data
