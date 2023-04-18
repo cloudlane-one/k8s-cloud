@@ -132,8 +132,8 @@ spec:
         - name: mailman-core
           image: maxking/mailman-core:0.4
           command: ["/bin/sh", "-c"]
-          args: | 
-            chown mailman /dev/stdout && docker-entrypoint.sh master --force
+          args: 
+            - "chown mailman /dev/stdout && docker-entrypoint.sh master --force"
           env:
             - name: DATABASE_URL
               value: {{ printf "postgresql://mailman:%s@postgresql/mailman" (b64dec $pg_user_pw) }}
