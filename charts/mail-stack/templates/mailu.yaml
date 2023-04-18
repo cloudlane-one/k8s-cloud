@@ -8,18 +8,14 @@ metadata:
     app.kubernetes.io/component: postfix
 data:
   postfix.cf: |
-    my_variable = my_value
     # Support the default VERP delimiter.
     recipient_delimiter = +
     unknown_local_recipient_reject_code = 550
     owner_request_special = no
     
-    transport_maps =
-        regexp:/mailman/var/data/postfix_lmtp
-    local_recipient_maps =
-        regexp:/mailman/var/data/postfix_lmtp
-    relay_domains =
-        regexp:/mailman/var/data/postfix_domains
+    transport_maps = regexp:/mailman/var/data/postfix_lmtp
+    local_recipient_maps = regexp:/mailman/var/data/postfix_lmtp
+    relay_domains = regexp:/mailman/var/data/postfix_domains
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
