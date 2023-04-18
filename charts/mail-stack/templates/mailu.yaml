@@ -52,9 +52,20 @@ spec:
       username: admin
       existingSecret: mailu-admin
       existingSecretPasswordKey: password
+    customization:
+      siteName: {{ printf "%s Mail" .Values.org.name }}
+      logoUrl: {{ .Values.org.logoURL | quote }}
+    externalRelay:
+      networks:
+        - "10.0.0.0/8"
     logLevel: INFO
     persistence:
-      size: 20Gi
+      single_pvc: false
+    ingress:
+      enabled: true
+      annotations:
+        cert-manager.io/cluster-issuer: {{ .Values.clusterIssuer }}
+        {{ include "proxy_auth_annotations" . | nindent 8 }}
     mariadb:
       enabled: true
       primary:
@@ -74,11 +85,6 @@ spec:
           value: "X-Auth-Request-Email"
         - name: PROXY_AUTH_CREATE
           value: "True"
-    ingress:
-      enabled: true
-      annotations:
-        cert-manager.io/cluster-issuer: {{ .Values.clusterIssuer }}
-        {{ include "proxy_auth_annotations" . | nindent 8 }}
     postfix:
       extraVolumes:
         - name: mailman
@@ -92,20 +98,29 @@ spec:
           mountPath: /mailman
         - name: overrides
           mountPath: /overrides
-    # Currently broken in upstream chart.
-    # Move ConfigMap from above in here once this is fixed: 
-    # overrides: {}
+      persistence:
+        size: 5Gi
+      # Currently broken in upstream chart.
+      # Move ConfigMap from above in here once this is fixed: 
+      # overrides: {}
+    admin:
+      persistence:
+        size: 5Gi
+    dovecot:
+      persistence:
+        size: 5Gi
+    webmail:
+      persistence:
+        size: 5Gi
     # Currently broken in upstream chart. 
     # Uncomment once this is closed: https://github.com/Mailu/helm-charts/issues/231
     # fetchmail:
     #   enabled: true
+      # persistence:
+      #   size: 5Gi
     # Currently broken in upstream chart. 
     # Uncomment once this is closed: https://github.com/Mailu/helm-charts/issues/232
     # webdav:
     #   enabled: true
-    customization:
-      siteName: {{ printf "%s Mail" .Values.org.name }}
-      logoUrl: {{ .Values.org.logoURL | quote }}
-    externalRelay:
-      networks:
-        - "10.0.0.0/8"
+      # persistence:
+      #   size: 5Gi
