@@ -13,6 +13,8 @@ hosts:
   mailman: ""
   mailu: ""
 
+requirePTR: true
+
 org:
   name: ""
   logoURL: ""

@@ -83,8 +83,10 @@ spec:
         - name: PROXY_AUTH_CREATE
           value: "True"
     postfix:
+      {{ if .Values.requirePTR -}}
       nodeSelector:
         PTR: {{ .Values.hosts.mailu }}
+      {{ end -}}
       extraVolumes:
         - name: mailman
           persistentVolumeClaim:
