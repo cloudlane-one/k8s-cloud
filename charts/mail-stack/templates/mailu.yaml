@@ -42,6 +42,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: mailu
+  timeout: 10m
   values:
     domain: {{ .Values.domain }}
     hostnames:
