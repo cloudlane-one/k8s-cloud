@@ -262,7 +262,7 @@ data:
     }
 
     # Set proper from-address for automatic emails
-    DEFAULT_FROM_EMAIL = {{ printf "postorius@%s" .Values.domain }}
+    DEFAULT_FROM_EMAIL = {{ printf "postorius@%s" .Values.domain | quote }}
 ---
 apiVersion: v1
 kind: ConfigMap
