@@ -71,11 +71,12 @@ spec:
         persistence:
           enabled: true
     front:
+      kind: DaemonSet
       hostPort:
         enabled: false
       externalService:
         enabled: true
-        type: LoadBalancer
+        type: NodePort
         externalTrafficPolicy: Local
       extraEnvVars:
         - name: PROXY_AUTH_WHITELIST
