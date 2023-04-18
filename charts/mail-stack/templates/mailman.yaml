@@ -312,6 +312,9 @@ data:
 
     # No extra logging settings are required.
     # Default behavior is to log to stdout/stderr
+
+    # "*" allows for matching all source IPs as described here: https://gitlab.com/mailman/hyperkitty/-/blob/master/example_project/settings.py?ref_type=heads#L47
+    MAILMAN_ARCHIVER_FROM = ("*",)
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
