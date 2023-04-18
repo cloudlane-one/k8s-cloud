@@ -450,6 +450,7 @@ metadata:
   name: mailman
   annotations:
     cert-manager.io/cluster-issuer: {{ .Values.clusterIssuer }}
+    external-dns.alpha.kubernetes.io/managed-by: {{ .Values.externalDNSManager }}
 spec:
   tls:
     - hosts:

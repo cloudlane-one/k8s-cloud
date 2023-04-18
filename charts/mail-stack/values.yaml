@@ -18,3 +18,5 @@ org:
   logoURL: ""
 
 clusterIssuer: "acme"
+
+externalDNSManager: ""
