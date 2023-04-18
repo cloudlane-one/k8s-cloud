@@ -37,7 +37,7 @@ data:
   # Config reference: https://docs.mailman3.org/projects/mailman/en/latest/src/mailman/config/docs/config.html
   mailman-extra.cfg: |
     [mailman]
-    site_owner: {{ .Values.admin.email }}
+    site_owner: {{ printf "admin@%s" .Values.domain }}
 
     # Redirect all file-based logging to stdout and stderr.
     [logging.template]
@@ -260,6 +260,9 @@ data:
             'PATH': "/opt/mailman-web-data/fulltext_index",
         },
     }
+
+    # Set proper from-address for automatic emails
+    DEFAULT_FROM_EMAIL = {{ printf "postorius@%s" .Values.domain }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -368,7 +371,7 @@ spec:
           image: maxking/mailman-web:0.4
           env:
             - name: SERVE_FROM_DOMAIN
-              value: {{ .Values.domains.mailman }}
+              value: {{ .Values.hosts.mailman }}
             - name: DATABASE_URL
               value: {{ printf "postgresql://mailman:%s@postgresql/mailman" (b64dec $pg_user_pw) }}
             - name: DATABASE_TYPE
@@ -388,9 +391,9 @@ spec:
             - name: MAILMAN_HOSTNAME
               value: mailman-core
             - name: MAILMAN_ADMIN_USER
-              value: {{ .Values.admin.user }}
+              value: admin
             - name: MAILMAN_ADMIN_EMAIL
-              value: {{ .Values.admin.email }}
+              value: {{ printf "admin@%s" .Values.domain }}
             - name: SECRET_KEY
               valueFrom:
                 secretKeyRef:
@@ -447,10 +450,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - {{ .Values.domains.mailman }}
+        - {{ .Values.hosts.mailman }}
       secretName: mailman-cert
   rules:
-    - host: {{ .Values.domains.mailman }}
+    - host: {{ .Values.hosts.mailman }}
       http:
         paths:
           - path: /

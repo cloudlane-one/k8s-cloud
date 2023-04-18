@@ -43,12 +43,12 @@ spec:
         kind: HelmRepository
         name: mailu
   values:
-    domain: {{ .Values.mailDomain }}
+    domain: {{ .Values.domain }}
     hostnames:
-      - {{ .Values.domains.mailu }}
+      - {{ .Values.hosts.mailu }}
     initialAccount:
       enabled: true
-      domain: {{ .Values.mailDomain }}
+      domain: {{ .Values.domain }}
       username: admin
       existingSecret: mailu-admin
       existingSecretPasswordKey: password
