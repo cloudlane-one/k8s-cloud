@@ -76,7 +76,7 @@ spec:
         enabled: false
       externalService:
         enabled: true
-        type: NodePort
+        type: LoadBalancer
         externalTrafficPolicy: Local
       extraEnvVars:
         - name: PROXY_AUTH_WHITELIST
