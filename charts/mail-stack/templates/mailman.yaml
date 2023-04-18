@@ -119,6 +119,8 @@ spec:
         app: mailman-core
     spec:
       hostname: mailman-core
+      securityContext:
+        runAsUser: 100 # should resolve to "mailman" user, may be unstable.
       initContainers:
         - name: copy
           image: busybox:1
@@ -352,6 +354,8 @@ spec:
         app: mailman-web
     spec:
       hostname: mailman-web
+      securityContext:
+        runAsUser: 100 # should resolve to "mailman" user, may be unstable.
       initContainers:
         - name: copy
           image: busybox:1
