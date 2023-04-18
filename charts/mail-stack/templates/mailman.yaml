@@ -119,8 +119,6 @@ spec:
         app: mailman-core
     spec:
       hostname: mailman-core
-      securityContext:
-        runAsUser: 100 # should resolve to "mailman" user, may be unstable.
       initContainers:
         - name: copy
           image: busybox:1
@@ -133,6 +131,9 @@ spec:
       containers:
         - name: mailman-core
           image: maxking/mailman-core:0.4
+          command: ["/bin/sh", "-c"]
+          args: | 
+            chown mailman /dev/stdout && docker-entrypoint.sh master --force
           env:
             - name: DATABASE_URL
               value: {{ printf "postgresql://mailman:%s@postgresql/mailman" (b64dec $pg_user_pw) }}
@@ -354,8 +355,6 @@ spec:
         app: mailman-web
     spec:
       hostname: mailman-web
-      securityContext:
-        runAsUser: 100 # should resolve to "mailman" user, may be unstable.
       initContainers:
         - name: copy
           image: busybox:1
