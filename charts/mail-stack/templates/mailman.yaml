@@ -307,9 +307,8 @@ data:
     unique-cron = 0 0 -1 -1 0 ./manage.py runjobs weekly
     unique-cron = 0 0 1 1 -1 ./manage.py runjobs yearly
 
-    # Setup logging to syslog.
-    req-logger = syslog:uwsgi-req
-    logger = syslog:uwsgi
+    # No extra logging settings are required.
+    # Default behavior is to log to stdout/stderr
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
