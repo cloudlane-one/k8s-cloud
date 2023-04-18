@@ -57,7 +57,8 @@ spec:
       logoUrl: {{ .Values.org.logoURL | quote }}
     externalRelay:
       networks:
-        - "10.0.0.0/8"
+        - "127.0.0.0/8" # Localhost
+        - "10.0.0.0/8" # Cluster network. Make sure to set your NetworkPolicies straight!
     logLevel: INFO
     persistence:
       single_pvc: false
