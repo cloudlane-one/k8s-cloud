@@ -34,13 +34,30 @@ kind: ConfigMap
 metadata:
   name: mailman-core-config
 data:
+  # Config reference: https://docs.mailman3.org/projects/mailman/en/latest/src/mailman/config/docs/config.html
   mailman-extra.cfg: |
     [mailman]
-    # This address is the "site owner" address.  Certain messages which must be
-    # delivered to a human, but which can't be delivered to a list owner (e.g. a
-    # bounce from a list owner), will be sent to this address.  It should point to
-    # a human.
     site_owner: {{ .Values.admin.email }}
+
+    # Redirect all file-based logging to stdout and stderr.
+    [logging.template]
+    format: %(asctime)s (%(process)d) %(message)s
+    datefmt: %b %d %H:%M:%S %Y
+    propagate: no
+    level: info
+    path: /dev/stdout
+
+    [logging.bounce]
+    path: /dev/stdout
+
+    [logging.debug]
+    path: /dev/null
+
+    [logging.plugins]
+    path: /dev/stdout
+
+    [logging.smtp]
+    path: /dev/stdout
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
@@ -242,6 +259,56 @@ data:
     }
 ---
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mailman-web-uwsgi
+data:
+  uwsgi.ini: |
+    [uwsgi]
+    # Port on which uwsgi will be listening.
+    uwsgi-socket = 0.0.0.0:8080
+    http-socket = 0.0.0.0:8000
+
+    #Enable threading for python
+    enable-threads = true
+
+    # Setting uwsgi buffer size to what Apache2 supports.
+    buffer-size = 8190
+
+    # Move to the directory wher the django files are.
+    chdir = /opt/mailman-web
+
+    # Use the wsgi file provided with the django project.
+    wsgi-file = wsgi.py
+
+    # Setup default number of processes and threads per process.
+    master = true
+    processes = 2
+    threads = 2
+
+    # Drop privielges and don't run as root.
+    uid = mailman
+    gid = mailman
+
+    # Setup the django_q related worker processes.
+    attach-daemon = ./manage.py qcluster
+
+    # Setup hyperkitty's cron jobs.
+    # 'minutely' jobs are run hourly for perf reasons.
+    # See https://github.com/maxking/docker-mailman/issues/327
+    unique-cron = 0 -1 -1 -1 -1 ./manage.py runjobs minutely
+    unique-cron = -15 -1 -1 -1 -1 ./manage.py runjobs quarter_hourly
+    unique-cron = 0 -1 -1 -1 -1 ./manage.py runjobs hourly
+    unique-cron = 0 0 -1 -1 -1 ./manage.py runjobs daily
+    unique-cron = 0 0 1 -1 -1 ./manage.py runjobs monthly
+    unique-cron = 0 0 -1 -1 0 ./manage.py runjobs weekly
+    unique-cron = 0 0 1 1 -1 ./manage.py runjobs yearly
+
+    # Setup logging to syslog.
+    req-logger = syslog:uwsgi-req
+    logger = syslog:uwsgi
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: mailman-web-data
@@ -355,6 +422,9 @@ spec:
           volumeMounts:
             - mountPath: "/opt/mailman-web-data"
               name: data
+            - mountPath: "/opt/mailman-web/uwsgi.ini"
+              name: uwsgi-config
+              subPath: "uwsgi.ini"
       volumes:
         - name: config
           configMap:
@@ -362,6 +432,9 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: mailman-web-data
+        - name: uwsgi-config
+          configMap:
+            name: mailman-web-uwsgi
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
