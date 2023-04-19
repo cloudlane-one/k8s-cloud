@@ -21,4 +21,4 @@ org:
 
 clusterIssuer: "acme"
 
-externalDNSManager: ""
+externalDNSManager: "cluster"
