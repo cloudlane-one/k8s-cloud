@@ -107,12 +107,26 @@ spec:
     admin:
       persistence:
         size: 5Gi
+      extraEnvVars:
+        - name: PROXY_AUTH_WHITELIST
+          value: "10.0.0.0/8"
+        - name: PROXY_AUTH_HEADER
+          value: "X-Auth-Request-Email"
+        - name: PROXY_AUTH_CREATE
+          value: "True"
     dovecot:
       persistence:
         size: 5Gi
     webmail:
       persistence:
         size: 5Gi
+      extraEnvVars:
+        - name: PROXY_AUTH_WHITELIST
+          value: "10.0.0.0/8"
+        - name: PROXY_AUTH_HEADER
+          value: "X-Auth-Request-Email"
+        - name: PROXY_AUTH_CREATE
+          value: "True"
     # Currently broken in upstream chart. 
     # Uncomment once this is closed: https://github.com/Mailu/helm-charts/issues/231
     # fetchmail:
