@@ -127,15 +127,11 @@ spec:
           value: "X-Auth-Request-Email"
         - name: PROXY_AUTH_CREATE
           value: "True"
-    # Currently broken in upstream chart. 
-    # Uncomment once this is closed: https://github.com/Mailu/helm-charts/issues/231
-    # fetchmail:
-    #   enabled: true
-      # persistence:
-      #   size: 5Gi
-    # Currently broken in upstream chart. 
-    # Uncomment once this is closed: https://github.com/Mailu/helm-charts/issues/232
-    # webdav:
-    #   enabled: true
-      # persistence:
-      #   size: 5Gi
+    fetchmail:
+      enabled: true
+      persistence:
+        size: 5Gi
+    webdav:
+      enabled: true
+      persistence:
+        size: 5Gi
