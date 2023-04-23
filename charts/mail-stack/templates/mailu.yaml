@@ -1,22 +1,3 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: mailu-postfix-overrides
-  labels:
-    app.kubernetes.io/name: mailu
-    app.kubernetes.io/instance: mailu
-    app.kubernetes.io/component: postfix
-data:
-  postfix.cf: |
-    # Support the default VERP delimiter.
-    recipient_delimiter = +
-    unknown_local_recipient_reject_code = 550
-    owner_request_special = no
-    
-    transport_maps = regexp:/mailman/var/data/postfix_lmtp
-    local_recipient_maps = regexp:/mailman/var/data/postfix_lmtp
-    relay_domains = regexp:/mailman/var/data/postfix_domains
----
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
@@ -87,23 +68,25 @@ spec:
       nodeSelector:
         PTR: {{ .Values.hosts.mailu }}
       {{ end -}}
+      persistence:
+        size: 5Gi
       extraVolumes:
         - name: mailman
           persistentVolumeClaim:
             claimName: mailman-core-data
-        - name: overrides
-          configMap:
-            name: mailu-postfix-overrides
       extraVolumeMounts:
         - name: mailman
           mountPath: /mailman
-        - name: overrides
-          mountPath: /overrides
-      persistence:
-        size: 5Gi
-      # Currently broken in upstream chart.
-      # Move ConfigMap from above in here once this is fixed: 
-      # overrides: {}
+      overrides:
+        postfix.cf: |
+          # Support the default VERP delimiter.
+          recipient_delimiter = +
+          unknown_local_recipient_reject_code = 550
+          owner_request_special = no
+          
+          transport_maps = regexp:/mailman/var/data/postfix_lmtp
+          local_recipient_maps = regexp:/mailman/var/data/postfix_lmtp
+          relay_domains = regexp:/mailman/var/data/postfix_domains
     admin:
       persistence:
         size: 5Gi
