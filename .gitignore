@@ -1,0 +1,7 @@
+# Chart dependencies
+**/charts/*.tgz
+Chart.lock
+
+# Files marked as local-only
+*.local
+*.local.*
