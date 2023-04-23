@@ -58,6 +58,36 @@ data:
 
     [logging.smtp]
     path: /dev/stdout
+
+    [ARC]
+    enabled: yes
+    privkey: /certs/arc.key
+    domain: {{ .Values.hosts.mailman }}
+    selector: arc
+    authserv_id: {{ .Values.hosts.mailu }}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mailman-arc-ca
+spec:
+  isCA: true
+  commonName: mailman-arc-ca
+  secretName: mailman-arc
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  issuerRef:
+    name: selfsigned-issuer
+    kind: Issuer
+    group: cert-manager.io
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
@@ -181,6 +211,9 @@ spec:
           volumeMounts:
             - mountPath: "/opt/mailman/"
               name: data
+            - mountPath: "/certs"
+              name: arc-key
+              subPath: arc.key
       volumes:
         - name: config
           configMap:
@@ -188,6 +221,12 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: mailman-core-data
+        - name: arc-key
+          secret:
+            items:
+              - key: tls.key
+                path: arc.key
+            secretName: mailman-arc
 ---
 apiVersion: v1
 kind: Secret
