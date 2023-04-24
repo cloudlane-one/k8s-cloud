@@ -211,9 +211,8 @@ spec:
           volumeMounts:
             - mountPath: "/opt/mailman/"
               name: data
-            - mountPath: "/certs/arc.key"
+            - mountPath: "/certs/"
               name: arc-key
-              subPath: arc.key
       volumes:
         - name: config
           configMap:
