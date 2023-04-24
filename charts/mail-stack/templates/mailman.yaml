@@ -61,7 +61,7 @@ data:
 
     [ARC]
     enabled: yes
-    privkey: /certs/arc.key
+    privkey: /certs/tls.key
     domain: {{ .Values.hosts.mailman }}
     selector: arc
     authserv_id: {{ .Values.hosts.mailu }}
@@ -222,9 +222,6 @@ spec:
             claimName: mailman-core-data
         - name: arc-key
           secret:
-            items:
-              - key: tls.key
-                path: arc.key
             secretName: mailman-arc
 ---
 apiVersion: v1
