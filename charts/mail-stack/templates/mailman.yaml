@@ -187,6 +187,8 @@ spec:
               value: "postfix"
             - name: SMTP_HOST
               value: mailu-front
+            - name: POSTORIUS_TEMPLATE_BASE_URL
+              value: "http://mailman-web"
           ports:
             - name: api
               containerPort: 8001
@@ -441,6 +443,8 @@ spec:
               value: mailu-front
             - name: UWSGI_STATIC_MAP
               value: "/static=/opt/mailman-web-data/static"
+            - name: POSTORIUS_TEMPLATE_BASE_URL
+              value: "http://mailman-web"
           ports:
             - name: ui
               containerPort: 8000
