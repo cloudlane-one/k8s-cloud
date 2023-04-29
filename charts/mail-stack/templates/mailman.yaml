@@ -19,15 +19,13 @@ type: Opaque
 data:
   api-key: {{ include "common.secrets.passwords.manage" (dict "secret" "hyperkitty-key" "key" "api-key" "providedValues" (list "") "context" $) }}
 ---
-{{ $mailman_admin_pw := include "common.secrets.passwords.manage" (dict "secret" "mailman-admin" "key" "password" "providedValues" (list "") "context" $) -}}
-{{ $mailman_admin_auth := printf "restadmin:%s" $mailman_admin_pw | b64enc -}}
 apiVersion: v1
 kind: Secret
 metadata:
   name: mailman-admin
 type: Opaque
 data:
-  password: {{ $mailman_admin_pw }}
+  password: {{ include "common.secrets.passwords.manage" (dict "secret" "mailman-admin" "key" "password" "providedValues" (list "") "context" $) }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -187,8 +185,6 @@ spec:
               value: "postfix"
             - name: SMTP_HOST
               value: mailu-front
-            - name: POSTORIUS_TEMPLATE_BASE_URL
-              value: "http://mailman-web"
           ports:
             - name: api
               containerPort: 8001
