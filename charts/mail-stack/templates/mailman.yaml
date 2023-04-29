@@ -1,15 +1,15 @@
-{{- $pg_admin_pw := include "common.secrets.passwords.manage" (dict "secret" "postgresql-passwords" "key" "postgres-password" "providedValues" (list "") "context" $) -}}
-{{- $pg_user_pw := include "common.secrets.passwords.manage" (dict "secret" "postgresql-passwords" "key" "password" "providedValues" (list "") "context" $) -}}
-{{- $pg_repl_pw := include "common.secrets.passwords.manage" (dict "secret" "postgresql-passwords" "key" "replication-password" "providedValues" (list "") "context" $) -}}
+{{- $pg_admin_pw := include "common.secrets.passwords.manage" (dict "secret" "postgresql-passwords" "key" "postgres-password" "providedValues" (list "") "context" $) | trimAll "\"" -}}
+{{- $pg_user_pw := include "common.secrets.passwords.manage" (dict "secret" "postgresql-passwords" "key" "password" "providedValues" (list "") "context" $) | trimAll "\"" -}}
+{{- $pg_repl_pw := include "common.secrets.passwords.manage" (dict "secret" "postgresql-passwords" "key" "replication-password" "providedValues" (list "") "context" $) | trimAll "\"" -}}
 apiVersion: v1
 kind: Secret
 metadata:
   name: postgresql-passwords
 type: Opaque
 data:
-  postgres-password: {{ $pg_admin_pw }}
-  password: {{ $pg_user_pw }}
-  replication-password: {{ $pg_repl_pw }}
+  postgres-password: {{ $pg_admin_pw | quote }}
+  password: {{ $pg_user_pw | quote }}
+  replication-password: {{ $pg_repl_pw | quote }}
 ---
 apiVersion: v1
 kind: Secret
