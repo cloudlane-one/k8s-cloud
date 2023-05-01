@@ -98,7 +98,7 @@ spec:
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: postgresql
+  name: mailman-postgresql
 spec:
   interval: 5m
   chart:
@@ -164,7 +164,7 @@ spec:
             - "chown mailman /dev/stdout && docker-entrypoint.sh master --force"
           env:
             - name: DATABASE_URL
-              value: {{ printf "postgresql://mailman:%s@postgresql/mailman" (b64dec $pg_user_pw) }}
+              value: {{ printf "postgresql://mailman:%s@mailman-postgresql/mailman" (b64dec $pg_user_pw) }}
             - name: DATABASE_TYPE
               value: postgres
             - name: DATABASE_CLASS
@@ -409,7 +409,7 @@ spec:
             - name: SERVE_FROM_DOMAIN
               value: {{ .Values.hosts.mailman }}
             - name: DATABASE_URL
-              value: {{ printf "postgresql://mailman:%s@postgresql/mailman" (b64dec $pg_user_pw) }}
+              value: {{ printf "postgresql://mailman:%s@mailman-postgresql/mailman" (b64dec $pg_user_pw) }}
             - name: DATABASE_TYPE
               value: "postgres"
             - name: HYPERKITTY_API_KEY
