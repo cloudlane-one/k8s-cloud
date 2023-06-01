@@ -231,11 +231,22 @@ data:
   secret: {{ include "common.secrets.passwords.manage" (dict "secret" "django-secret" "key" "secret" "providedValues" (list "") "context" $) }}
 ---
 apiVersion: v1
+kind: Secret
+metadata:
+  name: oidc-client
+type: Opaque
+data:
+  {{- with .Values.oidcClient.secret }}
+  secret: {{ (lookup "v1" "Secret" (default .Release.Namespace .namespace) .name).data | index .key }}
+  {{- end }}
+---
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: mailman-web-config
 data:
   settings_local.py: |
+    import os
     # Configure OpenID SSO provider.
     MAILMAN_WEB_SOCIAL_AUTH = [
         'allauth.socialaccount.providers.openid_connect',
@@ -249,7 +260,7 @@ data:
                     "server_url": {{ .Values.oidcClient.idpURL | quote }},
                     "APP": {
                         "client_id": {{ .Values.oidcClient.id | quote }},
-                        "secret": {{ .Values.oidcClient.secret | quote }},
+                        "secret": os.environ["OIDC_CLIENT_SECRET"],
                     },
                 },
             ]
@@ -441,6 +452,11 @@ spec:
               value: "/static=/opt/mailman-web-data/static"
             - name: POSTORIUS_TEMPLATE_BASE_URL
               value: "http://mailman-web"
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oidc-client
+                  key: secret
           ports:
             - name: ui
               containerPort: 8000

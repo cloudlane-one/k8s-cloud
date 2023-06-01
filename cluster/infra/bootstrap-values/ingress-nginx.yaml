@@ -1,0 +1,12 @@
+controller:
+  ingressClassResource:
+    default: true
+  watchIngressWithoutClass: true
+  extraArgs:
+    enable-ssl-passthrough: "true"
+  config:
+    proxy-buffer-size: "16k" # See https://andrewlock.net/fixing-nginx-upstream-sent-too-big-header-error-when-running-an-ingress-controller-in-kubernetes/ for explanation
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true

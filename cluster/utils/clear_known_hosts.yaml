@@ -1,0 +1,8 @@
+# Small utility for testing purposes, clears all hosts in inventory from known hosts,
+# so that they won't cause trouble if their keys are reset during testing.
+- name: Clear known host entries
+  hosts: localhost
+  tasks:
+    - name: Clear all cluster hosts from known_hosts file
+      with_items: "{{ groups['k3s_cluster'] }}"
+      ansible.builtin.command: "ssh-keygen -f $HOME/.ssh/known_hosts -R {{ hostvars[item].ansible_host }}"

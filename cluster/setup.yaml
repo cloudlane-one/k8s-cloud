@@ -1,0 +1,657 @@
+- name: Add all hosts to known_hosts file, if according flag is set
+  hosts: localhost
+  connection: local
+  tags: cluster
+  tasks:
+    - name: Add all hosts to known_hosts file
+      when: "auto_trust_remotes == true"
+      block:
+        - name: Check whether host is already known
+          loop: "{{ groups['k3s_cluster'] }}"
+          ansible.builtin.command: "ssh-keygen -F {{ hostvars[item].ansible_host }}"
+          changed_when: false
+          failed_when: false
+          ignore_errors: true
+          register: known_hosts_check
+
+        - name: Generate new lines for known_hosts
+          loop: "{{ known_hosts_check.results }}"
+          when: "item.rc != 0"
+          ansible.builtin.command: "ssh-keyscan -H {{ hostvars[item.item].ansible_host }}"
+          register: known_hosts_entries
+
+        - name: Add lines to known_hosts
+          when: "known_hosts_entries.changed == true"
+          loop: "{{ known_hosts_entries.results }}"
+          lineinfile:
+            dest: ~/.ssh/known_hosts
+            line: "{{ item.stdout }}"
+            insertafter: EOF
+
+- name: Install k3s on all cluster nodes and bootstrap infrastructure
+  hosts: k3s_cluster
+  become: true
+  tags: cluster
+  vars:
+    k3s_become: true
+    k3s_etcd_datastore: "{{ groups['masters'] | length > 1 }}"
+    k3s_install_hard_links: true
+    k3s_server:
+      node-taint:
+        - "node.cilium.io/agent-not-ready=true:NoExecute"
+      node-label:
+        - "cluster-{{ helm_values.domain }}=1"
+      flannel-backend: "none"
+      disable:
+        - traefik
+        - local-storage
+      kube-apiserver-arg:
+        - "oidc-issuer-url=https://{{ (helm_values.subdomains | default({})).dex | default('admin-oidc') }}.{{ helm_values.domain }}"
+        - "oidc-client-id=admin-oidc"
+        - "oidc-groups-claim=groups"
+      kube-controller-manager-arg:
+        - "address=0.0.0.0"
+        - "bind-address=0.0.0.0"
+      kube-proxy-arg:
+        - "metrics-bind-address=0.0.0.0"
+      kube-scheduler-arg:
+        - "address=0.0.0.0"
+        - "bind-address=0.0.0.0"
+      etcd-expose-metrics: true
+    k3s_agent:
+      node-taint:
+        - "node.cilium.io/agent-not-ready=true:NoExecute"
+      node-label:
+        - "cluster-{{ helm_values.domain }}=1"
+  tasks:
+    - name: Set control_node variable for master hosts
+      ansible.builtin.set_fact:
+        k3s_control_node: true
+      when: "'masters' in group_names"
+
+    - name: Install and update packages via apt
+      when: 'ansible_pkg_mgr == "apt"'
+      block:
+        - name: Update all packages to their latest version
+          ansible.builtin.apt:
+            name: "*"
+            state: latest
+            update_cache: yes
+        - name: Ensure NFS client is installed (apt)
+          ansible.builtin.apt:
+            name: "{{ item }}"
+      with_items:
+        - nfs-common
+        - wireguard
+
+    - name: Install and update packages via yum
+      when: 'ansible_pkg_mgr == "yum"'
+      block:
+        - name: Update all packages to their latest version
+          ansible.builtin.yum:
+            name: "*"
+            state: latest
+            update_cache: yes
+        - name: Ensure NFS client is installed (yum)
+          ansible.builtin.yum:
+            name: "{{ item }}"
+      with_items:
+        - nfs-utils
+        - wireguard-tools
+
+    - name: Install and update packages via apk
+      when: 'ansible_pkg_mgr == "apk"'
+      block:
+        - name: Update all packages to their latest version
+          community.general.apk:
+            upgrade: true
+            update_cache: yes
+        - name: Ensure NFS client is installed (apk)
+          community.general.apk:
+            name: "{{ item }}"
+      with_items:
+        - nfs-utils
+        - wireguard-tools
+
+    - name: Install and update packages via dnf
+      when: 'ansible_pkg_mgr == "dnf"'
+      block:
+        - name: Update all packages to their latest version
+          ansible.builtin.dnf:
+            name: "*"
+            state: latest
+            update_cache: yes
+        - name: Ensure NFS client is installed (dnf)
+          ansible.builtin.dnf:
+            name: "{{ item }}"
+      with_items:
+        - nfs-utils
+        - wireguard-tools
+
+    - name: Install and update packages via zypper
+      when: 'ansible_pkg_mgr == "zypper"'
+      block:
+        - name: Update all packages to their latest version
+          community.general.zypper:
+            name: "*"
+            state: latest
+            update_cache: yes
+        - name: Ensure NFS client is installed (zypper)
+          community.general.zypper:
+            name: "{{ item }}"
+      with_items:
+        - nfs-utils
+        - wireguard-tools
+
+    - name: Install and update packages via pacman
+      when: 'ansible_pkg_mgr == "pacman"'
+      block:
+        - name: Update all packages to their latest version
+          community.general.pacman:
+            upgrade: true
+            update_cache: yes
+        - name: Ensure NFS client is installed (pacman)
+          community.general.pacman:
+            name: "{{ item }}"
+      with_items:
+        - nfs-utils
+        - wireguard-tools
+
+    - name: Install k3s via role
+      ansible.builtin.include_role:
+        name: xanmanning.k3s
+
+- name: Set up cluster infrastructure
+  hosts: masters
+  run_once: true
+  tags: infra
+  environment:
+    K8S_AUTH_KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  vars:
+    cluster_label: "cluster-{{ helm_values.domain }}"
+  tasks:
+    - name: Ensure PIP is installed
+      ansible.builtin.package:
+        name: pip
+
+    - name: Copy requirements.txt to remote
+      ansible.builtin.copy:
+        src: requirements.txt
+        dest: /tmp
+
+    - name: Ensure PIP dependencies are installed
+      ansible.builtin.pip:
+        requirements: /tmp/requirements.txt
+
+    - name: Check if Helm CLI is installed
+      ansible.builtin.shell: "which helm"
+      register: which_helm
+      changed_when: false
+      failed_when: false
+      ignore_errors: true
+
+    - name: Download Helm install script
+      when: "which_helm.rc != 0"
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+        dest: /tmp/helm-install.sh
+        mode: "0700"
+
+    - name: Run Helm install script
+      when: "which_helm.rc != 0"
+      ansible.builtin.command: /tmp/helm-install.sh
+
+    - name: Ensure helm diff plugin is installed
+      kubernetes.core.helm_plugin:
+        plugin_path: https://github.com/databus23/helm-diff
+
+    - name: Check if Flux CLI is installed
+      ansible.builtin.shell: "which flux"
+      register: which_flux
+      changed_when: false
+      failed_when: false
+      ignore_errors: true
+
+    - name: Download Flux install script
+      when: "which_flux.rc != 0"
+      ansible.builtin.get_url:
+        url: https://fluxcd.io/install.sh
+        dest: /tmp/flux-install.sh
+        mode: "0700"
+
+    - name: Run Flux install script
+      when: "which_flux.rc != 0"
+      ansible.builtin.command: /tmp/flux-install.sh
+
+    - name: Check if VCluster CLI is installed
+      ansible.builtin.shell: "which vcluster"
+      register: which_vcluster
+      changed_when: false
+      failed_when: false
+      ignore_errors: true
+
+    - name: Download VCluster CLI
+      when: "which_vcluster.rc != 0"
+      ansible.builtin.get_url:
+        url: https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64
+        dest: /tmp/vcluster
+        mode: "0700"
+
+    - name: Install VCluster CLI
+      when: "which_vcluster.rc != 0"
+      ansible.builtin.shell: "install -c -m 0755 /tmp/vcluster /usr/local/bin"
+
+    - name: Ensure temp host-infra dir exists
+      ansible.builtin.file:
+        path: /tmp/host-infra/
+        state: directory
+        mode: "0755"
+
+    - name: Ensure temp infra dir exists
+      ansible.builtin.file:
+        path: /tmp/infra/
+        state: directory
+        mode: "0755"
+
+    - name: Copy values files for host infra bootstrap
+      ansible.builtin.copy:
+        src: host-infra/bootstrap-values
+        dest: /tmp/host-infra
+
+    - name: Copy values files for infra bootstrap
+      ansible.builtin.copy:
+        src: infra/bootstrap-values
+        dest: /tmp/infra
+
+    - name: Ensure k3s kubeconfig is set as default
+      ansible.builtin.lineinfile:
+        path: ~/.bashrc
+        create: true
+        line: "export KUBECONFIG=/etc/rancher/k3s/k3s.yaml"
+
+    - name: Check whether HelmRelease for host-cluster-infra chart already exists
+      kubernetes.core.k8s_info:
+        api_version: helm.toolkit.fluxcd.io/v2beta1
+        kind: HelmRelease
+        name: host-cluster-infra
+        namespace: flux-system
+      register: k3s_cluster_infra_release
+
+    - name: Setup host-cluster-infra
+      when: "not vcluster and (k8s_baseline_release.resources | length) == 0"
+      block:
+        - name: Ensure required namespaces for host-cluster-infra exist
+          kubernetes.core.k8s:
+            wait: true
+            definition:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: "{{ item }}"
+                labels:
+                  "app.kubernetes.io/managed-by": "Helm"
+                annotations:
+                  "meta.helm.sh/release-name": "host-cluster-infra"
+                  "meta.helm.sh/release-namespace": "flux-system"
+          with_items:
+            - longhorn-system
+            - backup-system
+
+        - name: Bootstrap Cilium
+          # This needs to happen before any other installation, as nodes will otherwise not be ready.
+          when: "(k3s_cluster_infra_release.resources | length) == 0"
+          kubernetes.core.helm:
+            wait: true
+            name: cilium
+            release_namespace: kube-system
+            chart_repo_url: https://helm.cilium.io/
+            chart_ref: cilium
+            chart_version: "^1"
+            values_files:
+              - /tmp/host-infra/bootstrap-values/cilium.yaml
+            values:
+              operator:
+                replicas: "{{ (groups['k3s_cluster'] | length > 2) | ternary(2, groups['k3s_cluster'] | length) }}"
+
+        - name: Restore from full-cluster backup
+          when: "restore_from_backup is defined"
+          block:
+            - name: Ensure Velero backup secret exists
+              kubernetes.core.k8s:
+                wait: true
+                definition:
+                  apiVersion: v1
+                  kind: Secret
+                  metadata:
+                    name: s3-backup-credentials
+                    namespace: backup-system
+                  type: Opaque
+                  data:
+                    cloud: '{{ ("[default]\naws_access_key_id=" helm_values.s3.access_key.id + "\naws_secret_access_key=" + helm_values.s3.access_key.secret) | b64encode  }}'
+
+            - name: Ensure Velero is installed
+              kubernetes.core.helm:
+                wait: true
+                name: velero
+                release_namespace: backup-system
+                chart_repo_url: https://vmware-tanzu.github.io/helm-charts/
+                chart_ref: velero
+                chart_version: "^2"
+                values:
+                  credentials:
+                    existingSecret: s3-backup-credentials
+                  initContainers:
+                    - name: velero-plugin-for-csi
+                      image: velero/velero-plugin-for-csi:v0.3.0
+                      imagePullPolicy: IfNotPresent
+                      volumeMounts:
+                        - mountPath: /target
+                          name: plugins
+                    - name: velero-plugin-for-aws
+                      image: velero/velero-plugin-for-aws:v1.5.0
+                      imagePullPolicy: IfNotPresent
+                      volumeMounts:
+                        - mountPath: /target
+                          name: plugins
+                  snapshotsEnabled: true
+                  configuration:
+                    provider: aws
+                    features: EnableCSI
+                    backupStorageLocation:
+                      name: default
+                      bucket: "{{ helm_values.s3.buckets.backup }}"
+                      prefix: velero
+                      config:
+                        region: "{{ helm_values.s3.region }}"
+                        s3Url: "https://{{ helm_values.s3.endpoint }}"
+                    volumeSnapshotLocation:
+                      name: default
+                      config:
+                        region: "{{ helm_values.s3.region }}"
+
+            - name: Apply backup restoration
+              kubernetes.core.k8s:
+                wait: true
+                definition:
+                  apiVersion: velero.io/v1
+                  kind: Restore
+                  metadata:
+                    name: initial-cluster-restore
+                    namespace: backup-system
+                  spec:
+                    backupName: "{{ restore_from_backup }}"
+
+        - name: Bootstrap Longhorn
+          kubernetes.core.helm:
+            wait: true
+            name: longhorn
+            release_namespace: longhorn-system
+            chart_repo_url: https://charts.longhorn.io
+            chart_ref: longhorn
+            chart_version: "^1"
+            values_files:
+              - /tmp/host-infra/bootstrap-values/longhorn.yaml
+
+        - name: Ensure temp manifest download dir exists
+          ansible.builtin.file:
+            path: /tmp/host-infra/bootstrap-manifests/
+            state: directory
+            mode: "0755"
+
+        - name: Download VolumeSnapshot CRDs
+          ansible.builtin.get_url:
+            url: "https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-6.1/client/config/crd/{{ item }}"
+            dest: /tmp/host-infra/bootstrap-manifests/
+            mode: "0664"
+          with_items:
+            - snapshot.storage.k8s.io_volumesnapshotclasses.yaml
+            - snapshot.storage.k8s.io_volumesnapshotcontents.yaml
+            - snapshot.storage.k8s.io_volumesnapshots.yaml
+
+        - name: Ensure VolumeSnapshot CRDs are installed
+          kubernetes.core.k8s:
+            wait: true
+            namespace: backup-system
+            src: "/tmp/host-infra/bootstrap-manifests/{{ item }}"
+          with_items:
+            - snapshot.storage.k8s.io_volumesnapshotclasses.yaml
+            - snapshot.storage.k8s.io_volumesnapshotcontents.yaml
+            - snapshot.storage.k8s.io_volumesnapshots.yaml
+
+        - name: Download VolumeSnapshot controller manifests
+          ansible.builtin.get_url:
+            url: "https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-6.1/deploy/kubernetes/snapshot-controller/{{ item }}"
+            dest: /tmp/host-infra/bootstrap-manifests/
+            mode: "0664"
+          with_items:
+            - rbac-snapshot-controller.yaml
+            - setup-snapshot-controller.yaml
+
+        - name: Ensure VolumeSnapshot controller is installed
+          kubernetes.core.k8s:
+            wait: true
+            namespace: backup-system
+            src: "/tmp/host-infra/bootstrap-manifests/{{ item }}"
+          with_items:
+            - rbac-snapshot-controller.yaml
+            - setup-snapshot-controller.yaml
+
+        - name: Download System Upgrade controller manifests
+          ansible.builtin.get_url:
+            url: https://github.com/rancher/system-upgrade-controller/releases/latest/download/system-upgrade-controller.yaml
+            dest: /tmp/host-infra/bootstrap-manifests/
+            mode: "0664"
+
+        - name: Ensure System Upgrade controller is installed
+          kubernetes.core.k8s:
+            wait: true
+            namespace: kube-system
+            src: /tmp/host-infra/bootstrap-manifests/system-upgrade-controller.yaml
+
+    - name: Setup vcluster
+      when: vcluster
+      block:
+        - name: Create vcluster for domain
+          kubernetes.core.helm:
+            wait: true
+            name: "{{ cluster_label }}"
+            release_namespace: "{{ cluster_label }}"
+            chart_repo_url: https://charts.loft.sh
+            chart_ref: vcluster
+            chart_version: "^0.15"
+            values:
+              sync:
+                persistentvolumes:
+                  enabled: true
+                storageclasses:
+                  enabled: true
+                volumesnapshots:
+                  enabled: true
+                nodes:
+                  enabled: true
+                  enableScheduler: true
+                  nodeSelector: "{{ cluster_label }}=1"
+              isolation:
+                enabled: true
+              proxy:
+                metricsServer:
+                  nodes:
+                    enabled: true
+                  pods:
+                    enabled: true
+
+        - name: Switch kubecontext to vcluster
+          ansible.builtin.shell: "vcluster connect {{ cluster_label }}"
+
+    - name: Ensure required namespaces for cluster-infra exist
+      kubernetes.core.k8s:
+        wait: true
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: "{{ item }}"
+            labels:
+              "app.kubernetes.io/managed-by": "Helm"
+            annotations:
+              "meta.helm.sh/release-name": "cluster-infra"
+              "meta.helm.sh/release-namespace": "flux-system"
+      with_items:
+        - cert-system
+        - flux-system
+        - ingress-system
+        - o11y-system
+
+    - name: Check whether HelmRelease for cluster-infra chart already exists
+      kubernetes.core.k8s_info:
+        api_version: helm.toolkit.fluxcd.io/v2beta1
+        kind: HelmRelease
+        name: cluster-infra
+        namespace: flux-system
+      register: cluster_infra_release
+
+    - name: Install FluxCD
+      ansible.builtin.command: "flux install --network-policy=false"
+
+    - name: Bootstrap Cert-Manager
+      kubernetes.core.helm:
+        wait: true
+        name: cert-manager
+        release_namespace: cert-system
+        chart_repo_url: https://charts.jetstack.io
+        chart_ref: cert-manager
+        chart_version: "^1"
+        values_files:
+          - /tmp/infra/bootstrap-values/cert-manager.yaml
+
+    - name: Bootstrap Kube-Prometheus-Stack
+      kubernetes.core.helm:
+        wait: true
+        name: kube-prometheus-stack
+        release_namespace: o11y-system
+        chart_repo_url: https://prometheus-community.github.io/helm-charts
+        chart_ref: kube-prometheus-stack
+        chart_version: "^45"
+        values_files:
+          - /tmp/infra/bootstrap-values/kube-prometheus-stack.yaml
+
+    - name: Bootstrap Ingress-NGINX
+      kubernetes.core.helm:
+        wait: true
+        name: ingress-nginx
+        release_namespace: ingress-system
+        chart_repo_url: https://kubernetes.github.io/ingress-nginx
+        chart_ref: ingress-nginx
+        chart_version: "^4"
+        values_files:
+          - /tmp/infra/bootstrap-values/ingress-nginx.yaml
+
+    - name: Check if Longhorn volume encryption secret exists
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Secret
+        name: longhorn-crypto
+        namespace: kube-system
+      register: longhorn_crypto_secret
+
+    - name: Create Longhorn volume encryption secret
+      when: "(longhorn_crypto_secret.resources | length) == 0"
+      kubernetes.core.k8s:
+        wait: true
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: longhorn-crypto
+            namespace: kube-system
+          stringData:
+            CRYPTO_KEY_VALUE: "{{ lookup('ansible.builtin.password', '/tmp/passwordfile chars=ascii_letters') }}"
+            CRYPTO_KEY_PROVIDER: "secret"
+            CRYPTO_KEY_CIPHER: "aes-xts-plain64"
+            CRYPTO_KEY_HASH: "sha256"
+            CRYPTO_KEY_SIZE: "256"
+            CRYPTO_PBKDF: "argon2i"
+
+    - name: Ensure Longhorn crypto storage class exists
+      kubernetes.core.k8s:
+        wait: true
+        definition:
+          kind: StorageClass
+          apiVersion: storage.k8s.io/v1
+          metadata:
+            name: longhorn-crypto
+            annotations:
+              "storageclass.kubernetes.io/is-default-class": "true"
+          provisioner: driver.longhorn.io
+          allowVolumeExpansion: true
+          parameters:
+            nodeSelector: "{{ cluster_label }}=1"
+            numberOfReplicas: "{{ (groups['k3s_cluster'] | length > 2) | ternary(2, groups['k3s_cluster'] | length) }}"
+            dataLocality: best-effort
+            staleReplicaTimeout: "2880" # 48 hours in minutes
+            fromBackup: ""
+            encrypted: "true"
+            # global secret that contains the encryption key that will be used for all volumes
+            csi.storage.k8s.io/provisioner-secret-name: "longhorn-crypto"
+            csi.storage.k8s.io/provisioner-secret-namespace: "kube-system"
+            csi.storage.k8s.io/node-publish-secret-name: "longhorn-crypto"
+            csi.storage.k8s.io/node-publish-secret-namespace: "kube-system"
+            csi.storage.k8s.io/node-stage-secret-name: "longhorn-crypto"
+            csi.storage.k8s.io/node-stage-secret-namespace: "kube-system"
+
+    - name: Ensure base GitRepository exists
+      kubernetes.core.k8s:
+        wait: true
+        definition:
+          apiVersion: source.toolkit.fluxcd.io/v1
+          kind: GitRepository
+          metadata:
+            name: base-repo
+            namespace: flux-system
+          spec:
+            interval: 1h
+            url: "{{ base_repo }}"
+            ref:
+              branch: "{{ base_branch }}"
+
+    - name: Ensure HelmRelease for host-cluster-infra chart exists
+      when: "not vcluster"
+      kubernetes.core.k8s:
+        wait: true
+        definition:
+          apiVersion: helm.toolkit.fluxcd.io/v2beta1
+          kind: HelmRelease
+          metadata:
+            name: host-cluster-infra
+            namespace: flux-system
+          spec:
+            interval: 1h
+            chart:
+              spec:
+                chart: ./cluster/host-infra
+                sourceRef:
+                  kind: GitRepository
+                  name: base-repo
+                reconcileStrategy: Revision
+            values: "{{ helm_values }}"
+
+    - name: Ensure HelmRelease for cluster-infra chart exists
+      kubernetes.core.k8s:
+        wait: true
+        definition:
+          apiVersion: helm.toolkit.fluxcd.io/v2beta1
+          kind: HelmRelease
+          metadata:
+            name: cluster-infra
+            namespace: flux-system
+          spec:
+            interval: 1h
+            chart:
+              spec:
+                chart: ./cluster/infra
+                sourceRef:
+                  kind: GitRepository
+                  name: base-repo
+                reconcileStrategy: Revision
+            values: "{{ helm_values }}"

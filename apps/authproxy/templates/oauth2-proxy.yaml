@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: oidc-client
+type: Opaque
+data:
+  {{- with .Values.oidcClient.secret }}
+  secret: {{ (lookup "v1" "Secret" (default .Release.Namespace .namespace) .name).data | index .key }}
+  {{- end }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cookies
+type: Opaque
+data:
+  secret: {{ include "common.secrets.passwords.manage" (dict "secret" "cookies" "key" "secret" "providedValues" (list "") "context" $) }}
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: oauth2-proxy
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: oauth2-proxy
+      version: '^6'
+      sourceRef:
+        kind: HelmRepository
+        name: oauth2-proxy
+  dependsOn:
+    - name: keycloak-config
+  valuesFrom:
+    - kind: Secret
+      name: oidc-client
+      valuesKey: secret
+      targetPath: config.clientSecret
+    - kind: Secret
+      name: oidc-client
+      valuesKey: secret
+      targetPath: config.cookieSecret
+  values:
+    config:
+      clientID: {{ .Values.oidcClient.id }}
+      clientSecret: "" # injected
+      cookieSecret: "" # injected
+      configFile: |-
+        upstreams = "file:///dev/null"
+        whitelist_domains = [ {{ printf ".%s" .Values.domain | quote }} ]
+        provider = "oidc"
+        provider_display_name = {{ printf "SSO for %s" .Values.org.name | quote }}
+        oidc_issuer_url = {{ .Values.oidcClient.idpURL }}
+        redirect_url = {{ printf "https://%s/callback" .Values.host }} # TODO: insert correct url
+        set_xauthrequest = true
+        set_authorization_header = true
+        pass_authorization_header = true
+        pass_access_token = true
+        cookie_samesite = "none"
+        cookie_domains = [ {{ printf ".%s" .Values.domain | quote }} ]
+        cookie_refresh = "300s"
+        email_domains = "*"
+        scope = "email groups profile openid"
+    # -> see https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview#config-file
+    # and https://dexidp.io/docs/custom-scopes-claims-clients/#scopes
+    # and https://dexidp.io/docs/custom-scopes-claims-clients/#cross-client-trust-and-authorized-party
+    ingress:
+      enabled: true
+      annotations:
+        cert-manager.io/cluster-issuer: {{ .Values.clusterIssuer }}
+        external-dns.alpha.kubernetes.io/managed-by: {{ .Values.externalDNSManager }}
+      hosts:
+        - {{ .Values.host }}
+      tls:
+        - hosts:
+            - {{ .Values.host }}
+          secretName: oauth2-proxy-cert

@@ -1,0 +1,377 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-theme-login
+data:
+  theme.properties: |
+    parent=keycloak
+    import=common/keycloak
+    styles=css/login.css css/styles.css
+  styles.css: |
+    .login-pf body {
+      background: rgb(226, 231, 240);
+    }
+    div.kc-logo-text {
+      background-image: url({{ .Values.org.logoURL }});
+      background-size: contain;
+      height: 150px;
+      background-position: center;
+    }
+    @media (max-width: 767px) {
+      div.kc-logo-text {
+        margin: auto;
+        width: auto;
+        height: 150px;
+        margin-bottom: 30px;
+      }
+      #kc-header-wrapper {
+        padding: 20px 0 0 0;
+      }
+    }
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: bitnami
+spec:
+  interval: 10m
+  url: https://charts.bitnami.com/bitnami
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: keycloak
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: keycloak
+      version: '^15'
+      sourceRef:
+        kind: HelmRepository
+        name: bitnami
+  timeout: 10m0s # Increase timeout to be sure.
+  values:
+    auth:
+      adminUser: admin
+      existingSecret: {{ .Values.idp.adminSecret }}
+      passwordSecretKey: password
+    ingress:
+      enabled: true
+      annotations:
+        cert-manager.io/cluster-issuer: {{ .Values.clusterIssuer }}
+        external-dns.alpha.kubernetes.io/managed-by: {{ .Values.externalDNSManager }}
+      hostname: {{ .Values.hosts.keycloak }}
+      tls: true
+    extraVolumes:
+      - name: theme-login
+        configMap:
+          name: keycloak-theme-login
+    extraVolumeMounts:
+      - name: theme-login
+        mountPath: /opt/k8s-cloud/themes/login
+        readOnly: true
+    initdbScripts:
+      setup_custom_theme.sh: |
+        #!/bin/bash
+
+        # Create custom theme folder:
+
+        cd /opt/bitnami/keycloak/themes
+        mkdir ./k8s-cloud
+        cd ./k8s-cloud
+
+        # Create login theme:
+
+        mkdir ./login
+        cd ./login
+        cp /opt/k8s-cloud/themes/login/theme.properties ./
+        mkdir ./resources
+        mkdir ./resources/css
+        cp /opt/k8s-cloud/themes/login/styles.css ./resources/css
+        cd ..
+    keycloakConfigCli:
+      enabled: true
+      extraEnvVars:
+        - name: IMPORT_MANAGED_CLIENT
+          value: "no-delete" # Do not delete existing clients, just add new ones
+        - name: import.var-substitution.enabled
+          value: "true"
+        - name: ADMIN_OIDC_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: admin-oidc
+              key: secret
+        {{- range $client := .Values.clients.oidc }}
+        - name: OIDC_SECRET.{{ $client.id }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ printf "oidc-client.%s" $client.id }}
+              key: secret
+        {{- end }}
+        {{- range $client := .Values.clients.saml }}
+        - name: SAML_CERT.{{ $client.id }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ printf "saml-cert.%s" (index .Values.clients.saml $i) }}
+              key: tls.crt
+        {{- end }}
+      configuration: 
+        main.yaml:
+          enabled: true
+          realm: main
+          registrationAllowed: true
+          registrationEmailAsUsername: false
+          rememberMe: true
+          verifyEmail: true
+          loginWithEmailAllowed: true
+          duplicateEmailsAllowed: false
+          resetPasswordAllowed: true
+          editUsernameAllowed: false
+          accessTokenLifespan: 600
+          accessTokenLifespanForImplicitFlow: 1200
+          ssoSessionIdleTimeout: 7200
+          ssoSessionMaxLifespan: 86400
+          ssoSessionIdleTimeoutRememberMe: 604800
+          ssoSessionMaxLifespanRememberMe: 5184000
+          offlineSessionIdleTimeout: 5184000
+          adminEventsEnabled: true
+          adminEventsDetailsEnabled: true
+          internationalizationEnabled: true
+          defaultLocale: {{ index (.Values.org.defaultLocale | splitList "_") 0 }}
+          displayName: {{ printf "%s Login" .Values.org.name }}
+          displayNameHtml: {{ printf "<div class=\"kc-logo-text\"><span>%s Login</span></div>" .Values.org.name }}
+          smtpServer:
+            port: {{ .Values.smtp.port | quote }}
+            host: {{ .Values.smtp.host }}
+            {{ if not .Values.smtp.starttls -}}
+            ssl: 'true'
+            {{- else -}}
+            starttls: 'true'
+            {{- end }}
+            auth: 'true'
+            from: {{ .Values.smtp.fromAddress }}
+            user: {{ .Values.smtp.username | quote }}
+            password: {{ .Values.smtp.password | quote }}
+          loginTheme: k8s-cloud
+          components:
+            org.keycloak.keys.KeyProvider:
+              - name: "rsa"
+                providerId: "rsa"
+                subComponents: {}
+                config: 
+                  privateKey:
+                    - {{ index $idp_cert "tls.key" | b64dec | quote }}
+                  certificate:
+                    - {{ index $idp_cert "tls.crt" | b64dec | quote }} 
+                  priority: ["200"] 
+                  algorithm: ["RS256"]
+              - name: "aes-generated"
+                providerId: "aes-generated"
+                subComponents: {}
+                config: 
+                  priority: ["100"]
+              - name: "rsa-enc-generated"
+                providerId: "rsa-enc-generated"
+                subComponents: {}
+                config: 
+                  priority: ["100"]
+                  algorithm: ["RSA-OAEP"]
+              - name: "hmac-generated"
+                providerId: "hmac-generated"
+                subComponents: {}
+                config: 
+                  priority: ["100"]
+                  algorithm: ["HS256"]
+          groups: 
+            - name: {{ .Values.idp.adminGroup }}
+              realmRoles: 
+                - admin
+              attributes:
+                is_admin: ["true"]
+          users:
+            - username: admin
+              enabled: true
+              emailVerified: true
+              requiredActions: []
+              realmRoles:
+                - admin
+                - create-realm
+                - default-roles-master
+          identityProviders:
+            - alias: admin-oidc
+              displayName: "Admin OIDC"
+              providerId: oidc
+              enabled: true
+              trustEmail: true
+              # firstBrokerLoginFlowAlias: "first broker login"
+              # storeToken: false
+              # authenticateByDefault: false
+              # linkOnly: false
+              config:
+                clientId: admin-oidc
+                clientAuthMethod: client_secret_post
+                clientSecret: "$(env:ADMIN_OIDC_SECRET)" # from env var
+                tokenUrl: {{ printf "https://%s/tokens" .Values.hosts.dex }}
+                authorizationUrl: {{ printf "https://%s/auth" .Values.hosts.dex }}
+                validateSignature: "true"
+                useJwksUrl: "true"
+                jwksUrl: {{ printf "https://%s/keys" .Values.hosts.dex }}
+                syncMode: FORCE
+                defaultScope: "email groups profile openid"
+                guiOrder: 0
+                # backchannelSupported: true
+          identityProviderMappers:
+            - name: admin-oidc-email-mapper
+              identityProviderAlias: admin-oidc
+              identityProviderMapper: "oidc-user-attribute-idp-mapper"
+              config:
+                claim: email
+                user.attribute: email
+                # syncMode: FORCE
+            - name: admin-oidc-group-mapper
+              identityProviderAlias: admin-oidc
+              identityProviderMapper: "oidc-advanced-group-idp-mapper"
+              config:
+                claims: {{ printf "[{\"key\": \"groups\",\"value\": %s}]" (.Values.idp.adminGroup | quote) | quote }}
+                group: {{ .Values.idp.adminGroup | quote }}
+                # syncMode: FORCE
+          clientScopes:
+            - name: groups
+              protocol: openid-connect
+              attributes:
+                display.on.consent.screen: "true"
+                include.in.token.scope": "true"
+              protocolMappers:
+                - name: groups
+                  protocol: openid-connect
+                  protocolMapper: oidc-group-membership-mapper
+                  config: 
+                    full.path: "false"
+                    id.token.claim: "true"
+                    access.token.claim: "true"
+                    userinfo.token.claim: "true"
+                    claim.name: groups
+            - name: is_admin
+              protocol: openid-connect
+              attributes:
+                display.on.consent.screen: "true"
+                include.in.token.scope": "true"
+              protocolMappers:
+                - name: is_admin
+                  protocol: openid-connect
+                  protocolMapper: oidc-usermodel-attribute-mapper
+                  consentRequired: false
+                  config:
+                    userinfo.token.claim: 'true'
+                    user.attribute: is_admin
+                    id.token.claim: 'true'
+                    access.token.claim: 'true'
+                    claim.name: is_admin
+                    jsonType.label: boolean
+                    multivalued: 'false'
+                    aggregate.attrs: ''
+          clients: 
+            {{ range $client := .Values.clients.oidc -}}
+            - clientId: {{ $client.id }}
+              name: {{ $client.id }}
+              description: "Internal OIDC client"
+              enabled: true
+              clientAuthenticatorType: client-secret
+              secret: "$(env:OIDC_SECRET.{{ $client.id }})" # from env var
+              redirectUris: 
+              {{ range $uri := $client.redirectURIs -}}
+                - {{ $uri }}
+              {{ end -}}
+              webOrigins: 
+                - "*"
+              defaultClientScopes:
+                - email
+                - profile
+              optionalClientScopes:
+                - groups
+                - roles
+                - is_admin
+            {{ end -}}
+            {{ range $client := .Values.clients.saml -}}
+            - clientId: {{ $client.id }}
+              protocol: saml
+              name: {{ $client.id }}
+              description: "Internal SAML client"
+              enabled: true
+              rootUrl: {{ $client.rootURL }}
+              redirectUris: 
+                - "*"
+              webOrigins: 
+                - "*"
+              frontchannelLogout: true
+              attributes:
+                saml.signing.certificate: "$(env:SAML_CERT.{{ $client.id }})" # from env var
+                saml.client.signature: "true"
+                saml.force.post.binding: "false"
+                saml.signature.algorithm: RSA_SHA256
+                saml.assertion.signature: "true"
+                saml_name_id_format: email
+                {{ if eq $client.assertionConsumer.method "post" -}}
+                saml_assertion_consumer_url_post: {{ $client.assertionConsumer.url }}
+                {{ end -}}
+                {{ if eq $client.assertionConsumer.method "redirect" -}}
+                saml_assertion_consumer_url_redirect: {{ $client.assertionConsumer.url }}
+                {{ end -}}
+                {{ if $client.logoutService -}}
+                {{ if eq $client.logoutService.method "post" -}}
+                saml_single_logout_service_url_post: {{ $client.logoutService.url }}
+                {{ end -}}
+                {{ if eq $client.logoutService.method "redirect" -}}
+                saml_single_logout_service_url_redirect: {{ $client.logoutService.url }}
+                {{- end }}
+                {{- end }}
+              protocolMappers:
+                - name: name-id
+                  protocol: saml
+                  protocolMapper: saml-user-attribute-nameid-mapper
+                  consentRequired: false
+                  config:
+                    mapper.nameid.format: urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified
+                    user.attribute: email
+                - name: firstName
+                  protocol: saml
+                  protocolMapper: saml-user-attribute-mapper
+                  config:
+                    attribute.nameformat: Basic
+                    user.attribute: firstName
+                    attribute.name: cn
+                - name: "X500 email"
+                  protocol: saml
+                  protocolMapper: saml-user-property-mapper
+                  config:
+                    attribute.name: urn:oid:1.2.840.113549.1.9.1
+                    attribute.nameformat: urn:oasis:names:tc:SAML:2.0:attrname-format:uri
+                    friendly.name: email
+                    user.attribute: email
+                - name: "X500 givenName"
+                  protocol: saml
+                  protocolMapper: saml-user-property-mapper
+                  config:
+                    attribute.name: urn:oid:2.5.4.42
+                    attribute.nameformat: urn:oasis:names:tc:SAML:2.0:attrname-format:uri
+                    friendly.name: givenName
+                    user.attribute: firstName
+                - name: "X500 surname"
+                  protocol: saml
+                  protocolMapper: saml-user-property-mapper
+                  config:
+                    attribute.name: urn:oid:2.5.4.4
+                    attribute.nameformat: urn:oasis:names:tc:SAML:2.0:attrname-format:uri
+                    friendly.name: surname
+                    user.attribute: lastName
+            {{ end -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  labels:
+    grafana_dashboard: "1"
+data:
+{{ (.Files.Glob "config/dashboard-*.json").AsConfig | indent 2 }}

@@ -1,0 +1,22 @@
+all:
+  vars:
+    auto_trust_remotes: false
+k3s_cluster:
+  children:
+    masters:
+      hosts:
+        # You can add an arbitrary number of agents and nodes based on the templates below
+        kube-0:
+          ansible_host: "" # IP address of server node
+    workers:
+      hosts:
+        kube-1:
+          ansible_host: "" # IP address of agent node
+  vars:
+    # Default variables, may be adapted
+    ansible_user: root
+    k3s_release_version: false # Set to false for latest stable release
+    base_repo: https://github.com/cloudlane-one/k8s-cloud
+    base_branch: main
+    vcluster: false # Set to true to create a vcluster on top of a k3s host cluster
+    helm_values: {}

@@ -5,3 +5,7 @@ Chart.lock
 # Files marked as local-only
 *.local
 *.local.*
+
+# Helm values
+/values.yaml
+/values.yml

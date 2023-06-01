@@ -1,0 +1,19 @@
+oidcClient:
+  idpURL: ""
+  id: ""
+  secret:
+    namespace: null
+    name: ""
+    key: "secret"
+
+domain: ""
+
+host: ""
+
+org:
+  name: ""
+  logoURL: ""
+
+clusterIssuer: "acme"
+
+externalDNSManager: "cluster"

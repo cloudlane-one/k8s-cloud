@@ -1,0 +1,43 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: kubernetes-dashboard
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://kubernetes.github.io/dashboard
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: kubernetes-dashboard
+  namespace: kube-system
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: kubernetes-dashboard
+      version: "^5"
+      sourceRef:
+        kind: HelmRepository
+        name: kubernetes-dashboard
+        namespace: flux-system
+  timeout: '10m0s' # Account for slow performance of cluster on first setup.
+  values:
+    metricsScraper:
+      enabled: true
+    ingress:
+      enabled: true
+      annotations:
+        cert-manager.io/cluster-issuer: acme
+        external-dns.alpha.kubernetes.io/managed-by: {{ include "cluster_fqn" . }}
+        {{ include "admin_auth_annotations" . | nindent 8 }}
+      hosts:
+        - {{ include "get_hostname" (dict "service" "k8s_dashboard" "context" $) }}
+      tls:
+        - hosts:
+            - {{ include "get_hostname" (dict "service" "k8s_dashboard" "context" $) }}
+          secretName: k8s-dashboard-cert
+    # resources: 
+    #   limits:
+    #     memory: 256Mi

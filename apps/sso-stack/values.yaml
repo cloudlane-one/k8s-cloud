@@ -1,0 +1,66 @@
+clients:
+  oidc: []
+  #    - id: ""
+  #      redirectURIs:
+  #        - https://example.com/path
+  saml: []
+  #    - id: ""
+  #      rootURL: ""
+  #      assertionConsumer:
+  #        method: "post" # "redirect" or "post"
+  #        url: "" # may be relative
+  #      logoutService:
+  #        method: "post" # "redirect" or "post"
+  #        url: "" # may be relative
+
+domain: ""
+
+hosts:
+  keycloak: ""
+  dex: ""
+  oauth2_proxy: ""
+
+smtp:
+  host: ""
+  port: ""
+  fromAddress: ""
+  username: ""
+  password: ""
+  starttls: false
+
+s3:
+  endpoint: ""
+  region: ""
+  bucket: ""
+  accessKey:
+    id: "" # Your S3 access key id
+    secret: "" # Your S3 access key secret
+
+org:
+  name: ""
+  defaultLocale: "en_US"
+  tagline: ""
+  logoURL: ""
+
+idp:
+  certSecret: "idp-cert" # Must be a tls type secret
+  adminSecret: "idp-admin" # Must be an opaque secret containing key "password"
+
+adminIDP:
+  type: "oidc"
+  issuerURL: ""
+  clientID: ""
+  clientSecret: ""
+  adminGroup: ""
+
+clusterIssuer: "acme"
+
+externalDNSManager: "cluster"
+
+# Directly set values on upstream chart.
+# This may override values templated by this chart and break stuff.
+# Use with caution!
+upstreamValues:
+  keycloak: {}
+  dex: {}
+  oauth2_proxy: {}

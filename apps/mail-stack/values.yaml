@@ -1,7 +1,10 @@
 oidcClient:
   idpURL: ""
   id: ""
-  secret: ""
+  secret:
+    namespace: null
+    name: ""
+    key: "secret"
 
 proxyAuthURLs:
   signin: "https://oauth2-proxy/oauth2/start"
