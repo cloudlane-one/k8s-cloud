@@ -1,0 +1,9 @@
+host: ""
+
+oauth2ProxyHost: ""
+
+adminGroup: ""
+
+clusterIssuer: "acme"
+
+externalDNSManager: "cluster"

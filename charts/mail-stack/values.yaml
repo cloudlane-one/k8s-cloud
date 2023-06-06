@@ -1,0 +1,27 @@
+oidcClient:
+  idpURL: ""
+  id: ""
+  secret:
+    namespace: null
+    name: ""
+    key: "secret"
+
+oauth2ProxyHost: ""
+
+domain: ""
+
+hosts:
+  mailman: ""
+  mailu: ""
+
+requirePTR: true
+
+useMailuProxyAuth: true
+
+org:
+  name: ""
+  logoURL: ""
+
+clusterIssuer: "acme"
+
+externalDNSManager: "cluster"

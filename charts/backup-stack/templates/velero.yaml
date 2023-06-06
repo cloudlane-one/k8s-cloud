@@ -1,0 +1,106 @@
+# This VolumeSnapshotClass will be used by Velero to automatically 
+# trigger volume snapshotting and snapshot backup via Longhorn.
+# See here: https://longhorn.io/docs/1.4.1/snapshots-and-backups/csi-snapshot-support/csi-volume-snapshot-associated-with-longhorn-backup/#create-a-csi-volumesnapshot-associated-with-longhorn-backup
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  labels:
+      velero.io/csi-volumesnapshot-class: "true"
+  name: velero-backup
+driver: {{ .Values.storageDriver }}
+deletionPolicy: Delete
+parameters:
+  type: bak
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: s3-backup-credentials
+type: Opaque
+data:
+  {{- with .Values.s3.accessKeySecret }}
+  {{- $s3_secret := (lookup "v1" "Secret" (default .Release.Namespace .namespace) .name).data | index .key | b64dec }}
+  {{- end }}
+  cloud: {{ printf "[default]\naws_access_key_id=%s\naws_secret_access_key=%s" .Values.s3.accessKeyID $s3_secret | b64enc }}
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: vmware-tanzu
+spec:
+  interval: 1h
+  url: https://vmware-tanzu.github.io/helm-charts/
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: velero
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: velero
+      version: "^2"
+      sourceRef:
+        kind: HelmRepository
+        name: vmware-tanzu
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+  timeout: '10m0s' # Account for slow performance of cluster on first setup.
+  values:
+    credentials:
+      existingSecret: s3-backup-credentials
+    initContainers:
+      - name: velero-plugin-for-csi
+        image: velero/velero-plugin-for-csi:latest
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+          - mountPath: /target
+            name: plugins
+      - name: velero-plugin-for-aws
+        image: velero/velero-plugin-for-aws:latest
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+          - mountPath: /target
+            name: plugins
+    snapshotsEnabled: true
+    configuration:
+      provider: aws
+      features: EnableCSI
+      backupStorageLocation:
+        name: default
+        bucket: {{ .Values.s3.bucket }}
+        prefix: velero
+        config:
+          region: {{ .Values.s3.region }}
+          s3Url: {{ printf "https://%s" .Values.s3.endpoint }}
+      volumeSnapshotLocation:
+        name: default
+        config:
+          region: {{ .Values.s3.region }}
+    schedules:
+      full-backup:
+        disabled: false
+        schedule: "0 0 * * *"
+        useOwnerReferencesInBackup: false
+        template:
+          includedNamespaces:
+            - "*"
+          includeClusterResources: true
+          snapshotVolumes: true
+          ttl: "7d"
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  labels:
+    grafana_dashboard: "1"
+data:
+{{ (.Files.Glob "config/grafana-dashboards/velero*").AsConfig | indent 2 }}

@@ -1,0 +1,40 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: k8s-dashboard
+spec:
+  interval: 1h
+  url: https://kubernetes.github.io/dashboard/
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: k8s-dashboard
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: kubernetes-dashboard
+      version: "^6"
+      sourceRef:
+        kind: HelmRepository
+        name: k8s-dashboard
+  timeout: '10m0s' # Account for slow performance of cluster on first setup.
+  values:
+    metricsScraper:
+      enabled: true
+    ingress:
+      enabled: true
+      annotations:
+        cert-manager.io/cluster-issuer: {{ .Values.clusterIssuer }}
+        external-dns.alpha.kubernetes.io/managed-by: {{ .Values.externalDNSManager }}
+        # As described in this docs section: https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/#configuring-for-use-with-the-nginx-auth_request-directive
+        nginx.ingress.kubernetes.io/auth-response-headers: Authorization
+        nginx.ingress.kubernetes.io/auth-signin: {{ printf "https://%s/oauth2/start?rd=$scheme%%3A%%2F%%2F$host$escaped_request_uri" .Values.oauth2ProxyHost }}
+        nginx.ingress.kubernetes.io/auth-url: {{ printf "https://%s/oauth2/auth?allowed_groups=%s" .Values.oauth2ProxyHost .Values.adminGroup }}
+      hosts:
+        - {{ .Values.host }}
+      tls:
+        - hosts:
+            - {{ .Values.host }}
+          secretName: k8s-dashboard-cert

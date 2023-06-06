@@ -1,0 +1,20 @@
+host: ""
+
+oidcClient:
+  idpURL: ""
+  id: ""
+  secret:
+    namespace: null
+    name: ""
+    key: "secret"
+
+clusterIssuer: "acme"
+
+externalDNSManager: "cluster"
+
+bootstrap: false # Set to true to install in bootstrap mode (minimum deployment to support core functions and CRs)
+
+# Bootstrap values
+flux2:
+  policies:
+    enabled: false

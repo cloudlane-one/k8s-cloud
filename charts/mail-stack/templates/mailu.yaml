@@ -1,0 +1,128 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: mailu
+spec:
+  interval: 60m
+  url: https://mailu.github.io/helm-charts/
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: mailu
+spec:
+  interval: 10m
+  chart:
+    spec:
+      chart: mailu
+      version: "^1"
+      sourceRef:
+        kind: HelmRepository
+        name: mailu
+  timeout: 10m
+  values:
+    domain: {{ .Values.domain }}
+    hostnames:
+      - {{ .Values.hosts.mailu }}
+    initialAccount:
+      enabled: true
+      domain: {{ .Values.domain }}
+      username: admin
+      existingSecret: mailu-admin
+      existingSecretPasswordKey: password
+    customization:
+      siteName: {{ printf "%s Mail" .Values.org.name }}
+      logoUrl: {{ .Values.org.logoURL | quote }}
+    subnet: "10.0.0.0/8" # Cluster network. Make sure to set your NetworkPolicies straight!
+    logLevel: INFO
+    persistence:
+      single_pvc: false
+    ingress:
+      enabled: true
+      annotations:
+        cert-manager.io/cluster-issuer: {{ .Values.clusterIssuer }}
+        external-dns.alpha.kubernetes.io/managed-by: {{ .Values.externalDNSManager }}
+        nginx.ingress.kubernetes.io/auth-response-headers: "Authorization, X-Auth-Request-User, X-Auth-Request-Groups, X-Auth-Request-Email, X-Auth-Request-Preferred-Username, X-Auth-Request-Access-Token"
+        nginx.ingress.kubernetes.io/auth-signin: {{ printf "https://%s/oauth2/start?rd=$scheme%%3A%%2F%%2F$host$escaped_request_uri" .Values.oauth2ProxyHost }}
+        nginx.ingress.kubernetes.io/auth-url: {{ printf "https://%s/oauth2/auth" .Values.oauth2ProxyHost }}
+    mariadb:
+      enabled: true
+      primary:
+        persistence:
+          enabled: true
+    front:
+      kind: DaemonSet
+      hostPort:
+        enabled: false
+      externalService:
+        enabled: true
+        type: LoadBalancer
+        externalTrafficPolicy: Local
+      {{- if .Values.useMailuProxyAuth }}
+      extraEnvVars:
+        - name: PROXY_AUTH_WHITELIST
+          value: "10.0.0.0/8"
+        - name: PROXY_AUTH_HEADER
+          value: "X-Auth-Request-Email"
+        - name: PROXY_AUTH_CREATE
+          value: "True"
+      {{- end }}
+    postfix:
+      {{ if .Values.requirePTR -}}
+      nodeSelector:
+        PTR: {{ .Values.hosts.mailu }}
+      {{ end -}}
+      persistence:
+        size: 5Gi
+      extraVolumes:
+        - name: mailman
+          persistentVolumeClaim:
+            claimName: mailman-core-data
+      extraVolumeMounts:
+        - name: mailman
+          mountPath: /mailman
+      overrides:
+        postfix.cf: |
+          # Support the default VERP delimiter.
+          recipient_delimiter = +
+          unknown_local_recipient_reject_code = 550
+          owner_request_special = no
+          
+          transport_maps = regexp:/mailman/var/data/postfix_lmtp
+          local_recipient_maps = regexp:/mailman/var/data/postfix_lmtp
+          relay_domains = regexp:/mailman/var/data/postfix_domains
+    admin:
+      persistence:
+        size: 5Gi
+      {{- if .Values.useMailuProxyAuth }}
+      extraEnvVars:
+        - name: PROXY_AUTH_WHITELIST
+          value: "10.0.0.0/8"
+        - name: PROXY_AUTH_HEADER
+          value: "X-Auth-Request-Email"
+        - name: PROXY_AUTH_CREATE
+          value: "True"
+      {{- end }}
+    dovecot:
+      persistence:
+        size: 5Gi
+    webmail:
+      persistence:
+        size: 5Gi
+      {{- if .Values.useMailuProxyAuth }}
+      extraEnvVars:
+        - name: PROXY_AUTH_WHITELIST
+          value: "10.0.0.0/8"
+        - name: PROXY_AUTH_HEADER
+          value: "X-Auth-Request-Email"
+        - name: PROXY_AUTH_CREATE
+          value: "True"
+      {{- end }}
+    fetchmail:
+      enabled: true
+      persistence:
+        size: 5Gi
+    webdav:
+      enabled: true
+      persistence:
+        size: 5Gi

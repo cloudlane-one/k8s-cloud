@@ -9,3 +9,9 @@ Chart.lock
 # Helm values
 /values.yaml
 /values.yml
+
+kubeconfig.yaml
+kubeconfig.yml
+kubeconfig
+/inventory.yaml
+/inventory.yml

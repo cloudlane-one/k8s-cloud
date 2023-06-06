@@ -1,0 +1,14 @@
+apiVersion: v2
+name: telemetry-stack
+description: Prometheus + Loki + Grafana
+type: application
+version: "0.0.1"
+appVersion: "0.0.1"
+dependencies:
+  - name: common
+    version: "^1"
+    repository: https://charts.bitnami.com/bitnami
+  - name: kube-prometheus-stack
+    version: "^46"
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: bootstrap

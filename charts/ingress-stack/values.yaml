@@ -1,0 +1,21 @@
+domain: "" # The public root domain of this cluster (e.g. "example.org")
+
+clusterName: "cluster" # Name for this cluster (unique for the supplied domain)
+
+externalDNS:
+  # Currently only Digitalocean provider supported.
+  tokenSecret:
+    namespace: null
+    name: ""
+    key: "token"
+
+letsencryptStaging: false # If true, uses Letsencrypt staging APIs instead of production ones. Prevents execeeding API limits.
+
+bootstrap: false # Set to true to install in bootstrap mode (minimum deployment to support core functions and CRs)
+
+# Bootstrap values
+ingress-nginx:
+  controller:
+    ingressClassResource:
+      default: true
+    watchIngressWithoutClass: true

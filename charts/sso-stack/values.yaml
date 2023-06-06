@@ -1,0 +1,52 @@
+clients:
+  oidc: []
+  #    - id: ""
+  #      redirectURIs:
+  #        - https://example.com/path
+  saml: []
+  #    - id: ""
+  #      rootURL: ""
+  #      assertionConsumer:
+  #        method: "post" # "redirect" or "post"
+  #        url: "" # may be relative
+  #      logoutService:
+  #        method: "post" # "redirect" or "post"
+  #        url: "" # may be relative
+
+domain: ""
+
+hosts:
+  keycloak: ""
+  dex: ""
+
+smtp:
+  host: ""
+  port: ""
+  fromAddress: ""
+  username: ""
+  starttls: false
+  passwordSecret:
+    namespace: null
+    name: ""
+    key: "password"
+
+org:
+  name: ""
+  defaultLocale: "en_US"
+  tagline: ""
+  logoURL: ""
+
+adminIDP:
+  type: "oidc"
+  issuerURL: ""
+  clientID: ""
+  clientSecret:
+    namespace: null
+    name: ""
+    key: "secret"
+
+adminGroup: ""
+
+clusterIssuer: "acme"
+
+externalDNSManager: "cluster"

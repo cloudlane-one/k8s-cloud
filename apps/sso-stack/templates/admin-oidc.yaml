@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: Secret
-metadata:
-  name: admin-oidc
-type: Opaque
-data:
-  secret: {{ include "common.secrets.passwords.manage" (dict "secret" "admin-oidc" "key" "secret" "providedValues" (list "") "context" $) }}

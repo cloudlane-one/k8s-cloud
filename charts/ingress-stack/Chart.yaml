@@ -1,0 +1,14 @@
+apiVersion: v2
+name: ingress-stack
+description: NGINX ingress controller + external-dns + extras
+type: application
+version: "0.0.1"
+appVersion: "0.0.1"
+dependencies:
+  - name: common
+    version: "^1"
+    repository: https://charts.bitnami.com/bitnami
+  - name: ingress-nginx
+    version: "^4"
+    repository: https://kubernetes.github.io/ingress-nginx
+    condition: bootstrap
