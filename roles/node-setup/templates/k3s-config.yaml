@@ -1,0 +1,3 @@
+node-label:
+  - "cluster.{{ domain }}=1"
+node-external-ip: "{{ ansible_host }}"

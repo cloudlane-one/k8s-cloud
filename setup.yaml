@@ -14,8 +14,9 @@
     - node-setup
 
 - name: Set up cluster infrastructure
-  hosts: masters
+  hosts: cluster
   run_once: true
+  when: "{{ control_plane }}"
   tags: infra
   environment:
     K8S_AUTH_KUBECONFIG: /etc/rancher/k3s/k3s.yaml

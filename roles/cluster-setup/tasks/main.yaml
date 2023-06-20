@@ -119,78 +119,8 @@
           bootstrap: true
 
   with_items:
-    - chart: network-stack
-      namespace: kube-system
     - chart: storage-stack
       namespace: longhorn-system
-
-- name: Restore from full-cluster backup
-  when: "restoreFromBackup is defined"
-  block:
-    - name: Ensure Velero backup secret exists
-      kubernetes.core.k8s:
-        wait: true
-        definition:
-          apiVersion: v1
-          kind: Secret
-          metadata:
-            name: s3-backup-credentials
-            namespace: backup-system
-          type: Opaque
-          data:
-            cloud: '{{ ("[default]\naws_access_key_id=" s3Credentials.accessKeyID + "\naws_secret_access_key=" + s3.accessKeySecret) | b64encode  }}'
-
-    - name: Ensure Velero is installed
-      kubernetes.core.helm:
-        wait: true
-        name: velero
-        release_namespace: backup-system
-        chart_repo_url: https://vmware-tanzu.github.io/helm-charts/
-        chart_ref: velero
-        chart_version: "^2"
-        values:
-          credentials:
-            existingSecret: s3-backup-credentials
-          initContainers:
-            - name: velero-plugin-for-csi
-              image: velero/velero-plugin-for-csi:v0.3.0
-              imagePullPolicy: IfNotPresent
-              volumeMounts:
-                - mountPath: /target
-                  name: plugins
-            - name: velero-plugin-for-aws
-              image: velero/velero-plugin-for-aws:v1.5.0
-              imagePullPolicy: IfNotPresent
-              volumeMounts:
-                - mountPath: /target
-                  name: plugins
-          snapshotsEnabled: true
-          configuration:
-            provider: aws
-            features: EnableCSI
-            backupStorageLocation:
-              name: default
-              bucket: "{{ s3Buckets.backups }}"
-              prefix: velero
-              config:
-                region: "{{ s3Credentials.region }}"
-                s3Url: "https://{{ s3Credentials.endpoint }}"
-            volumeSnapshotLocation:
-              name: default
-              config:
-                region: "{{ s3Credentials.region }}"
-
-    - name: Apply backup restoration
-      kubernetes.core.k8s:
-        wait: true
-        definition:
-          apiVersion: velero.io/v1
-          kind: Restore
-          metadata:
-            name: initial-cluster-restore
-            namespace: backup-system
-          spec:
-            backupName: "{{ restoreFromBackup }}"
 
 - name: Setup vcluster
   when: vcluster
@@ -250,14 +180,10 @@
   with_items:
     - chart: cert-manager
       namespace: kube-system
-    - chart: telemetry-stack
-      namespace: telemetry-system
     - chart: ingress-stack
       namespace: ingress-system
-    - chart: upgrade-controller
-      namespace: kube-system
-    - chart: crypto-storage
-      namespace: longhorn-system
+    - chart: telemetry-stack
+      namespace: telemetry-system
     - chart: cicd-stack
       namespace: flux-system
 
@@ -328,30 +254,6 @@
       data:
         secret: "{{ s3AccessKeySecret }}"
 
-- name: Ensure HelmRelease for network-stack exists
-  when: "not vcluster"
-  kubernetes.core.k8s:
-    wait: true
-    definition:
-      apiVersion: helm.toolkit.fluxcd.io/v2beta1
-      kind: HelmRelease
-      metadata:
-        name: network-stack
-        namespace: kube-system
-      spec:
-        interval: 1h
-        chart:
-          spec:
-            chart: "./charts/network-stack"
-            sourceRef:
-              kind: GitRepository
-              name: base-repo
-            reconcileStrategy: Revision
-        values:
-          host: "{{ subdomains.network }}.{{ domain }}"
-          oauth2ProxyHost: "{{ subdomains.auth }}.{{ domain }}"
-          adminGroup: "{{ adminGroup }}"
-
 - name: Ensure HelmRelease for storage-stack exists
   when: "not vcluster"
   kubernetes.core.k8s:
@@ -409,6 +311,110 @@
                 reconcileStrategy: Revision
             values:
               s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system'}, 'bucket': s3Buckets.backup}) }}"
+
+- name: Ensure HelmRelease for upgrade-controller exists
+  when: "not vcluster"
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      metadata:
+        name: upgrade-controller
+        namespace: kube-system
+      spec:
+        interval: 1h
+        chart:
+          spec:
+            chart: "./charts/upgrade-controller"
+            sourceRef:
+              kind: GitRepository
+              name: base-repo
+            reconcileStrategy: Revision
+
+- name: Ensure HelmRelease for admin RBAC exists
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      metadata:
+        name: admin-rbac
+        namespace: kube-system
+      spec:
+        interval: 1h
+        chart:
+          spec:
+            chart: "./charts/admin-rbac"
+            sourceRef:
+              kind: GitRepository
+              name: base-repo
+            reconcileStrategy: Revision
+        values:
+          adminGroup: "{{ adminGroup }}"
+
+- name: Ensure HelmRelease for encrypted storage class exists
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      metadata:
+        name: crypto-storage
+        namespace: longhorn-system
+      spec:
+        interval: 1h
+        chart:
+          spec:
+            chart: "./charts/crypto-storage"
+            sourceRef:
+              kind: GitRepository
+              name: base-repo
+            reconcileStrategy: Revision
+        values:
+          clusterFQN: "{{ clusterFQN }}"
+
+- name: Ensure HelmRelease for cert-manager exists
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      metadata:
+        name: cert-manager
+        namespace: kube-system
+      spec:
+        interval: 1h
+        chart:
+          spec:
+            chart: "./charts/cert-manager"
+            sourceRef:
+              kind: GitRepository
+              name: base-repo
+            reconcileStrategy: Revision
+
+- name: Ensure HelmRelease for ingress-stack exists
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      metadata:
+        name: ingress-stack
+        namespace: ingress-system
+      spec:
+        interval: 1h
+        chart:
+          spec:
+            chart: "./charts/ingress-stack"
+            sourceRef:
+              kind: GitRepository
+              name: base-repo
+            reconcileStrategy: Revision
+        values:
+          domain: "{{ domain }}"
+          clusterName: "{{ clusterName }}"
+          externalDNS: "{{ externalDNS | combine({'tokenSecret': {'name': 'external-dns', 'namespace': 'kube-system'}}) }}"
 
 - name: Ensure sso-system exists
   block:
@@ -483,25 +489,6 @@
                 secret:
                   name: "oidc-client.cluster-oidc"
 
-- name: Ensure HelmRelease for cert-manager exists
-  kubernetes.core.k8s:
-    wait: true
-    definition:
-      apiVersion: helm.toolkit.fluxcd.io/v2beta1
-      kind: HelmRelease
-      metadata:
-        name: cert-manager
-        namespace: kube-system
-      spec:
-        interval: 1h
-        chart:
-          spec:
-            chart: "./charts/cert-manager"
-            sourceRef:
-              kind: GitRepository
-              name: base-repo
-            reconcileStrategy: Revision
-
 - name: Ensure HelmRelease for telemetry-stack exists
   kubernetes.core.k8s:
     wait: true
@@ -534,114 +521,6 @@
           s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system'}, 'bucket': s3Buckets.logs}) }}"
           smtp: "{{ smtp | combine({'passwordSecret': {'name': 'smtp', 'namespace': 'kube-system'}}) }}"
 
-- name: Ensure HelmRelease for ingress-stack exists
-  kubernetes.core.k8s:
-    wait: true
-    definition:
-      apiVersion: helm.toolkit.fluxcd.io/v2beta1
-      kind: HelmRelease
-      metadata:
-        name: ingress-stack
-        namespace: ingress-system
-      spec:
-        interval: 1h
-        chart:
-          spec:
-            chart: "./charts/ingress-stack"
-            sourceRef:
-              kind: GitRepository
-              name: base-repo
-            reconcileStrategy: Revision
-        values:
-          domain: "{{ domain }}"
-          clusterName: "{{ clusterName }}"
-          externalDNS: "{{ externalDNS | combine({'tokenSecret': {'name': 'external-dns', 'namespace': 'kube-system'}}) }}"
-
-- name: Ensure HelmRelease for k8s-dashboard exists
-  when: "not vcluster"
-  kubernetes.core.k8s:
-    wait: true
-    definition:
-      apiVersion: helm.toolkit.fluxcd.io/v2beta1
-      kind: HelmRelease
-      metadata:
-        name: k8s-dashboard
-        namespace: kube-system
-      spec:
-        interval: 1h
-        chart:
-          spec:
-            chart: "./charts/k8s-dashboard"
-            sourceRef:
-              kind: GitRepository
-              name: base-repo
-            reconcileStrategy: Revision
-        values:
-          host: "{{ subdomains.control }}.{{ domain }}"
-          oauth2ProxyHost: "{{ subdomains.auth }}.{{ domain }}"
-          adminGroup: "{{ adminGroup }}"
-
-- name: Ensure HelmRelease for upgrade-controller exists
-  kubernetes.core.k8s:
-    wait: true
-    definition:
-      apiVersion: helm.toolkit.fluxcd.io/v2beta1
-      kind: HelmRelease
-      metadata:
-        name: upgrade-controller
-        namespace: kube-system
-      spec:
-        interval: 1h
-        chart:
-          spec:
-            chart: "./charts/upgrade-controller"
-            sourceRef:
-              kind: GitRepository
-              name: base-repo
-            reconcileStrategy: Revision
-
-- name: Ensure HelmRelease for encrypted storage class exists
-  kubernetes.core.k8s:
-    wait: true
-    definition:
-      apiVersion: helm.toolkit.fluxcd.io/v2beta1
-      kind: HelmRelease
-      metadata:
-        name: crypto-storage
-        namespace: longhorn-system
-      spec:
-        interval: 1h
-        chart:
-          spec:
-            chart: "./charts/crypto-storage"
-            sourceRef:
-              kind: GitRepository
-              name: base-repo
-            reconcileStrategy: Revision
-        values:
-          clusterFQN: "{{ clusterFQN }}"
-
-- name: Ensure HelmRelease for admin RBAC exists
-  kubernetes.core.k8s:
-    wait: true
-    definition:
-      apiVersion: helm.toolkit.fluxcd.io/v2beta1
-      kind: HelmRelease
-      metadata:
-        name: admin-rbac
-        namespace: kube-system
-      spec:
-        interval: 1h
-        chart:
-          spec:
-            chart: "./charts/admin-rbac"
-            sourceRef:
-              kind: GitRepository
-              name: base-repo
-            reconcileStrategy: Revision
-        values:
-          adminGroup: "{{ adminGroup }}"
-
 - name: Ensure HelmRelease for cicd-stack exists
   kubernetes.core.k8s:
     wait: true
@@ -667,3 +546,39 @@
             id: "cluster-oidc"
             secret:
               name: "oidc-client.cluster-oidc"
+
+- name: Ensure HelmRelease for k8s-dashboard exists
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      metadata:
+        name: k8s-dashboard
+        namespace: kube-system
+      spec:
+        interval: 1h
+        chart:
+          spec:
+            chart: "./charts/k8s-dashboard"
+            sourceRef:
+              kind: GitRepository
+              name: base-repo
+            reconcileStrategy: Revision
+        values:
+          host: "{{ subdomains.control }}.{{ domain }}"
+          oauth2ProxyHost: "{{ subdomains.auth }}.{{ domain }}"
+          adminGroup: "{{ adminGroup }}"
+
+- name: Apply backup restoration
+  when: "not vcluster and restoreFromBackup is defined"
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: velero.io/v1
+      kind: Restore
+      metadata:
+        name: initial-cluster-restore
+        namespace: backup-system
+      spec:
+        backupName: "{{ restoreFromBackup }}"

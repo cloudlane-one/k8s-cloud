@@ -1,19 +1,14 @@
-all:
-  vars:
-    autoTrustRemotes: false
 cluster:
-  children:
-    masters:
-      hosts:
-        # You can add an arbitrary number of agents and nodes based on the templates below
-        kube-0:
-          ansible_host: "" # IP address of server node
-    workers:
-      hosts:
-        kube-1:
-          ansible_host: "" # IP address of agent node
+  hosts:
+    # You can add an arbitrary number of agents and nodes based on the templates below
+    kube-0:
+      ansible_host: "" # IP address of server node
+      control_plane: true
+    kube-1:
+      ansible_host: "" # IP address of agent node
   vars:
     # Default variables, may be adapted
+    autoTrustRemotes: false
 
     domain: ""
 
@@ -46,7 +41,7 @@ cluster:
       accessKeyID: "" # Your S3 access key id
 
     s3AccessKeySecret: ""
-    
+
     s3Buckets:
       backup: ""
       logs: ""
@@ -69,7 +64,6 @@ cluster:
       gitops: "gitops"
       telemetry: "telemetry"
       storage: "storage"
-      network: "network"
 
     letsencryptStaging: false # If true, uses Letsencrypt staging APIs instead of production ones. Prevents exceeding API limits.
 
