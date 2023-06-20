@@ -1,0 +1,24 @@
+- name: Add all hosts to known_hosts file, if according flag is set
+  hosts: localhost
+  connection: local
+  tags: cluster
+  when: "autoTrustRemotes == true"
+  roles:
+    - auto-trust
+
+- name: Install k3s on all cluster nodes and bootstrap infrastructure
+  hosts: cluster
+  become: true
+  tags: cluster
+  roles:
+    - node-setup
+
+- name: Set up cluster infrastructure
+  hosts: masters
+  run_once: true
+  tags: infra
+  environment:
+    K8S_AUTH_KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  roles:
+    - cluster-setup

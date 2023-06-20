@@ -1,0 +1,32 @@
+k3s_become: true
+k3s_etcd_datastore: "{{ groups['masters'] | length > 1 }}"
+k3s_use_unsupported_config: "{{ groups['masters'] | length > 1 }}"
+k3s_install_hard_links: true
+k3s_server:
+  node-taint:
+    - "node.cilium.io/agent-not-ready=true:NoExecute"
+  node-label:
+    - "cluster.{{ domain }}=1"
+  flannel-backend: "none"
+  disable:
+    - traefik
+    - local-storage
+  kube-apiserver-arg:
+    - "oidc-issuer-url=https://{{ subdomains.oidc }}.{{ domain }}"
+    - "oidc-client-id=cluster-oidc"
+    - "oidc-groups-claim=groups"
+  kube-controller-manager-arg:
+    - "address=0.0.0.0"
+    - "bind-address=0.0.0.0"
+  kube-proxy-arg:
+    - "metrics-bind-address=0.0.0.0"
+  kube-scheduler-arg:
+    - "address=0.0.0.0"
+    - "bind-address=0.0.0.0"
+  etcd-expose-metrics: true
+  disable-network-policy: true
+k3s_agent:
+  node-taint:
+    - "node.cilium.io/agent-not-ready=true:NoExecute"
+  node-label:
+    - "cluster.{{ domain }}=1"

@@ -1,0 +1,96 @@
+- name: Set control_node variable for master hosts
+  ansible.builtin.set_fact:
+    k3s_control_node: true
+  when: "'masters' in group_names"
+
+- name: Install and update packages via apt
+  when: 'ansible_pkg_mgr == "apt"'
+  block:
+    - name: Update all packages to their latest version
+      ansible.builtin.apt:
+        name: "*"
+        state: latest
+        update_cache: yes
+    - name: Ensure NFS client is installed (apt)
+      ansible.builtin.apt:
+        name: "{{ item }}"
+  with_items:
+    - nfs-common
+    - wireguard
+
+- name: Install and update packages via yum
+  when: 'ansible_pkg_mgr == "yum"'
+  block:
+    - name: Update all packages to their latest version
+      ansible.builtin.yum:
+        name: "*"
+        state: latest
+        update_cache: yes
+    - name: Ensure NFS client is installed (yum)
+      ansible.builtin.yum:
+        name: "{{ item }}"
+  with_items:
+    - nfs-utils
+    - wireguard-tools
+
+- name: Install and update packages via apk
+  when: 'ansible_pkg_mgr == "apk"'
+  block:
+    - name: Update all packages to their latest version
+      community.general.apk:
+        upgrade: true
+        update_cache: yes
+    - name: Ensure NFS client is installed (apk)
+      community.general.apk:
+        name: "{{ item }}"
+  with_items:
+    - nfs-utils
+    - wireguard-tools
+
+- name: Install and update packages via dnf
+  when: 'ansible_pkg_mgr == "dnf"'
+  block:
+    - name: Update all packages to their latest version
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
+        update_cache: yes
+    - name: Ensure NFS client is installed (dnf)
+      ansible.builtin.dnf:
+        name: "{{ item }}"
+  with_items:
+    - nfs-utils
+    - wireguard-tools
+
+- name: Install and update packages via zypper
+  when: 'ansible_pkg_mgr == "zypper"'
+  block:
+    - name: Update all packages to their latest version
+      community.general.zypper:
+        name: "*"
+        state: latest
+        update_cache: yes
+    - name: Ensure NFS client is installed (zypper)
+      community.general.zypper:
+        name: "{{ item }}"
+  with_items:
+    - nfs-utils
+    - wireguard-tools
+
+- name: Install and update packages via pacman
+  when: 'ansible_pkg_mgr == "pacman"'
+  block:
+    - name: Update all packages to their latest version
+      community.general.pacman:
+        upgrade: true
+        update_cache: yes
+    - name: Ensure NFS client is installed (pacman)
+      community.general.pacman:
+        name: "{{ item }}"
+  with_items:
+    - nfs-utils
+    - wireguard-tools
+
+- name: Install k3s via role
+  ansible.builtin.include_role:
+    name: xanmanning.k3s

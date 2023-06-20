@@ -1,0 +1,3 @@
+- name: Clear all cluster hosts from known_hosts file
+  with_items: "{{ groups['all'] }}"
+  ansible.builtin.command: "ssh-keygen -f $HOME/.ssh/known_hosts -R {{ hostvars[item].ansible_host }}"

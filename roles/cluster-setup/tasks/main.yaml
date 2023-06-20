@@ -1,0 +1,669 @@
+- name: Ensure PIP is installed
+  ansible.builtin.package:
+    name: pip
+
+- name: Copy requirements.txt to remote
+  ansible.builtin.copy:
+    src: requirements.txt
+    dest: /tmp
+
+- name: Ensure PIP dependencies are installed
+  ansible.builtin.pip:
+    requirements: /tmp/requirements.txt
+
+- name: Check if Helm CLI is installed
+  ansible.builtin.shell: "which helm"
+  register: which_helm
+  changed_when: false
+  failed_when: false
+  ignore_errors: true
+
+- name: Download Helm install script
+  when: "which_helm.rc != 0"
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+    dest: /tmp/helm-install.sh
+    mode: "0700"
+
+- name: Run Helm install script
+  when: "which_helm.rc != 0"
+  ansible.builtin.command: /tmp/helm-install.sh
+
+- name: Ensure helm diff plugin is installed
+  kubernetes.core.helm_plugin:
+    plugin_path: https://github.com/databus23/helm-diff
+
+- name: Check if Flux CLI is installed
+  ansible.builtin.shell: "which flux"
+  register: which_flux
+  changed_when: false
+  failed_when: false
+  ignore_errors: true
+
+- name: Download Flux install script
+  when: "which_flux.rc != 0"
+  ansible.builtin.get_url:
+    url: https://fluxcd.io/install.sh
+    dest: /tmp/flux-install.sh
+    mode: "0700"
+
+- name: Run Flux install script
+  when: "which_flux.rc != 0"
+  ansible.builtin.command: /tmp/flux-install.sh
+
+- name: Check if VCluster CLI is installed
+  ansible.builtin.shell: "which vcluster"
+  register: which_vcluster
+  changed_when: false
+  failed_when: false
+  ignore_errors: true
+
+- name: Download VCluster CLI
+  when: "which_vcluster.rc != 0"
+  ansible.builtin.get_url:
+    url: https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64
+    dest: /tmp/vcluster
+    mode: "0700"
+
+- name: Install VCluster CLI
+  when: "which_vcluster.rc != 0"
+  ansible.builtin.shell: "install -c -m 0755 /tmp/vcluster /usr/local/bin"
+
+- name: Ensure temp host-infra dir exists
+  ansible.builtin.file:
+    path: /tmp/host-infra/
+    state: directory
+    mode: "0755"
+
+- name: Ensure temp infra dir exists
+  ansible.builtin.file:
+    path: /tmp/infra/
+    state: directory
+    mode: "0755"
+
+- name: Copy values files for host infra bootstrap
+  ansible.builtin.copy:
+    src: host-infra/bootstrap-values
+    dest: /tmp/host-infra
+
+- name: Copy values files for infra bootstrap
+  ansible.builtin.copy:
+    src: infra/bootstrap-values
+    dest: /tmp/infra
+
+- name: Ensure k3s kubeconfig is set as default
+  ansible.builtin.lineinfile:
+    path: ~/.bashrc
+    create: true
+    line: "export KUBECONFIG=/etc/rancher/k3s/k3s.yaml"
+
+- name: Bootstrap host-cluster infrastructure
+  when: "not vcluster and (k8s_baseline_release.resources | length) == 0"
+  block:
+    - name: Ensure namespace exists
+      kubernetes.core.k8s:
+        wait: true
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: "{{ item.namespace }}"
+
+    - name: Deploy helm chart in bootstrap mode
+      kubernetes.core.helm:
+        wait: true
+        name: "{{ item.chart }}"
+        release_namespace: "{{ item.namespace }}"
+        chart_ref: "charts/{{ item.chart }}"
+        values:
+          bootstrap: true
+
+  with_items:
+    - chart: network-stack
+      namespace: kube-system
+    - chart: storage-stack
+      namespace: longhorn-system
+
+- name: Restore from full-cluster backup
+  when: "restoreFromBackup is defined"
+  block:
+    - name: Ensure Velero backup secret exists
+      kubernetes.core.k8s:
+        wait: true
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: s3-backup-credentials
+            namespace: backup-system
+          type: Opaque
+          data:
+            cloud: '{{ ("[default]\naws_access_key_id=" s3Credentials.accessKeyID + "\naws_secret_access_key=" + s3.accessKeySecret) | b64encode  }}'
+
+    - name: Ensure Velero is installed
+      kubernetes.core.helm:
+        wait: true
+        name: velero
+        release_namespace: backup-system
+        chart_repo_url: https://vmware-tanzu.github.io/helm-charts/
+        chart_ref: velero
+        chart_version: "^2"
+        values:
+          credentials:
+            existingSecret: s3-backup-credentials
+          initContainers:
+            - name: velero-plugin-for-csi
+              image: velero/velero-plugin-for-csi:v0.3.0
+              imagePullPolicy: IfNotPresent
+              volumeMounts:
+                - mountPath: /target
+                  name: plugins
+            - name: velero-plugin-for-aws
+              image: velero/velero-plugin-for-aws:v1.5.0
+              imagePullPolicy: IfNotPresent
+              volumeMounts:
+                - mountPath: /target
+                  name: plugins
+          snapshotsEnabled: true
+          configuration:
+            provider: aws
+            features: EnableCSI
+            backupStorageLocation:
+              name: default
+              bucket: "{{ s3Buckets.backups }}"
+              prefix: velero
+              config:
+                region: "{{ s3Credentials.region }}"
+                s3Url: "https://{{ s3Credentials.endpoint }}"
+            volumeSnapshotLocation:
+              name: default
+              config:
+                region: "{{ s3Credentials.region }}"
+
+    - name: Apply backup restoration
+      kubernetes.core.k8s:
+        wait: true
+        definition:
+          apiVersion: velero.io/v1
+          kind: Restore
+          metadata:
+            name: initial-cluster-restore
+            namespace: backup-system
+          spec:
+            backupName: "{{ restoreFromBackup }}"
+
+- name: Setup vcluster
+  when: vcluster
+  block:
+    - name: Create vcluster for domain
+      kubernetes.core.helm:
+        wait: true
+        name: "{{ clusterFQN }}"
+        release_namespace: "{{ clusterFQN }}"
+        chart_repo_url: https://charts.loft.sh
+        chart_ref: vcluster
+        chart_version: "^0.15"
+        values:
+          sync:
+            persistentvolumes:
+              enabled: true
+            storageclasses:
+              enabled: true
+            volumesnapshots:
+              enabled: true
+            nodes:
+              enabled: true
+              enableScheduler: true
+              nodeSelector: "{{ clusterFQN }}=1"
+          isolation:
+            enabled: true
+          proxy:
+            metricsServer:
+              nodes:
+                enabled: true
+              pods:
+                enabled: true
+
+    - name: Switch kubecontext to vcluster
+      ansible.builtin.shell: "vcluster connect {{ clusterFQN }}"
+
+- name: Bootstrap cluster infrastructure
+  block:
+    - name: Ensure namespace exists
+      kubernetes.core.k8s:
+        wait: true
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: "{{ item.namespace }}"
+
+    - name: Deploy helm chart in bootstrap mode
+      kubernetes.core.helm:
+        wait: true
+        name: "{{ item.chart }}"
+        release_namespace: "{{ item.namespace }}"
+        chart_ref: "charts/{{ item.chart }}"
+        values:
+          bootstrap: true
+
+  with_items:
+    - chart: cert-manager
+      namespace: kube-system
+    - chart: telemetry-stack
+      namespace: telemetry-system
+    - chart: ingress-stack
+      namespace: ingress-system
+    - chart: upgrade-controller
+      namespace: kube-system
+    - chart: crypto-storage
+      namespace: longhorn-system
+    - chart: cicd-stack
+      namespace: flux-system
+
+- name: Ensure base GitRepository exists
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: source.toolkit.fluxcd.io/v1
+      kind: GitRepository
+      metadata:
+        name: base-repo
+        namespace: flux-system
+      spec:
+        interval: 1h
+        url: "{{ baseRepo }}"
+        ref:
+          branch: "{{ baseBranch }}"
+
+- name: Ensure admin IDP client secret exists
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: admin-idp-client
+        namespace: kube-system
+      type: Opaque
+      data:
+        secret: "{{ adminIDPClientSecret }}"
+
+- name: Ensure external DNS token secret exists
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: external-dns
+        namespace: kube-system
+      type: Opaque
+      data:
+        token: "{{ externalDNSToken }}"
+
+- name: Ensure SMTP secret exists
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: smtp
+        namespace: kube-system
+      type: Opaque
+      data:
+        password: "{{ smtpPassword }}"
+
+- name: Ensure S3 secret exists
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: s3
+        namespace: kube-system
+      type: Opaque
+      data:
+        secret: "{{ s3AccessKeySecret }}"
+
+- name: Ensure HelmRelease for network-stack exists
+  when: "not vcluster"
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      metadata:
+        name: network-stack
+        namespace: kube-system
+      spec:
+        interval: 1h
+        chart:
+          spec:
+            chart: "./charts/network-stack"
+            sourceRef:
+              kind: GitRepository
+              name: base-repo
+            reconcileStrategy: Revision
+        values:
+          host: "{{ subdomains.network }}.{{ domain }}"
+          oauth2ProxyHost: "{{ subdomains.auth }}.{{ domain }}"
+          adminGroup: "{{ adminGroup }}"
+
+- name: Ensure HelmRelease for storage-stack exists
+  when: "not vcluster"
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      metadata:
+        name: storage-stack
+        namespace: longhorn-system
+      spec:
+        interval: 1h
+        chart:
+          spec:
+            chart: "./charts/storage-stack"
+            sourceRef:
+              kind: GitRepository
+              name: base-repo
+            reconcileStrategy: Revision
+        values:
+          host: "{{ subdomains.storage }}.{{ domain }}"
+          oauth2ProxyHost: "{{ subdomains.auth }}.{{ domain }}"
+          adminGroup: "{{ adminGroup }}"
+          s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system'}, 'bucket': s3Buckets.backup}) }}"
+
+- name: Ensure backup-system exists
+  when: "not vcluster"
+  block:
+    - name: Ensure namespace exists
+      kubernetes.core.k8s:
+        wait: true
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: "backup-system"
+
+    - name: Deploy backup-stack
+      kubernetes.core.k8s:
+        wait: true
+        definition:
+          apiVersion: helm.toolkit.fluxcd.io/v2beta1
+          kind: HelmRelease
+          metadata:
+            name: backup-stack
+            namespace: backup-system
+          spec:
+            interval: 1h
+            chart:
+              spec:
+                chart: "./charts/backup-stack"
+                sourceRef:
+                  kind: GitRepository
+                  name: base-repo
+                reconcileStrategy: Revision
+            values:
+              s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system'}, 'bucket': s3Buckets.backup}) }}"
+
+- name: Ensure sso-system exists
+  block:
+    - name: Ensure namespace exists
+      kubernetes.core.k8s:
+        wait: true
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: "sso-system"
+
+    - name: Deploy sso-stack
+      kubernetes.core.k8s:
+        wait: true
+        definition:
+          apiVersion: helm.toolkit.fluxcd.io/v2beta1
+          kind: HelmRelease
+          metadata:
+            name: sso-stack
+            namespace: sso-system
+          spec:
+            interval: 1h
+            chart:
+              spec:
+                chart: "./charts/sso-stack"
+                sourceRef:
+                  kind: GitRepository
+                  name: base-repo
+                reconcileStrategy: Revision
+            values:
+              domain: "{{ domain }}"
+              org: "{{ org }}"
+              hosts:
+                keycloak: "{{ subdomains.idp }}.{{ domain }}"
+                dex: "{{ subdomains.oidc }}.{{ domain }}"
+              clients:
+                oidc:
+                  - id: cluster-oidc
+                    redirectURIs:
+                      - "https://{{ subdomains.auth }}.{{ domain }}/oauth2/callback"
+                      - "http://localhost:8000/"
+                      - "https://*.{{ domain }}/*"
+              smtp: "{{ smtp | combine({'passwordSecret': {'name': 'smtp', 'namespace': 'kube-system'}}) }}"
+              adminIDP: "{{ adminIDP | combine({'clientSecret': {'name': 'admin-idp-client', 'namespace': 'kube-system'}}) }}"
+
+    - name: Deploy authproxy
+      kubernetes.core.k8s:
+        wait: true
+        definition:
+          apiVersion: helm.toolkit.fluxcd.io/v2beta1
+          kind: HelmRelease
+          metadata:
+            name: authproxy
+            namespace: sso-system
+          spec:
+            interval: 1h
+            chart:
+              spec:
+                chart: "./charts/authproxy"
+                sourceRef:
+                  kind: GitRepository
+                  name: base-repo
+                reconcileStrategy: Revision
+            values:
+              domain: "{{ domain }}"
+              org: "{{ org }}"
+              host: "{{ subdomains.auth }}.{{ domain }}"
+              oidcClient:
+                idpURL: "https://{{ subdomains.idp }}.{{ domain }}/realms/main"
+                id: "cluster-oidc"
+                secret:
+                  name: "oidc-client.cluster-oidc"
+
+- name: Ensure HelmRelease for cert-manager exists
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      metadata:
+        name: cert-manager
+        namespace: kube-system
+      spec:
+        interval: 1h
+        chart:
+          spec:
+            chart: "./charts/cert-manager"
+            sourceRef:
+              kind: GitRepository
+              name: base-repo
+            reconcileStrategy: Revision
+
+- name: Ensure HelmRelease for telemetry-stack exists
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      metadata:
+        name: telemetry-stack
+        namespace: telemetry-system
+      spec:
+        interval: 1h
+        chart:
+          spec:
+            chart: "./charts/telemetry-stack"
+            sourceRef:
+              kind: GitRepository
+              name: base-repo
+            reconcileStrategy: Revision
+        values:
+          domain: "{{ domain }}"
+          org: "{{ org }}"
+          host: "{{ subdomains.telemetry }}.{{ domain }}"
+          oidcClient:
+            idpURL: "https://{{ subdomains.idp }}.{{ domain }}/realms/main"
+            id: "cluster-oidc"
+            secret:
+              name: "oidc-client.cluster-oidc"
+          adminEmail: "{{ adminEmail }}"
+          adminGroup: "{{ adminGroup }}"
+          s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system'}, 'bucket': s3Buckets.logs}) }}"
+          smtp: "{{ smtp | combine({'passwordSecret': {'name': 'smtp', 'namespace': 'kube-system'}}) }}"
+
+- name: Ensure HelmRelease for ingress-stack exists
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      metadata:
+        name: ingress-stack
+        namespace: ingress-system
+      spec:
+        interval: 1h
+        chart:
+          spec:
+            chart: "./charts/ingress-stack"
+            sourceRef:
+              kind: GitRepository
+              name: base-repo
+            reconcileStrategy: Revision
+        values:
+          domain: "{{ domain }}"
+          clusterName: "{{ clusterName }}"
+          externalDNS: "{{ externalDNS | combine({'tokenSecret': {'name': 'external-dns', 'namespace': 'kube-system'}}) }}"
+
+- name: Ensure HelmRelease for k8s-dashboard exists
+  when: "not vcluster"
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      metadata:
+        name: k8s-dashboard
+        namespace: kube-system
+      spec:
+        interval: 1h
+        chart:
+          spec:
+            chart: "./charts/k8s-dashboard"
+            sourceRef:
+              kind: GitRepository
+              name: base-repo
+            reconcileStrategy: Revision
+        values:
+          host: "{{ subdomains.control }}.{{ domain }}"
+          oauth2ProxyHost: "{{ subdomains.auth }}.{{ domain }}"
+          adminGroup: "{{ adminGroup }}"
+
+- name: Ensure HelmRelease for upgrade-controller exists
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      metadata:
+        name: upgrade-controller
+        namespace: kube-system
+      spec:
+        interval: 1h
+        chart:
+          spec:
+            chart: "./charts/upgrade-controller"
+            sourceRef:
+              kind: GitRepository
+              name: base-repo
+            reconcileStrategy: Revision
+
+- name: Ensure HelmRelease for encrypted storage class exists
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      metadata:
+        name: crypto-storage
+        namespace: longhorn-system
+      spec:
+        interval: 1h
+        chart:
+          spec:
+            chart: "./charts/crypto-storage"
+            sourceRef:
+              kind: GitRepository
+              name: base-repo
+            reconcileStrategy: Revision
+        values:
+          clusterFQN: "{{ clusterFQN }}"
+
+- name: Ensure HelmRelease for admin RBAC exists
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      metadata:
+        name: admin-rbac
+        namespace: kube-system
+      spec:
+        interval: 1h
+        chart:
+          spec:
+            chart: "./charts/admin-rbac"
+            sourceRef:
+              kind: GitRepository
+              name: base-repo
+            reconcileStrategy: Revision
+        values:
+          adminGroup: "{{ adminGroup }}"
+
+- name: Ensure HelmRelease for cicd-stack exists
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      metadata:
+        name: cicd-stack
+        namespace: flux-system
+      spec:
+        interval: 1h
+        chart:
+          spec:
+            chart: "./charts/cicd-stack"
+            sourceRef:
+              kind: GitRepository
+              name: base-repo
+            reconcileStrategy: Revision
+        values:
+          host: "{{ subdomains.gitops }}.{{ domain }}"
+          oidcClient:
+            idpURL: "https://{{ subdomains.idp }}.{{ domain }}/realms/main"
+            id: "cluster-oidc"
+            secret:
+              name: "oidc-client.cluster-oidc"
