@@ -1,102 +1,3 @@
-- name: Ensure PIP is installed
-  ansible.builtin.package:
-    name: pip
-
-- name: Copy requirements.txt to remote
-  ansible.builtin.copy:
-    src: requirements.txt
-    dest: /tmp
-
-- name: Ensure PIP dependencies are installed
-  ansible.builtin.pip:
-    requirements: /tmp/requirements.txt
-
-- name: Check if Helm CLI is installed
-  ansible.builtin.shell: "which helm"
-  register: which_helm
-  changed_when: false
-  failed_when: false
-  ignore_errors: true
-
-- name: Download Helm install script
-  when: "which_helm.rc != 0"
-  ansible.builtin.get_url:
-    url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-    dest: /tmp/helm-install.sh
-    mode: "0700"
-
-- name: Run Helm install script
-  when: "which_helm.rc != 0"
-  ansible.builtin.command: /tmp/helm-install.sh
-
-- name: Ensure helm diff plugin is installed
-  kubernetes.core.helm_plugin:
-    plugin_path: https://github.com/databus23/helm-diff
-
-- name: Check if Flux CLI is installed
-  ansible.builtin.shell: "which flux"
-  register: which_flux
-  changed_when: false
-  failed_when: false
-  ignore_errors: true
-
-- name: Download Flux install script
-  when: "which_flux.rc != 0"
-  ansible.builtin.get_url:
-    url: https://fluxcd.io/install.sh
-    dest: /tmp/flux-install.sh
-    mode: "0700"
-
-- name: Run Flux install script
-  when: "which_flux.rc != 0"
-  ansible.builtin.command: /tmp/flux-install.sh
-
-- name: Check if VCluster CLI is installed
-  ansible.builtin.shell: "which vcluster"
-  register: which_vcluster
-  changed_when: false
-  failed_when: false
-  ignore_errors: true
-
-- name: Download VCluster CLI
-  when: "which_vcluster.rc != 0"
-  ansible.builtin.get_url:
-    url: https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64
-    dest: /tmp/vcluster
-    mode: "0700"
-
-- name: Install VCluster CLI
-  when: "which_vcluster.rc != 0"
-  ansible.builtin.shell: "install -c -m 0755 /tmp/vcluster /usr/local/bin"
-
-- name: Ensure temp host-infra dir exists
-  ansible.builtin.file:
-    path: /tmp/host-infra/
-    state: directory
-    mode: "0755"
-
-- name: Ensure temp infra dir exists
-  ansible.builtin.file:
-    path: /tmp/infra/
-    state: directory
-    mode: "0755"
-
-- name: Copy values files for host infra bootstrap
-  ansible.builtin.copy:
-    src: host-infra/bootstrap-values
-    dest: /tmp/host-infra
-
-- name: Copy values files for infra bootstrap
-  ansible.builtin.copy:
-    src: infra/bootstrap-values
-    dest: /tmp/infra
-
-- name: Ensure k3s kubeconfig is set as default
-  ansible.builtin.lineinfile:
-    path: ~/.bashrc
-    create: true
-    line: "export KUBECONFIG=/etc/rancher/k3s/k3s.yaml"
-
 - name: Bootstrap host-cluster infrastructure
   when: "not vcluster and (k8s_baseline_release.resources | length) == 0"
   block:
@@ -311,6 +212,19 @@
                 reconcileStrategy: Revision
             values:
               s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system'}, 'bucket': s3Buckets.backup}) }}"
+
+    - name: Apply backup restoration
+      when: "restoreFromBackup is defined"
+      kubernetes.core.k8s:
+        wait: true
+        definition:
+          apiVersion: velero.io/v1
+          kind: Restore
+          metadata:
+            name: initial-cluster-restore
+            namespace: backup-system
+          spec:
+            backupName: "{{ restoreFromBackup }}"
 
 - name: Ensure HelmRelease for upgrade-controller exists
   when: "not vcluster"
@@ -570,15 +484,32 @@
           oauth2ProxyHost: "{{ subdomains.auth }}.{{ domain }}"
           adminGroup: "{{ adminGroup }}"
 
-- name: Apply backup restoration
-  when: "not vcluster and restoreFromBackup is defined"
-  kubernetes.core.k8s:
-    wait: true
-    definition:
-      apiVersion: velero.io/v1
-      kind: Restore
-      metadata:
-        name: initial-cluster-restore
-        namespace: backup-system
-      spec:
-        backupName: "{{ restoreFromBackup }}"
+- name: Get secret for cluster oidc client
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - get
+      - secret
+      - oidc-client.cluster-oidc
+      - -o=jsonpath='{.data.secret}'
+  register: oidc_client_secret
+
+- name: Add oidc login to kubeconfig
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - config
+      - set-credentials
+      - oidc
+      - --exec-api-version=client.authentication.k8s.io/v1beta1
+      - --exec-command=kubectl
+      - --exec-arg=oidc-login
+      - --exec-arg=get-token
+      - "--exec-arg=--oidc-issuer-url=https://{{ subdomains.oidc }}.{{ domain }}"
+      - --exec-arg=--oidc-client-id=cluster-oidc
+      - "--exec-arg=--oidc-client-secret={{ oidc_client_secret | b64decode }}"
+
+- name: Download oidc kubeconfig file
+  ansible.builtin.copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: "{{ playbook_dir }}/kubeconfig-oidc.yaml"

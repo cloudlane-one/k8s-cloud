@@ -1,8 +1,3 @@
-- name: Set control_node variable for master hosts
-  ansible.builtin.set_fact:
-    k3s_control_node: true
-  when: "{{ control_plane }}"
-
 - name: Install and update packages via apt
   when: 'ansible_pkg_mgr == "apt"'
   block:
@@ -91,4 +86,80 @@
     - nfs-utils
     - wireguard-tools
 
-- name: Install k3s via role # TODO: remove third-party ansible role and use k3s setup script
+- name: Install k3s via official setup script # TODO: remove third-party ansible role and use k3s setup script
+  block:
+    - name: Ensure k3s config dir exists
+      ansible.builtin.file:
+        path: /etc/rancher/k3s/config.yaml.d/
+        state: directory
+
+    - name: Template out k3s config file
+      ansible.builtin.template:
+        src: k3s-config.yaml
+        dest: /etc/rancher/k3s/config.yaml.d/main.yaml
+
+    - name: Template out k3s controlplane config file
+      when: "{{ control_plane }}"
+      ansible.builtin.template:
+        src: k3s-config-controlplane.yaml
+        dest: /etc/rancher/k3s/config.yaml.d/controlplane.yaml
+
+    - name: Download k3s install script
+      ansible.builtin.get_url:
+        url: https://get.k3s.io
+        dest: /tmp/k3s-install.sh
+        mode: "0700"
+
+    - name: Check if local join token file exists
+      delegate_to: localhost
+      ansible.builtin.stat:
+        path: "{{ playbook_dir }}/join-token"
+      register: join_token_stat
+
+    - name: Install k3s on first node and download config
+      when: "{{ not join_token_stat.stat.exists }}"
+      block:
+        - name: Run k3s install script for first control node
+          ansible.builtin.command:
+            argv:
+              - /tmp/k3s-install.sh
+              - server
+          environment:
+            K3S_CLUSTER_INIT: "true"
+
+        - name: Download join token file
+          ansible.builtin.copy:
+            src: /var/lib/rancher/k3s/server/token
+            dest: "{{ playbook_dir }}/join-token"
+
+        - name: Download kubeconfig file
+          ansible.builtin.copy:
+            src: /etc/rancher/k3s/k3s.yaml
+            dest: "{{ playbook_dir }}/kubeconfig.yaml"
+
+    - name: Upload config and join additional node
+      when: "{{ join_token_stat.stat.exists }}"
+      block:
+        - name: Upload join token file
+          ansible.builtin.copy:
+            src: "{{ playbook_dir }}/join-token"
+            dest: /tmp/k3s-join-token
+
+        - name: Load kubeconfig file
+          delegate_to: localhost
+          ansible.builtin.slurp:
+            src: "{{ playbook_dir }}/kubeconfig.yaml"
+          register: kubeconfig_yaml
+
+        - name: Interpret remote file content as yaml
+          ansible.builtin.set_fact:
+            control_server: "{{ (kubeconfig_yaml.content | b64decode | from_yaml)['clusters'][0]['cluster']['server'] }}"
+
+        - name: Run k3s install script for additional node
+          ansible.builtin.command:
+            argv:
+              - /tmp/k3s-install.sh
+              - "{{ control_plane | ternary('server', 'agent') }}"
+          environment:
+            K3S_TOKEN_FILE: /tmp/k3s-join-token
+            K3S_URL: "{{ control_server }}"

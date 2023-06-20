@@ -10,8 +10,10 @@ Chart.lock
 /values.yaml
 /values.yml
 
-kubeconfig.yaml
-kubeconfig.yml
-kubeconfig
+# Files containing secrets
+/kubeconfig*.yaml
+/kubeconfig*.yml
+/kubeconfig*
 /inventory.yaml
 /inventory.yml
+/join-token
