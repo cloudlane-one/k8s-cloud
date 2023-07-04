@@ -50,7 +50,7 @@ metadata:
 type: Opaque
 data:
   {{- $secretRef := .Values.s3.accessKeySecret }}
-  {{- $s3_secret := (lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data | get $secretRef.key }}
+  {{- $s3_secret := get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
   # See https://longhorn.io/docs/1.2.4/snapshots-and-backups/backup-and-restore/set-backup-target/#set-up-aws-s3-backupstore
   AWS_ACCESS_KEY_ID: {{ .Values.s3.accessKeyID | b64enc }}
   AWS_SECRET_ACCESS_KEY: {{ $s3_secret }}
