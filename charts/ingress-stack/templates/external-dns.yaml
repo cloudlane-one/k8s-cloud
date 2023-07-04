@@ -6,7 +6,7 @@ metadata:
 type: Opaque
 data:
   {{- $secretRef := .Values.externalDNS.tokenSecret }}
-  secret: {{ (lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data | get $secretRef.key }}
+  secret: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
