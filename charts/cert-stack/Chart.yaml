@@ -1,0 +1,14 @@
+apiVersion: v2
+name: cert-stack
+description: cert-manager with proper config
+type: application
+version: "0.0.1"
+appVersion: "0.0.1"
+dependencies:
+- name: common
+  version: "^1"
+  repository: https://charts.bitnami.com/bitnami
+- name: cert-manager
+  version: "^1"
+  repository: https://charts.jetstack.io
+  condition: bootstrap
