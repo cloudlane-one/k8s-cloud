@@ -1,14 +1,18 @@
 apiVersion: v2
-name: host-cluster-infra
-description: Infrastructure chart to supply baseline k8s infrastructure
+name: storage-stack
+description: Longhorn-based storage system
 type: application
 version: "0.0.1"
 appVersion: "0.0.1"
 dependencies:
-  - name: common
-    version: "^1"
-    repository: https://charts.bitnami.com/bitnami
-  - name: longhorn
-    version: "^1"
-    repository: https://charts.longhorn.io
-    condition: bootstrap
+- name: common
+  version: "^1"
+  repository: https://charts.bitnami.com/bitnami
+- name: longhorn
+  version: "^1"
+  repository: https://charts.longhorn.io
+  condition: bootstrap
+- name: snapshot-controller
+  version: "^1"
+  repository: https://piraeus.io/helm-charts/
+  condition: bootstrap
