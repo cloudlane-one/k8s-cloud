@@ -5,7 +5,7 @@
     - role: clear-known-hosts
       when: "(clearKnownHosts is defined) and clearKnownHosts and (clearKnownHosts != 'false')"
     - role: auto-trust
-      when: "autoTrustRemotes == true"
+      when: "(autoTrustRemotes is defined) and autoTrustRemotes and (autoTrustRemotes != 'false')"
 
 - name: Run setup for all nodes
   hosts: all
