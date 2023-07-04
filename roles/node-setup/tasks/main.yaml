@@ -16,36 +16,42 @@
 - name: Ensure all required system packages are installed
   block:
     - name: Install packages via apt
+      when: 'ansible_pkg_mgr == "apt"'
       ansible.builtin.apt:
         state: present
         name: '{{ system_packages }}'
         update_cache: true
 
     - name: Install packages via yum
+      when: 'ansible_pkg_mgr == "yum"'
       ansible.builtin.yum:
         state: present
         name: '{{ system_packages }}'
         update_cache: true
 
     - name: Install packages via apk
+      when: 'ansible_pkg_mgr == "apk"'
       community.general.apk:
         state: present
         name: '{{ system_packages }}'
         update_cache: true
 
     - name: Install packages via dnf
+      when: 'ansible_pkg_mgr == "dnf"'
       ansible.builtin.dnf:
         state: present
         name: '{{ system_packages }}'
         update_cache: true
 
     - name: Install packages via zypper
+      when: 'ansible_pkg_mgr == "zypper"'
       community.general.zypper:
         state: present
         name: '{{ system_packages }}'
         update_cache: true
 
     - name: Install packages via pacman
+      when: 'ansible_pkg_mgr == "pacman"'
       community.general.pacman:
         state: present
         name: '{{ system_packages }}'
