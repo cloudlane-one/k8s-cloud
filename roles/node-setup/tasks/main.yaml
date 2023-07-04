@@ -14,9 +14,42 @@
           - wireguard-tools
 
 - name: Ensure all required system packages are installed
-  ansible.builtin.package:
-    state: present
-    name: '{{ system_packages }}'
+  block:
+    - name: Install packages via apt
+      ansible.builtin.apt:
+        state: present
+        name: '{{ system_packages }}'
+        update_cache: true
+
+    - name: Install packages via yum
+      ansible.builtin.yum:
+        state: present
+        name: '{{ system_packages }}'
+        update_cache: true
+
+    - name: Install packages via apk
+      community.general.apk:
+        state: present
+        name: '{{ system_packages }}'
+        update_cache: true
+
+    - name: Install packages via dnf
+      ansible.builtin.dnf:
+        state: present
+        name: '{{ system_packages }}'
+        update_cache: true
+
+    - name: Install packages via zypper
+      community.general.zypper:
+        state: present
+        name: '{{ system_packages }}'
+        update_cache: true
+
+    - name: Install packages via pacman
+      community.general.pacman:
+        state: present
+        name: '{{ system_packages }}'
+        update_cache: true
 
 - name: Install k3s via official setup script # TODO: remove third-party ansible role and use k3s setup script
   block:
