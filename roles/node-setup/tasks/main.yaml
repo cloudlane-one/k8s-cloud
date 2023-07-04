@@ -118,5 +118,5 @@
               - "{{ control_plane | ternary('server', 'agent') }}"
           environment:
             K3S_TOKEN_FILE: /tmp/k3s-join-token
-            K3S_URL: "{{ main_control_host }}"
+            K3S_URL: "https://{{ main_control_host }}"
           changed_when: true
