@@ -8,7 +8,7 @@ data:
   issuerURL: {{ .Values.oidcClient.idpURL | b64enc }}
   clientID: {{ .Values.oidcClient.id | b64enc }}
   {{- $secretRef := .Values.oidcClient.secret }}
-  clientSecret: {{ (lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data | index $secretRef.key }}
+  clientSecret: {{ (lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data | get $secretRef.key }}
   redirectURL: {{ printf "https://%s/oauth2/callback" .Values.host | b64enc }}
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2

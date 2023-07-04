@@ -237,7 +237,7 @@ metadata:
 type: Opaque
 data:
   {{- $secretRef := .Values.oidcClient.secret }}
-  secret: {{ (lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data | index $secretRef.key }}
+  secret: {{ (lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data | get $secretRef.key }}
 ---
 apiVersion: v1
 kind: ConfigMap

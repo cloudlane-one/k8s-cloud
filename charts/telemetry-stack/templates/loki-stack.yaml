@@ -5,9 +5,8 @@ metadata:
   name: s3-access-key
 type: Opaque
 data:
-  {{- with .Values.s3.accessKeySecret }}
-  secret: {{ (lookup "v1" "Secret" (default .Release.Namespace .namespace) .name).data | index .key }}
-  {{- end }}
+  {{- $secretRef := .Values.s3.accessKeySecret }}
+  secret: {{ (lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data | get $secretRef.key }}
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
