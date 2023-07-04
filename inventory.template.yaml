@@ -13,7 +13,6 @@ all:
     # Default variables, may be adapted
 
     domain: ""
-
     org:
       name: ""
       defaultLocale: "en_US"
@@ -24,7 +23,6 @@ all:
       type: "oidc"
       issuerURL: ""
       clientID: ""
-
     adminIDPClientSecret: ""
 
     externalDNSToken: "" # currently only "digitalocean" supported
@@ -34,26 +32,21 @@ all:
       port: ""
       user: ""
       fromAddress: ""
-
     smtpPassword: ""
 
     s3:
       endpoint: "" # Domain without protocol of your S3 endpoint (e.g. "s3.example.org")
       region: "eu-central-1" # Required by Longhorn, just leave the default if you don't have zones
       accessKeyID: "" # Your S3 access key id
-
     s3AccessKeySecret: ""
-
     s3Buckets:
       backup: ""
       logs: ""
 
     adminEmail: ""
-
     adminGroup: ""
 
     vcluster: false # Set to true to create a vcluster on top of a k3s host cluster
-
     clusterName: "cluster" # Name for this cluster (unique for the supplied domain)
 
     restoreFromBackup: null
