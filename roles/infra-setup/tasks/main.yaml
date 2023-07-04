@@ -52,29 +52,14 @@
       vars:
         chart: "{{ item }}"
   loop:
-    - name: cert-manager
-      namespace: kube-system
+    - name: cert-stack
+      namespace: cert-system
     - name: ingress-stack
       namespace: ingress-system
     - name: telemetry-stack
       namespace: telemetry-system
     - name: cicd-stack
       namespace: flux-system
-
-- name: Ensure base GitRepository exists
-  kubernetes.core.k8s:
-    wait: true
-    definition:
-      apiVersion: source.toolkit.fluxcd.io/v1
-      kind: GitRepository
-      metadata:
-        name: base-repo
-        namespace: flux-system
-      spec:
-        interval: 1h
-        url: "{{ baseRepo }}"
-        ref:
-          branch: "{{ baseBranch }}"
 
 - name: Ensure all required secrets exist
   kubernetes.core.k8s:
@@ -97,6 +82,25 @@
       name: s3
     - inventoryKey: externalDNSToken
       name: external-dns
+
+- name: Ensure base GitRepository exists
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: source.toolkit.fluxcd.io/v1
+      kind: GitRepository
+      metadata:
+        name: base-repo
+        namespace: flux-system
+      spec:
+        interval: 1h
+        url: "{{ baseRepo }}"
+        ref:
+          branch: "{{ baseBranch }}"
+
+- name: Reconcile base git repo
+  ansible.builtin.command: "flux reconcile source git base-repo -n flux-system"
+  changed_when: true
 
 - name: Ensure HelmReleases for host-cluster infrastructure exist
   when: "not vcluster"
@@ -153,8 +157,8 @@
       values:
         cluster_fqn: "{{ cluster_fqn }}"
 
-    - name: cert-manager
-      namespace: kube-system
+    - name: cert-stack
+      namespace: cert-system
       values: {}
 
     - name: ingress-stack

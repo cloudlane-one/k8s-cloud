@@ -7,19 +7,28 @@
       metadata:
         name: "{{ chart.namespace }}"
 
-- name: Copy local chart dir to remote
-  ansible.builtin.copy:
-    src: "{{ charts_dir }}/{{ chart.name }}"
-    dest: /tmp
-    mode: '0755'
-
-- name: Deploy helm chart in bootstrap mode
-  kubernetes.core.helm:
-    wait: true
-    timeout: 10m
+- name: Check if chart release already exists
+  kubernetes.core.helm_info:
     name: "{{ chart.name }}"
     release_namespace: "{{ chart.namespace }}"
-    chart_ref: "/tmp/{{ chart.name }}"
-    dependency_update: true
-    values:
-      bootstrap: true
+  register: existing_release
+
+- name: Bootstrap the chart, if release hasn't been deployed yet
+  when: "existing_release.status is undefined or existing_release.status.keys() | length == 0"
+  block:
+    - name: Copy local chart dir to remote
+      ansible.builtin.copy:
+        src: "{{ charts_dir }}/{{ chart.name }}"
+        dest: /tmp
+        mode: '0755'
+
+    - name: Deploy helm chart in bootstrap mode
+      kubernetes.core.helm:
+        wait: true
+        timeout: 10m
+        name: "{{ chart.name }}"
+        release_namespace: "{{ chart.namespace }}"
+        chart_ref: "/tmp/{{ chart.name }}"
+        dependency_update: true
+        values:
+          bootstrap: true
