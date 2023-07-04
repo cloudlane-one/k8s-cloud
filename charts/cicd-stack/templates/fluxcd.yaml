@@ -21,7 +21,8 @@ spec:
         name: flux-community
   interval: 1h
   values:
-    {{- .Values.flux2 | toYaml | nindent 4 }}
+    policies:
+      enabled: false
     prometheus:
       podMonitor:
         create: true

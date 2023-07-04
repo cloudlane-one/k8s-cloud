@@ -22,7 +22,8 @@ spec:
         name: longhorn
   timeout: '10m0s' # Account for slow performance of cluster on first setup.
   values:
-    {{- .Values.longhorn | toYaml | nindent 4 }}
+    persistence:
+      defaultClass: false
     defaultSettings:
       # See https://longhorn.io/docs/1.2.4/snapshots-and-backups/backup-and-restore/set-backup-target/#set-up-aws-s3-backupstore
       backupTarget: {{ printf "s3://%s@%s/" .Values.s3.bucket .Values.s3.region }}
