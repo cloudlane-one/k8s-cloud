@@ -11,10 +11,8 @@ kube-apiserver-arg:
   - "oidc-client-id=cluster-oidc"
   - "oidc-groups-claim=groups"
 kube-controller-manager-arg:
-  - "address=0.0.0.0"
   - "bind-address=0.0.0.0"
 kube-proxy-arg:
   - "metrics-bind-address=0.0.0.0"
 kube-scheduler-arg:
-  - "address=0.0.0.0"
   - "bind-address=0.0.0.0"
