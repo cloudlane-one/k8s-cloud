@@ -1,6 +1,0 @@
-# Small utility for testing purposes, clears all hosts in inventory from known hosts,
-# so that they won't cause trouble if their keys are reset during testing.
-- name: Clear known host entries
-  hosts: localhost
-  roles:
-    - clear-known-hosts

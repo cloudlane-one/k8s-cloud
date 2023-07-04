@@ -12,7 +12,3 @@ dependencies:
     version: "^1"
     repository: https://charts.longhorn.io
     condition: bootstrap
-  - name: longhorn
-    version: "^6"
-    repository: https://piraeus.io/helm-charts/
-    condition: bootstrap

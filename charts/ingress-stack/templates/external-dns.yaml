@@ -5,9 +5,8 @@ metadata:
   name: dns-token
 type: Opaque
 data:
-  {{- with .Values.externalDNS.tokenSecret }}
-  secret: {{ (lookup "v1" "Secret" (default .Release.Namespace .namespace) .name).data | index .key }}
-  {{- end }}
+  {{- $secretRef := .Values.externalDNS.tokenSecret }}
+  secret: {{ (lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data | index $secretRef.key }}
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository

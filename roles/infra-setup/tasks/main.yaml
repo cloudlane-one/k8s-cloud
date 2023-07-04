@@ -1,36 +1,22 @@
 - name: Bootstrap host-cluster infrastructure
-  when: "not vcluster and (k8s_baseline_release.resources | length) == 0"
-  block:
-    - name: Ensure namespace exists
-      kubernetes.core.k8s:
-        wait: true
-        definition:
-          apiVersion: v1
-          kind: Namespace
-          metadata:
-            name: "{{ item.namespace }}"
-
-    - name: Deploy helm chart in bootstrap mode
-      kubernetes.core.helm:
-        wait: true
-        name: "{{ item.chart }}"
-        release_namespace: "{{ item.namespace }}"
-        chart_ref: "charts/{{ item.chart }}"
-        values:
-          bootstrap: true
-
+  when: "not vcluster"
+  ansible.builtin.include_tasks:
+    file: bootstrap-chart.yaml
+    apply:
+      vars:
+        item: "{{ item }}"
   with_items:
     - chart: storage-stack
       namespace: longhorn-system
 
 - name: Setup vcluster
-  when: vcluster
+  when: "vcluster"
   block:
     - name: Create vcluster for domain
       kubernetes.core.helm:
         wait: true
-        name: "{{ clusterFQN }}"
-        release_namespace: "{{ clusterFQN }}"
+        name: "{{ cluster_fqn }}"
+        release_namespace: "{{ cluster_fqn }}"
         chart_repo_url: https://charts.loft.sh
         chart_ref: vcluster
         chart_version: "^0.15"
@@ -45,7 +31,7 @@
             nodes:
               enabled: true
               enableScheduler: true
-              nodeSelector: "{{ clusterFQN }}=1"
+              nodeSelector: "{{ cluster_fqn }}=1"
           isolation:
             enabled: true
           proxy:
@@ -56,28 +42,16 @@
                 enabled: true
 
     - name: Switch kubecontext to vcluster
-      ansible.builtin.shell: "vcluster connect {{ clusterFQN }}"
+      ansible.builtin.command: "vcluster connect {{ cluster_fqn }}"
+      register: kubectx_switch
+      changed_when: true
 
 - name: Bootstrap cluster infrastructure
-  block:
-    - name: Ensure namespace exists
-      kubernetes.core.k8s:
-        wait: true
-        definition:
-          apiVersion: v1
-          kind: Namespace
-          metadata:
-            name: "{{ item.namespace }}"
-
-    - name: Deploy helm chart in bootstrap mode
-      kubernetes.core.helm:
-        wait: true
-        name: "{{ item.chart }}"
-        release_namespace: "{{ item.namespace }}"
-        chart_ref: "charts/{{ item.chart }}"
-        values:
-          bootstrap: true
-
+  ansible.builtin.include_tasks:
+    file: bootstrap-chart.yaml
+    apply:
+      vars:
+        item: "{{ item }}"
   with_items:
     - chart: cert-manager
       namespace: kube-system
@@ -103,57 +77,27 @@
         ref:
           branch: "{{ baseBranch }}"
 
-- name: Ensure admin IDP client secret exists
+- name: Ensure all required secrets exist
   kubernetes.core.k8s:
     wait: true
     definition:
       apiVersion: v1
       kind: Secret
       metadata:
-        name: admin-idp-client
+        name: "{{ item.name }}"
         namespace: kube-system
       type: Opaque
       data:
-        secret: "{{ adminIDPClientSecret }}"
-
-- name: Ensure external DNS token secret exists
-  kubernetes.core.k8s:
-    wait: true
-    definition:
-      apiVersion: v1
-      kind: Secret
-      metadata:
-        name: external-dns
-        namespace: kube-system
-      type: Opaque
-      data:
-        token: "{{ externalDNSToken }}"
-
-- name: Ensure SMTP secret exists
-  kubernetes.core.k8s:
-    wait: true
-    definition:
-      apiVersion: v1
-      kind: Secret
-      metadata:
-        name: smtp
-        namespace: kube-system
-      type: Opaque
-      data:
-        password: "{{ smtpPassword }}"
-
-- name: Ensure S3 secret exists
-  kubernetes.core.k8s:
-    wait: true
-    definition:
-      apiVersion: v1
-      kind: Secret
-      metadata:
-        name: s3
-        namespace: kube-system
-      type: Opaque
-      data:
-        secret: "{{ s3AccessKeySecret }}"
+        secret: "{{ vars[item.inventoryKey] }}"
+  with_items:
+    - inventoryKey: adminIDPClientSecret
+      name: admin-idp-client
+    - inventoryKey: smtpPassword
+      name: smtp
+    - inventoryKey: s3AccessKeySecret
+      name: s3
+    - inventoryKey: externalDNSToken
+      name: external-dns
 
 - name: Ensure HelmRelease for storage-stack exists
   when: "not vcluster"
@@ -178,7 +122,7 @@
           host: "{{ subdomains.storage }}.{{ domain }}"
           oauth2ProxyHost: "{{ subdomains.auth }}.{{ domain }}"
           adminGroup: "{{ adminGroup }}"
-          s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system'}, 'bucket': s3Buckets.backup}) }}"
+          s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3Buckets.backup}) }}"
 
 - name: Ensure backup-system exists
   when: "not vcluster"
@@ -211,7 +155,7 @@
                   name: base-repo
                 reconcileStrategy: Revision
             values:
-              s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system'}, 'bucket': s3Buckets.backup}) }}"
+              s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3Buckets.backup}) }}"
 
     - name: Apply backup restoration
       when: "restoreFromBackup is defined"
@@ -286,7 +230,7 @@
               name: base-repo
             reconcileStrategy: Revision
         values:
-          clusterFQN: "{{ clusterFQN }}"
+          cluster_fqn: "{{ cluster_fqn }}"
 
 - name: Ensure HelmRelease for cert-manager exists
   kubernetes.core.k8s:
@@ -328,7 +272,7 @@
         values:
           domain: "{{ domain }}"
           clusterName: "{{ clusterName }}"
-          externalDNS: "{{ externalDNS | combine({'tokenSecret': {'name': 'external-dns', 'namespace': 'kube-system'}}) }}"
+          externalDNS: "{{ externalDNS | combine({'tokenSecret': {'name': 'external-dns', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
 
 - name: Ensure sso-system exists
   block:
@@ -372,8 +316,8 @@
                       - "https://{{ subdomains.auth }}.{{ domain }}/oauth2/callback"
                       - "http://localhost:8000/"
                       - "https://*.{{ domain }}/*"
-              smtp: "{{ smtp | combine({'passwordSecret': {'name': 'smtp', 'namespace': 'kube-system'}}) }}"
-              adminIDP: "{{ adminIDP | combine({'clientSecret': {'name': 'admin-idp-client', 'namespace': 'kube-system'}}) }}"
+              smtp: "{{ smtp | combine({'passwordSecret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
+              adminIDP: "{{ adminIDP | combine({'clientSecret': {'name': 'admin-idp-client', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
 
     - name: Deploy authproxy
       kubernetes.core.k8s:
@@ -402,6 +346,7 @@
                 id: "cluster-oidc"
                 secret:
                   name: "oidc-client.cluster-oidc"
+                  key: secret
 
 - name: Ensure HelmRelease for telemetry-stack exists
   kubernetes.core.k8s:
@@ -430,10 +375,11 @@
             id: "cluster-oidc"
             secret:
               name: "oidc-client.cluster-oidc"
+              key: secret
           adminEmail: "{{ adminEmail }}"
           adminGroup: "{{ adminGroup }}"
-          s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system'}, 'bucket': s3Buckets.logs}) }}"
-          smtp: "{{ smtp | combine({'passwordSecret': {'name': 'smtp', 'namespace': 'kube-system'}}) }}"
+          s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3Buckets.logs}) }}"
+          smtp: "{{ smtp | combine({'passwordSecret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
 
 - name: Ensure HelmRelease for cicd-stack exists
   kubernetes.core.k8s:
@@ -460,6 +406,7 @@
             id: "cluster-oidc"
             secret:
               name: "oidc-client.cluster-oidc"
+              key: secret
 
 - name: Ensure HelmRelease for k8s-dashboard exists
   kubernetes.core.k8s:
@@ -483,33 +430,3 @@
           host: "{{ subdomains.control }}.{{ domain }}"
           oauth2ProxyHost: "{{ subdomains.auth }}.{{ domain }}"
           adminGroup: "{{ adminGroup }}"
-
-- name: Get secret for cluster oidc client
-  ansible.builtin.command:
-    argv:
-      - kubectl
-      - get
-      - secret
-      - oidc-client.cluster-oidc
-      - -o=jsonpath='{.data.secret}'
-  register: oidc_client_secret
-
-- name: Add oidc login to kubeconfig
-  ansible.builtin.command:
-    argv:
-      - kubectl
-      - config
-      - set-credentials
-      - oidc
-      - --exec-api-version=client.authentication.k8s.io/v1beta1
-      - --exec-command=kubectl
-      - --exec-arg=oidc-login
-      - --exec-arg=get-token
-      - "--exec-arg=--oidc-issuer-url=https://{{ subdomains.oidc }}.{{ domain }}"
-      - --exec-arg=--oidc-client-id=cluster-oidc
-      - "--exec-arg=--oidc-client-secret={{ oidc_client_secret | b64decode }}"
-
-- name: Download oidc kubeconfig file
-  ansible.builtin.copy:
-    src: /etc/rancher/k3s/k3s.yaml
-    dest: "{{ playbook_dir }}/kubeconfig-oidc.yaml"

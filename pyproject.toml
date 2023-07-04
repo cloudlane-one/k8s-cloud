@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "k8s-cloud"
+version = "0.1.0"
+description = ""
+authors = ["Lorenzo Wormer <l.wormer@pm.me>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+ansible = "^8.1.0"
+
+[tool.poetry.group.dev.dependencies]
+ansible-lint = { version = "^6", markers = "platform_system != 'Windows'" }
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

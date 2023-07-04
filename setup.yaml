@@ -1,33 +1,33 @@
-- name: Add all hosts to known_hosts file, if according flag is set
+- name: Perform localhost setup steps, if according flags are set
   hosts: localhost
   connection: local
-  tags: cluster
-  when: "autoTrustRemotes == true"
   roles:
-    - auto-trust
+    - role: clear-known-hosts
+      when: "(clearKnownHosts is defined) and clearKnownHosts and (clearKnownHosts != 'false')"
+    - role: auto-trust
+      when: "autoTrustRemotes == true"
 
-- name: Run common setup for all nodes
-  hosts: cluster
+- name: Run setup for all nodes
+  hosts: all
   become: true
-  tags: cluster
   roles:
-    - node-setup
+    - role: node-setup
+      vars:
+        main_control_host: "{{ hostvars[groups['control_plane'][0]]['ansible_host'] }}"
+        control_plane: "{{ 'control_plane' in group_names }}"
 
-- name: Run setup specific to control nodes
-  hosts: cluster
-  when: "{{ control_plane }}"
+- name: Run setup for all control nodes
+  hosts: control_plane
   become: true
-  tags: cluster
   roles:
-    - node-setup
+    - role: control-node-setup
 
-- name: Set up cluster infrastructure
-  hosts: cluster
-  when: "{{ control_plane }}"
+- name: Setup infrastructure
+  hosts: control_plane
   run_once: true
-  tags: infra
-  environment:
-    K8S_AUTH_KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  become: true
   roles:
-    - infra-setup
+    - role: infra-setup
+      environment:
+        K8S_AUTH_KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml

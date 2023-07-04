@@ -1,5 +1,5 @@
 - name: Check whether host is already known
-  loop: "{{ groups['cluster'] }}"
+  loop: "{{ groups['all'] }}"
   ansible.builtin.command: "ssh-keygen -F {{ hostvars[item].ansible_host }}"
   changed_when: false
   failed_when: false
@@ -11,11 +11,12 @@
   when: "item.rc != 0"
   ansible.builtin.command: "ssh-keyscan -H {{ hostvars[item.item].ansible_host }}"
   register: known_hosts_entries
+  changed_when: true
 
 - name: Add lines to known_hosts
-  when: "known_hosts_entries.changed == true"
   loop: "{{ known_hosts_entries.results }}"
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: ~/.ssh/known_hosts
     line: "{{ item.stdout }}"
     insertafter: EOF
+    mode: '0644'

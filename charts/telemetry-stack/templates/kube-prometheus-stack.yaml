@@ -222,9 +222,8 @@ metadata:
   name: smtp-creds
 type: Opaque
 data:
-  {{- with .Values.smtp.passwordSecret }}
-  password: {{ (lookup "v1" "Secret" (default .Release.Namespace .namespace) .name).data | index .key }}
-  {{- end }}
+  {{- $passRef := .Values.smtp.passwordSecret }}
+  password: {{ (lookup "v1" "Secret" (default .Release.Namespace $passRef.namespace) $passRef.name).data | index $passRef.key }}
 ---
 apiVersion: v1
 kind: Secret
@@ -232,8 +231,7 @@ metadata:
   name: oidc-client
 type: Opaque
 data:
-  {{- with .Values.oidcClient.secret }}
-  secret: {{ (lookup "v1" "Secret" (default .Release.Namespace .namespace) .name).data | index .key }}
-  {{- end }}
+  {{- $secretRef := .Values.oidcClient.secret }}
+  secret: {{ (lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data | index $secretRef.key }}
 ---
 {{- end }}

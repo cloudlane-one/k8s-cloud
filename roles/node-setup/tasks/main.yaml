@@ -1,90 +1,22 @@
-- name: Install and update packages via apt
-  when: 'ansible_pkg_mgr == "apt"'
+- name: Pick the correct names for system packages to be installed
   block:
-    - name: Update all packages to their latest version
-      ansible.builtin.apt:
-        name: "*"
-        state: latest
-        update_cache: yes
-    - name: Ensure NFS client is installed (apt)
-      ansible.builtin.apt:
-        name: "{{ item }}"
-  with_items:
-    - nfs-common
-    - wireguard
+    - name: Set sys package names for apt
+      when: 'ansible_pkg_mgr == "apt"'
+      ansible.builtin.set_fact:
+        system_packages:
+          - nfs-common
+          - wireguard
+    - name: Set sys package names for other package managers
+      when: 'ansible_pkg_mgr in ["yum", "apk", "dnf", "zypper", "pacman"]'
+      ansible.builtin.set_fact:
+        system_packages:
+          - nfs-utils
+          - wireguard-tools
 
-- name: Install and update packages via yum
-  when: 'ansible_pkg_mgr == "yum"'
-  block:
-    - name: Update all packages to their latest version
-      ansible.builtin.yum:
-        name: "*"
-        state: latest
-        update_cache: yes
-    - name: Ensure NFS client is installed (yum)
-      ansible.builtin.yum:
-        name: "{{ item }}"
-  with_items:
-    - nfs-utils
-    - wireguard-tools
-
-- name: Install and update packages via apk
-  when: 'ansible_pkg_mgr == "apk"'
-  block:
-    - name: Update all packages to their latest version
-      community.general.apk:
-        upgrade: true
-        update_cache: yes
-    - name: Ensure NFS client is installed (apk)
-      community.general.apk:
-        name: "{{ item }}"
-  with_items:
-    - nfs-utils
-    - wireguard-tools
-
-- name: Install and update packages via dnf
-  when: 'ansible_pkg_mgr == "dnf"'
-  block:
-    - name: Update all packages to their latest version
-      ansible.builtin.dnf:
-        name: "*"
-        state: latest
-        update_cache: yes
-    - name: Ensure NFS client is installed (dnf)
-      ansible.builtin.dnf:
-        name: "{{ item }}"
-  with_items:
-    - nfs-utils
-    - wireguard-tools
-
-- name: Install and update packages via zypper
-  when: 'ansible_pkg_mgr == "zypper"'
-  block:
-    - name: Update all packages to their latest version
-      community.general.zypper:
-        name: "*"
-        state: latest
-        update_cache: yes
-    - name: Ensure NFS client is installed (zypper)
-      community.general.zypper:
-        name: "{{ item }}"
-  with_items:
-    - nfs-utils
-    - wireguard-tools
-
-- name: Install and update packages via pacman
-  when: 'ansible_pkg_mgr == "pacman"'
-  block:
-    - name: Update all packages to their latest version
-      community.general.pacman:
-        upgrade: true
-        update_cache: yes
-    - name: Ensure NFS client is installed (pacman)
-      community.general.pacman:
-        name: "{{ item }}"
-  with_items:
-    - nfs-utils
-    - wireguard-tools
+- name: Ensure all required system packages are installed
+  ansible.builtin.package:
+    state: present
+    name: '{{ system_packages }}'
 
 - name: Install k3s via official setup script # TODO: remove third-party ansible role and use k3s setup script
   block:
@@ -92,17 +24,20 @@
       ansible.builtin.file:
         path: /etc/rancher/k3s/config.yaml.d/
         state: directory
+        mode: '0755'
 
     - name: Template out k3s config file
       ansible.builtin.template:
         src: k3s-config.yaml
         dest: /etc/rancher/k3s/config.yaml.d/main.yaml
+        mode: '0644'
 
     - name: Template out k3s controlplane config file
-      when: "{{ control_plane }}"
+      when: "control_plane"
       ansible.builtin.template:
         src: k3s-config-controlplane.yaml
         dest: /etc/rancher/k3s/config.yaml.d/controlplane.yaml
+        mode: '0644'
 
     - name: Download k3s install script
       ansible.builtin.get_url:
@@ -110,14 +45,8 @@
         dest: /tmp/k3s-install.sh
         mode: "0700"
 
-    - name: Check if local join token file exists
-      delegate_to: localhost
-      ansible.builtin.stat:
-        path: "{{ playbook_dir }}/join-token"
-      register: join_token_stat
-
     - name: Install k3s on first node and download config
-      when: "{{ not join_token_stat.stat.exists }}"
+      when: "ansible_host == main_control_host"
       block:
         - name: Run k3s install script for first control node
           ansible.builtin.command:
@@ -126,34 +55,22 @@
               - server
           environment:
             K3S_CLUSTER_INIT: "true"
+          changed_when: true
 
         - name: Download join token file
-          ansible.builtin.copy:
+          ansible.builtin.fetch:
             src: /var/lib/rancher/k3s/server/token
             dest: "{{ playbook_dir }}/join-token"
-
-        - name: Download kubeconfig file
-          ansible.builtin.copy:
-            src: /etc/rancher/k3s/k3s.yaml
-            dest: "{{ playbook_dir }}/kubeconfig.yaml"
+            flat: true
 
     - name: Upload config and join additional node
-      when: "{{ join_token_stat.stat.exists }}"
+      when: "ansible_host != main_control_host"
       block:
         - name: Upload join token file
           ansible.builtin.copy:
             src: "{{ playbook_dir }}/join-token"
             dest: /tmp/k3s-join-token
-
-        - name: Load kubeconfig file
-          delegate_to: localhost
-          ansible.builtin.slurp:
-            src: "{{ playbook_dir }}/kubeconfig.yaml"
-          register: kubeconfig_yaml
-
-        - name: Interpret remote file content as yaml
-          ansible.builtin.set_fact:
-            control_server: "{{ (kubeconfig_yaml.content | b64decode | from_yaml)['clusters'][0]['cluster']['server'] }}"
+            mode: '0644'
 
         - name: Run k3s install script for additional node
           ansible.builtin.command:
@@ -162,4 +79,5 @@
               - "{{ control_plane | ternary('server', 'agent') }}"
           environment:
             K3S_TOKEN_FILE: /tmp/k3s-join-token
-            K3S_URL: "{{ control_server }}"
+            K3S_URL: "{{ main_control_host }}"
+          changed_when: true

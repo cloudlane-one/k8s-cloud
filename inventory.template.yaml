@@ -1,14 +1,16 @@
-cluster:
+all:
   hosts:
     # You can add an arbitrary number of agents and nodes based on the templates below
     kube-0:
       ansible_host: "" # IP address of server node
-      control_plane: true
     kube-1:
       ansible_host: "" # IP address of agent node
+  children:
+    control_plane:
+      hosts:
+        kube-0:
   vars:
     # Default variables, may be adapted
-    autoTrustRemotes: false
 
     domain: ""
 
@@ -65,11 +67,12 @@ cluster:
       telemetry: "telemetry"
       storage: "storage"
 
+    autoTrustRemotes: false
+    clearKnownHosts: false
+
     letsencryptStaging: false # If true, uses Letsencrypt staging APIs instead of production ones. Prevents exceeding API limits.
 
     baseRepo: https://github.com/cloudlane-one/k8s-cloud
     baseBranch: main
-
-    k3s_release_version: false # Set to false for latest stable release
 
     ansible_user: root

@@ -1,0 +1,26 @@
+- name: Bootstrap chart
+  block:
+    - name: Ensure namespace exists
+      kubernetes.core.k8s:
+        wait: true
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: "{{ item.namespace }}"
+
+    - name: Copy local chart dir to remote
+      ansible.builtin.copy:
+        src: "{{ charts_dir }}/{{ item.chart }}"
+        dest: /tmp
+        mode: '0755'
+
+    - name: Deploy helm chart in bootstrap mode
+      kubernetes.core.helm:
+        wait: true
+        name: "{{ item.chart }}"
+        release_namespace: "{{ item.namespace }}"
+        chart_ref: "/tmp/{{ item.chart }}"
+        dependency_update: true
+        values:
+          bootstrap: true

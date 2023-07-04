@@ -3,22 +3,25 @@
     path: ~/.bashrc
     create: true
     line: "export KUBECONFIG=/etc/rancher/k3s/k3s.yaml"
+    mode: '0640'
 
 - name: Ensure PIP is installed
   ansible.builtin.package:
     name: pip
+    state: present
 
 - name: Copy requirements.txt to remote
   ansible.builtin.copy:
     src: requirements.txt
     dest: /tmp
+    mode: '0644'
 
 - name: Ensure PIP dependencies are installed
   ansible.builtin.pip:
     requirements: /tmp/requirements.txt
 
 - name: Check if Helm CLI is installed
-  ansible.builtin.shell: "which helm"
+  ansible.builtin.command: "which helm"
   register: which_helm
   changed_when: false
   failed_when: false
@@ -34,13 +37,14 @@
 - name: Run Helm install script
   when: "which_helm.rc != 0"
   ansible.builtin.command: /tmp/helm-install.sh
+  changed_when: true
 
 - name: Ensure helm diff plugin is installed
   kubernetes.core.helm_plugin:
     plugin_path: https://github.com/databus23/helm-diff
 
 - name: Check if Flux CLI is installed
-  ansible.builtin.shell: "which flux"
+  ansible.builtin.command: "which flux"
   register: which_flux
   changed_when: false
   failed_when: false
@@ -56,9 +60,10 @@
 - name: Run Flux install script
   when: "which_flux.rc != 0"
   ansible.builtin.command: /tmp/flux-install.sh
+  changed_when: true
 
 - name: Check if VCluster CLI is installed
-  ansible.builtin.shell: "which vcluster"
+  ansible.builtin.command: "which vcluster"
   register: which_vcluster
   changed_when: false
   failed_when: false
@@ -73,4 +78,5 @@
 
 - name: Install VCluster CLI
   when: "which_vcluster.rc != 0"
-  ansible.builtin.shell: "install -c -m 0755 /tmp/vcluster /usr/local/bin"
+  ansible.builtin.command: "install -c -m 0755 /tmp/vcluster /usr/local/bin"
+  changed_when: true

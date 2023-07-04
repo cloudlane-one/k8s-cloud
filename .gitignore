@@ -17,3 +17,6 @@ Chart.lock
 /inventory.yaml
 /inventory.yml
 /join-token
+
+# Do not commit lockfil
+/poetry.lock

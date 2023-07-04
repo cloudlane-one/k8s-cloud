@@ -18,9 +18,8 @@ metadata:
   name: s3-backup-credentials
 type: Opaque
 data:
-  {{- with .Values.s3.accessKeySecret }}
-  {{- $s3_secret := (lookup "v1" "Secret" (default .Release.Namespace .namespace) .name).data | index .key | b64dec }}
-  {{- end }}
+  {{- $secretRef := .Values.s3.accessKeySecret }}
+  {{- $s3_secret := (lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data | index $secretRef.key | b64dec }}
   cloud: {{ printf "[default]\naws_access_key_id=%s\naws_secret_access_key=%s" .Values.s3.accessKeyID $s3_secret | b64enc }}
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2

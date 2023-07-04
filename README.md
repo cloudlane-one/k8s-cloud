@@ -52,14 +52,24 @@ The cluster set up by this repo consists of a multitude of open-source projects,
 
 > How to setup a cluster on bare linux hosts
 
-### Install binary dependencies
+### Install system dependencies
 
 These are to be installed on your local machine.
 
 - [Python](https://www.python.org/downloads/)
-- [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/index.html)
+- [Poetry](https://python-poetry.org)
+
+### Install Python dependencies via poetry
+
+From the project folder run:
+
+```bash
+poetry install
+```
 
 ### Install Ansible role dependencies
+
+From the project folder run:
 
 ```bash
 ansible-galaxy install -r requirements.yaml
@@ -79,7 +89,7 @@ To setup all you provided hosts as kubernetes nodes and join them into a single 
 ansible-playbook setup.yaml -i inventory.yaml
 ```
 
-> If you recently rebuilt the OS on any of the hosts and thereby lost its public key, make sure to also update (or at least delete) its `known_hosts` entry, otherwise Ansible will throw an error. There exists a helper playbook `utils/clear_known_hosts.yaml`, which you can run to delete the `known_hosts` entries for all hosts in the inventory at once.
+> If you recently rebuilt the OS on any of the hosts and thereby lost its public key, make sure to also update (or at least delete) its `known_hosts` entry, otherwise Ansible will throw an error. You can also append `-e clearKnownHosts=true` to above command to delete the `known_hosts` entries for all hosts in the inventory before executing the setup.
 
 #### Restore from backup
 
@@ -89,7 +99,7 @@ If you want to restore from a full-cluster backup, simply append `-e restoreFrom
 
 For cluster operations, which do not change the set of nodes, this playbook isn't required. You can use `kubectl` or specific CLI tools relying on `kubectl` to perform these operations.
 
-`kubectl` is automatically installed and configured on all master nodes of the cluster. So best just ssh into one of them and perform below operations from there.
+`kubectl` is automatically installed and configured on all master nodes of the cluster. So best just `ssh` into one of them and perform below operations from there.
 
 ### Kubernetes Version Upgrade
 
