@@ -1,4 +1,5 @@
-# Default values, copy before making changes.
+# Default values, copy to ./<YOURCLUSTERNAME>.config.yaml before making changes.
+# Do not forget to also copy and fill out ./secrets.yaml!
 
 domain: ""
 org:
@@ -11,22 +12,20 @@ admin_idp:
   type: "oidc"
   issuer_url: ""
   client_id: ""
-admin_idp_client_secret: ""
-
-external_dns_token: "" # currently only "digitalocean" supported
+  # Put the client secret in ./<YOURCLUSTERNAME>.secrets.yaml
 
 smtp: # For admin notifications
   host: ""
   port: ""
   user: ""
   from_address: ""
-smtp_password: ""
+  # Put the password in ./<YOURCLUSTERNAME>.secrets.yaml
 
 s3:
   endpoint: "" # Domain without protocol of your S3 endpoint (e.g. "s3.example.org")
   region: "eu-central-1" # Required by Longhorn, just leave the default if you don't have zones
   access_key_id: "" # Your S3 access key id
-s3_access_key_secret: ""
+  # Put the access key secret in ./<YOURCLUSTERNAME>.secrets.yaml
 s3_buckets:
   backup: ""
   logs: ""

@@ -6,19 +6,14 @@ Chart.lock
 *.local
 *.local.*
 
-# Helm values
-/values.yaml
-/values.yml
-
-# Files containing secrets
+# Files containing secrets & custom config
 /kubeconfig*.yaml
 /kubeconfig*.yml
 /kubeconfig*
-/inventory.yaml
-/inventory.yml
 /join-token
-/hosts.ini
-/infrastructure.yaml
+/*.hosts.ini
+/*.config.yaml
+/*.secrets.yaml
 
 # Do not commit lockfil
 /poetry.lock
