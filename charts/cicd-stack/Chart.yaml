@@ -8,7 +8,3 @@ dependencies:
   - name: common
     version: "^1"
     repository: https://charts.bitnami.com/bitnami
-  - name: flux2
-    version: "^2"
-    repository: https://fluxcd-community.github.io/helm-charts
-    condition: bootstrap

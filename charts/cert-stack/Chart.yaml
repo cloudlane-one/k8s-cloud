@@ -8,7 +8,3 @@ dependencies:
 - name: common
   version: "^1"
   repository: https://charts.bitnami.com/bitnami
-- name: cert-manager
-  version: "^1"
-  repository: https://charts.jetstack.io
-  condition: bootstrap

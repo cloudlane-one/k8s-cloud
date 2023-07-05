@@ -3,6 +3,40 @@
     cluster_fqn: "cluster.{{ domain }}"
     charts_dir: "{{ playbook_dir }}/charts"
 
+- name: Ensure FluxCD is deployed
+  kubernetes.core.helm:
+    wait: true
+    timeout: 10m
+    name: fluxcd
+    release_namespace: flux-system
+    create_namespace: true
+    chart_repo_url: "^2"
+    chart_ref: flux2
+    chart_version: https://fluxcd-community.github.io/helm-charts
+    dependency_update: true
+    values:
+      policies:
+        enabled: false
+
+- name: Ensure base GitRepository exists
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: source.toolkit.fluxcd.io/v1
+      kind: GitRepository
+      metadata:
+        name: base-repo
+        namespace: flux-system
+      spec:
+        interval: 1h
+        url: "{{ base_repo }}"
+        ref:
+          branch: "{{ base_branch }}"
+
+- name: Reconcile base git repo
+  ansible.builtin.command: "flux reconcile source git base-repo -n flux-system"
+  changed_when: true
+
 - name: Bootstrap host-cluster infrastructure
   when: "not vcluster"
   ansible.builtin.include_tasks:
@@ -87,25 +121,6 @@
       name: s3
     - inventoryKey: external_dns_token
       name: external-dns
-
-- name: Ensure base GitRepository exists
-  kubernetes.core.k8s:
-    wait: true
-    definition:
-      apiVersion: source.toolkit.fluxcd.io/v1
-      kind: GitRepository
-      metadata:
-        name: base-repo
-        namespace: flux-system
-      spec:
-        interval: 1h
-        url: "{{ base_repo }}"
-        ref:
-          branch: "{{ base_branch }}"
-
-- name: Reconcile base git repo
-  ansible.builtin.command: "flux reconcile source git base-repo -n flux-system"
-  changed_when: true
 
 - name: Ensure HelmReleases for host-cluster infrastructure exist
   when: "not vcluster"

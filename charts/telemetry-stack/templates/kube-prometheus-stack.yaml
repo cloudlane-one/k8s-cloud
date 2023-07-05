@@ -1,4 +1,3 @@
-{{- if not .Values.bootstrap }}
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
@@ -26,6 +25,7 @@ spec:
   upgrade:
     crds: CreateReplace
   timeout: '10m0s' # Account for slow performance of cluster on first setup.
+{{- if not .Values.bootstrap }}
   valuesFrom:
     - kind: Secret
       name: smtp-creds

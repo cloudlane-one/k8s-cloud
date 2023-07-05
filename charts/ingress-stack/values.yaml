@@ -12,10 +12,3 @@ externalDNS:
 letsencrypt_staging: false # If true, uses Letsencrypt staging APIs instead of production ones. Prevents execeeding API limits.
 
 bootstrap: false # Set to true to install in bootstrap mode (minimum deployment to support core functions and CRs)
-
-# Bootstrap values
-ingress-nginx:
-  controller:
-    ingressClassResource:
-      default: true
-    watchIngressWithoutClass: true
