@@ -1,6 +1,6 @@
 domain: "" # The public root domain of this cluster (e.g. "example.org")
 
-clusterName: "cluster" # Name for this cluster (unique for the supplied domain)
+cluster_name: "cluster" # Name for this cluster (unique for the supplied domain)
 
 externalDNS:
   # Currently only Digitalocean provider supported.
@@ -9,7 +9,7 @@ externalDNS:
     name: ""
     key: "token"
 
-letsencryptStaging: false # If true, uses Letsencrypt staging APIs instead of production ones. Prevents execeeding API limits.
+letsencrypt_staging: false # If true, uses Letsencrypt staging APIs instead of production ones. Prevents execeeding API limits.
 
 bootstrap: false # Set to true to install in bootstrap mode (minimum deployment to support core functions and CRs)
 

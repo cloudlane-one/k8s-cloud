@@ -17,6 +17,8 @@ Chart.lock
 /inventory.yaml
 /inventory.yml
 /join-token
+/hosts.ini
+/infrastructure.yaml
 
 # Do not commit lockfil
 /poetry.lock

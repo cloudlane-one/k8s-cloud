@@ -1,2 +1,0 @@
-cluster_fqn: "cluster.{{ domain }}"
-charts_dir: "{{ playbook_dir }}/charts"

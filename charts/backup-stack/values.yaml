@@ -3,7 +3,7 @@ storageDriver: "driver.longhorn.io"
 s3:
   endpoint: "" # Domain without protocol of your S3 endpoint (e.g. "s3.example.org")
   region: "eu-central-1" # Required by Longhorn, just leave the default if you don't have zones
-  accessKeyID: "" # Your S3 access key id
+  access_key_id: "" # Your S3 access key id
   accessKeySecret:
     # Your S3 access key secret
     namespace: null

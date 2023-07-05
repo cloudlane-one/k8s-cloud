@@ -1,0 +1,59 @@
+# Default values, copy before making changes.
+
+domain: ""
+org:
+  name: ""
+  defaultLocale: "en_US"
+  tagline: ""
+  logoURL: ""
+
+admin_idp:
+  type: "oidc"
+  issuer_url: ""
+  client_id: ""
+admin_idp_client_secret: ""
+
+external_dns_token: "" # currently only "digitalocean" supported
+
+smtp: # For admin notifications
+  host: ""
+  port: ""
+  user: ""
+  from_address: ""
+smtp_password: ""
+
+s3:
+  endpoint: "" # Domain without protocol of your S3 endpoint (e.g. "s3.example.org")
+  region: "eu-central-1" # Required by Longhorn, just leave the default if you don't have zones
+  access_key_id: "" # Your S3 access key id
+s3_access_key_secret: ""
+s3_buckets:
+  backup: ""
+  logs: ""
+
+admin_email: ""
+admin_group: ""
+
+vcluster: false # Set to true to create a vcluster on top of a k3s host cluster
+cluster_name: "cluster" # Name for this cluster (unique for the supplied domain)
+
+restore_from_backup: null
+
+subdomains:
+  oidc: "oidc"
+  idp: "idp"
+  auth: "auth"
+  control: "control"
+  gitops: "gitops"
+  telemetry: "telemetry"
+  storage: "storage"
+
+auto_trust_remotes: false
+clear_known_hosts: false
+
+letsencrypt_staging: false # If true, uses Letsencrypt staging APIs instead of production ones. Prevents exceeding API limits.
+
+base_repo: https://github.com/cloudlane-one/k8s-cloud
+base_branch: main
+
+ansible_user: root

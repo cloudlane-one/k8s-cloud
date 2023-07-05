@@ -29,7 +29,7 @@ spec:
       createClusterScoped: false
     envVars:
       - name: IDP_CLIENT_ID
-        value: {{ .Values.adminIDP.clientID }}
+        value: {{ .Values.admin_idp.client_id }}
       - name: IDP_CLIENT_SECRET
         valueFrom:
           secretKeyRef:
@@ -41,21 +41,21 @@ spec:
         type: memory
       issuer: {{ printf "https://%s" .Values.hosts.dex }}
       connectors:
-        - type: {{ .Values.adminIDP.type }}
-          id: {{ printf "adminIDP-%s" .Values.adminIDP.type }}
-          name: {{ printf "adminIDP-%s" .Values.adminIDP.type }}
+        - type: {{ .Values.admin_idp.type }}
+          id: {{ printf "admin_idp-%s" .Values.admin_idp.type }}
+          name: {{ printf "admin_idp-%s" .Values.admin_idp.type }}
           config:
             # Credentials can be string literals or pulled from the environment.
-            clientID: $IDP_CLIENT_ID
+            client_id: $IDP_CLIENT_ID
             clientSecret: $IDP_CLIENT_SECRET
             redirectURI: {{ printf "https://%s/callback" .Values.hosts.dex }}
             # flag which will switch from using the internal GitHub id to the users handle (@mention) as the user id.
             # It is possible for a user to change their own user name but it is very rare for them to do so
-            {{ if eq .Values.adminIDP.type "github" -}}
+            {{ if eq .Values.admin_idp.type "github" -}}
             useLoginAsID: true
             loadAllGroups: true
-            {{- else if eq .Values.adminIDP.type "oidc" -}}
-            issuerURL: {{ .Values.adminIDP.issuerURL }}
+            {{- else if eq .Values.admin_idp.type "oidc" -}}
+            issuer_url: {{ .Values.admin_idp.issuer_url }}
             scopes:
               - profile
               - email

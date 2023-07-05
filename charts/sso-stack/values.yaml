@@ -22,7 +22,7 @@ hosts:
 smtp:
   host: ""
   port: ""
-  fromAddress: ""
+  from_address: ""
   username: ""
   starttls: false
   passwordSecret:
@@ -36,16 +36,16 @@ org:
   tagline: ""
   logoURL: ""
 
-adminIDP:
+admin_idp:
   type: "oidc"
-  issuerURL: ""
-  clientID: ""
+  issuer_url: ""
+  client_id: ""
   clientSecret:
     namespace: null
     name: ""
     key: "secret"
 
-adminGroup: ""
+admin_group: ""
 
 clusterIssuer: "acme"
 

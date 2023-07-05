@@ -1,3 +1,10 @@
+- name: Determine the main control host (first to join the cluster)
+  ansible.builtin.set_fact:
+    main_control_node: "{{ (control_nodes | length > 0) | ternary(control_nodes[0], all_hosts[0]) }}"
+  vars:
+    all_hosts: "{{ hostvars | dict2items | map(attribute='value.ansible_host') }}"
+    control_nodes: "{{ hostvars | dict2items | selectattr('value.control_node', 'eq', true) | map(attribute='value.ansible_host') }}"
+
 - name: Pick the correct names for system packages to be installed
   block:
     - name: Set sys package names for apt
@@ -72,7 +79,7 @@
         mode: '0644'
 
     - name: Template out k3s controlplane config file
-      when: "control_plane"
+      when: "control_node"
       ansible.builtin.template:
         src: k3s-config-controlplane.yaml
         dest: /etc/rancher/k3s/config.yaml.d/controlplane.yaml
@@ -85,7 +92,7 @@
         mode: "0700"
 
     - name: Install k3s on first node and download config
-      when: "ansible_host == main_control_host"
+      when: "ansible_host == main_control_node"
       block:
         - name: Run k3s install script for first control node
           ansible.builtin.command:
@@ -96,6 +103,31 @@
             K3S_CLUSTER_INIT: "true"
           changed_when: true
 
+        - name: Copy default kubeconfig file
+          ansible.builtin.copy:
+            remote_src: true
+            src: /etc/rancher/k3s/k3s.yaml
+            dest: /tmp/kubeconfig.yaml
+            mode: '0644'
+
+        - name: Change server address of copied kubeconfig to public IP
+          ansible.builtin.command:
+            argv:
+              - kubectl
+              - config
+              - set-cluster
+              - default
+              - "--server=https://{{ ansible_host }}:6443"
+          environment:
+            KUBECONFIG: /tmp/kubeconfig.yaml
+          changed_when: true
+
+        - name: Download kubeconfig file
+          ansible.builtin.fetch:
+            src: /tmp/kubeconfig.yaml
+            dest: "{{ playbook_dir }}/kubeconfig.yaml"
+            flat: true
+
         - name: Download join token file
           ansible.builtin.fetch:
             src: /var/lib/rancher/k3s/server/token
@@ -103,7 +135,7 @@
             flat: true
 
     - name: Upload config and join additional node
-      when: "ansible_host != main_control_host"
+      when: "ansible_host != main_control_node"
       block:
         - name: Upload join token file
           ansible.builtin.copy:
@@ -115,8 +147,13 @@
           ansible.builtin.command:
             argv:
               - /tmp/k3s-install.sh
-              - "{{ control_plane | ternary('server', 'agent') }}"
+              - "{{ control_node | ternary('server', 'agent') }}"
           environment:
             K3S_TOKEN_FILE: /tmp/k3s-join-token
-            K3S_URL: "https://{{ main_control_host }}:6443"
+            K3S_URL: "https://{{ main_control_node }}:6443"
           changed_when: true
+
+- name: Run control-node-specific setup steps
+  when: "control_node"
+  ansible.builtin.include_tasks:
+    file: control-node-setup.yaml

@@ -1,3 +1,8 @@
+- name: Set dynamic facts
+  ansible.builtin.set_fact:
+    cluster_fqn: "cluster.{{ domain }}"
+    charts_dir: "{{ playbook_dir }}/charts"
+
 - name: Bootstrap host-cluster infrastructure
   when: "not vcluster"
   ansible.builtin.include_tasks:
@@ -74,13 +79,13 @@
       data:
         secret: "{{ vars[item.inventoryKey] | b64encode }}"
   loop:
-    - inventoryKey: adminIDPClientSecret
+    - inventoryKey: admin_idp_client_secret
       name: admin-idp-client
-    - inventoryKey: smtpPassword
+    - inventoryKey: smtp_password
       name: smtp
-    - inventoryKey: s3AccessKeySecret
+    - inventoryKey: s3_access_key_secret
       name: s3
-    - inventoryKey: externalDNSToken
+    - inventoryKey: external_dns_token
       name: external-dns
 
 - name: Ensure base GitRepository exists
@@ -94,9 +99,9 @@
         namespace: flux-system
       spec:
         interval: 1h
-        url: "{{ baseRepo }}"
+        url: "{{ base_repo }}"
         ref:
-          branch: "{{ baseBranch }}"
+          branch: "{{ base_branch }}"
 
 - name: Reconcile base git repo
   ansible.builtin.command: "flux reconcile source git base-repo -n flux-system"
@@ -119,16 +124,16 @@
       values:
         host: "{{ subdomains.storage }}.{{ domain }}"
         oauth2ProxyHost: "{{ subdomains.auth }}.{{ domain }}"
-        adminGroup: "{{ adminGroup }}"
-        s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3Buckets.backup}) }}"
+        admin_group: "{{ admin_group }}"
+        s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
 
     - name: backup-stack
       namespace: backup-system
       values:
-        s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3Buckets.backup}) }}"
+        s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
 
 - name: Apply backup restoration
-  when: "restoreFromBackup"
+  when: "restore_from_backup"
   kubernetes.core.k8s:
     wait: true
     definition:
@@ -138,7 +143,7 @@
         name: initial-cluster-restore
         namespace: backup-system
       spec:
-        backupName: "{{ restoreFromBackup }}"
+        backupName: "{{ restore_from_backup }}"
 
 - name: Ensure HelmReleases for cluster infrastructure exist
   ansible.builtin.include_tasks:
@@ -150,7 +155,7 @@
     - name: admin-rbac
       namespace: kube-system
       values:
-        adminGroup: "{{ adminGroup }}"
+        admin_group: "{{ admin_group }}"
 
     - name: crypto-storage
       namespace: longhorn-system
@@ -165,7 +170,7 @@
       namespace: ingress-system
       values:
         domain: "{{ domain }}"
-        clusterName: "{{ clusterName }}"
+        cluster_name: "{{ cluster_name }}"
         externalDNS:
           tokenSecret:
             namespace: kube-system
@@ -188,7 +193,7 @@
                 - "http://localhost:8000/"
                 - "https://*.{{ domain }}/*"
         smtp: "{{ smtp | combine({'passwordSecret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
-        adminIDP: "{{ adminIDP | combine({'clientSecret': {'name': 'admin-idp-client', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
+        admin_idp: "{{ admin_idp | combine({'clientSecret': {'name': 'admin-idp-client', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
 
     - name: authproxy
       namespace: sso-system
@@ -215,9 +220,9 @@
           secret:
             name: "oidc-client.cluster-oidc"
             key: secret
-        adminEmail: "{{ adminEmail }}"
-        adminGroup: "{{ adminGroup }}"
-        s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3Buckets.logs}) }}"
+        admin_email: "{{ admin_email }}"
+        admin_group: "{{ admin_group }}"
+        s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.logs}) }}"
         smtp: "{{ smtp | combine({'passwordSecret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
 
     - name: cicd-stack
@@ -236,4 +241,4 @@
       values:
         host: "{{ subdomains.control }}.{{ domain }}"
         oauth2ProxyHost: "{{ subdomains.auth }}.{{ domain }}"
-        adminGroup: "{{ adminGroup }}"
+        admin_group: "{{ admin_group }}"

@@ -77,23 +77,42 @@ ansible-galaxy install -r requirements.yaml
 
 ### Provide configuration
 
-First copy the configuration template file `inventory.template.yaml` to `inventory.yaml`. Then edit the config options in the file to your liking.
+List the IPs or public domains of your hosts, which you intend to become k8s nodes, in a file called `./hosts.ini` within the project directory. Simply write one IP / domain per line, like so:
+
+```ini
+123.456.789
+my.domain.com
+111.111.111
+```
+
+By default, the first listed host ist used as the sole control-plane node. If you want to have multiple control hosts, select them via adding `control_node=true` behind their IP / domain, like so:
+
+```ini
+123.456.789 control_node=true
+my.domain.com control_node=true
+my-other.domain.com control_node=true
+111.111.111
+```
+
+Note that it is recommended to have either one or at least 3 control plane nodes.
+
+Then copy the default infrastructure values file `./roles/infrastructure/defaults/main.yaml` to `./infrastructure.yaml` in the top-level project dir. Fill in the required values and either change or delete the optional ones.
 
 ### Setup the cluster
 
-> Please either manually make sure that all your nodes are listed as trusted in `known_hosts` or append `-e autoTrustRemotes=true` to below command, otherwise you will have to type `yes` and hit Enter for each of your hosts at the beginning of the playbook run.
+> Please either manually make sure that all your nodes are listed as trusted in `known_hosts` or append `-e auto_trust_remotes=true` to below command, otherwise you will have to type `yes` and hit Enter for each of your hosts at the beginning of the playbook run.
 
 To setup all you provided hosts as kubernetes nodes and join them into a single cluster, run:
 
 ```bash
-ansible-playbook setup.yaml -i inventory.yaml
+ansible-playbook setup.yaml -i hosts.ini -e @infrastructure.yaml
 ```
 
-> If you recently rebuilt the OS on any of the hosts and thereby lost its public key, make sure to also update (or at least delete) its `known_hosts` entry, otherwise Ansible will throw an error. You can also append `-e clearKnownHosts=true` to above command to delete the `known_hosts` entries for all hosts in the inventory before executing the setup.
+> If you recently rebuilt the OS on any of the hosts and thereby lost its public key, make sure to also update (or at least delete) its `known_hosts` entry, otherwise Ansible will throw an error. You can also append `-e clear_known_hosts=true` to above command to delete the `known_hosts` entries for all hosts in the inventory before executing the setup.
 
 #### Restore from backup
 
-If you want to restore from a full-cluster backup, simply append `-e restoreFromBackup=<BACKUP-NAME>` to above setup command.
+If you want to restore from a full-cluster backup, simply append `-e restore_from_backup=<BACKUP-NAME>` to above setup command.
 
 ## Operations
 

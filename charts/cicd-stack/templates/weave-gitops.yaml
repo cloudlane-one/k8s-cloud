@@ -5,8 +5,8 @@ metadata:
   name: oidc-auth
 type: Opaque
 data:
-  issuerURL: {{ .Values.oidcClient.idpURL | b64enc }}
-  clientID: {{ .Values.oidcClient.id | b64enc }}
+  issuer_url: {{ .Values.oidcClient.idpURL | b64enc }}
+  client_id: {{ .Values.oidcClient.id | b64enc }}
   {{- $secretRef := .Values.oidcClient.secret }}
   clientSecret: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
   redirectURL: {{ printf "https://%s/oauth2/callback" .Values.host | b64enc }}

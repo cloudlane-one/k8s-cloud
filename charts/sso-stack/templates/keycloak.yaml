@@ -155,7 +155,7 @@ spec:
             starttls: 'true'
             {{- end }}
             auth: 'true'
-            from: {{ .Values.smtp.fromAddress }}
+            from: {{ .Values.smtp.from_address }}
             user: {{ .Values.smtp.username | quote }}
             password: "" # injected
           loginTheme: k8s-cloud
@@ -189,7 +189,7 @@ spec:
                   priority: ["100"]
                   algorithm: ["HS256"]
           groups: 
-            - name: {{ .Values.adminGroup }}
+            - name: {{ .Values.admin_group }}
               realmRoles: 
                 - admin
               attributes:
@@ -214,7 +214,7 @@ spec:
               # authenticateByDefault: false
               # linkOnly: false
               config:
-                clientId: admin-oidc
+                client_id: admin-oidc
                 clientAuthMethod: client_secret_post
                 clientSecret: "$(env:ADMIN_OIDC_SECRET)" # from env var
                 tokenUrl: {{ printf "https://%s/tokens" .Values.hosts.dex }}
@@ -238,8 +238,8 @@ spec:
               identityProviderAlias: admin-oidc
               identityProviderMapper: "oidc-advanced-group-idp-mapper"
               config:
-                claims: {{ printf "[{\"key\": \"groups\",\"value\": %s}]" (.Values.adminGroup | quote) | quote }}
-                group: {{ .Values.adminGroup | quote }}
+                claims: {{ printf "[{\"key\": \"groups\",\"value\": %s}]" (.Values.admin_group | quote) | quote }}
+                group: {{ .Values.admin_group | quote }}
                 # syncMode: FORCE
           clientScopes:
             - name: groups
@@ -278,7 +278,7 @@ spec:
                     aggregate.attrs: ''
           clients: 
             {{ range $client := .Values.clients.oidc -}}
-            - clientId: {{ $client.id }}
+            - client_id: {{ $client.id }}
               name: {{ $client.id }}
               description: "Internal OIDC client"
               enabled: true
@@ -299,7 +299,7 @@ spec:
                 - is_admin
             {{ end -}}
             {{ range $client := .Values.clients.saml -}}
-            - clientId: {{ $client.id }}
+            - client_id: {{ $client.id }}
               protocol: saml
               name: {{ $client.id }}
               description: "Internal SAML client"

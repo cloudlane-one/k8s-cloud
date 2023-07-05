@@ -34,11 +34,11 @@ spec:
     sources:
       - service
       - ingress
-    txtOwnerId: {{ .Values.clusterName | quote }}
+    txtOwnerId: {{ .Values.cluster_name | quote }}
     provider: digitalocean
     digitalocean:
       secretName: dns-token
-    annotationFilter: {{ printf "external-dns.alpha.kubernetes.io/managed-by in (%s)" .Values.clusterName | quote }}
+    annotationFilter: {{ printf "external-dns.alpha.kubernetes.io/managed-by in (%s)" .Values.cluster_name | quote }}
     serviceMonitor:
       enabled: true
 {{- end }}

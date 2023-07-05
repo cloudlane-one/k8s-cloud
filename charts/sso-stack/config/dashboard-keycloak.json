@@ -1511,7 +1511,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (error) (increase(keycloak_failed_login_attempts{provider=\"keycloak\",realm=\"$realm\",client_id=\"$ClientId\"}[30m]))",
+          "expr": "sum by (error) (increase(keycloak_failed_login_attempts{provider=\"keycloak\",realm=\"$realm\",client_id=\"$client_id\"}[30m]))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -1523,7 +1523,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Login Errors for $ClientId",
+      "title": "Login Errors for $client_id",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1724,7 +1724,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (error) (increase(keycloak_registrations_errors{provider=\"keycloak\",realm=\"$realm\",client_id=\"$ClientId\"}[30m]))",
+          "expr": "sum by (error) (increase(keycloak_registrations_errors{provider=\"keycloak\",realm=\"$realm\",client_id=\"$client_id\"}[30m]))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -1736,7 +1736,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Registration Errors for $ClientId",
+      "title": "Registration Errors for $client_id",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -2416,10 +2416,10 @@
         "definition": "",
         "hide": 0,
         "includeAll": false,
-        "label": "ClientId",
+        "label": "client_id",
         "multi": false,
         "multiFormat": "",
-        "name": "ClientId",
+        "name": "client_id",
         "options": [],
         "query": "label_values(keycloak_logins{provider=\"keycloak\",realm=\"$realm\"},client_id)",
         "refresh": 1,

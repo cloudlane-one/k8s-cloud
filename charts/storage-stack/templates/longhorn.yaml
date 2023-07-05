@@ -36,7 +36,7 @@ spec:
         # As described in this docs section: https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/#configuring-for-use-with-the-nginx-auth_request-directive
         nginx.ingress.kubernetes.io/auth-response-headers: "Authorization, X-Auth-Request-User, X-Auth-Request-Groups, X-Auth-Request-Email, X-Auth-Request-Preferred-Username, X-Auth-Request-Access-Token"
         nginx.ingress.kubernetes.io/auth-signin: {{ printf "https://%s/oauth2/start?rd=$scheme%%3A%%2F%%2F$host$escaped_request_uri" .Values.oauth2ProxyHost }}
-        nginx.ingress.kubernetes.io/auth-url: {{ printf "https://%s/oauth2/auth?allowed_groups=%s" .Values.oauth2ProxyHost .Values.adminGroup }}
+        nginx.ingress.kubernetes.io/auth-url: {{ printf "https://%s/oauth2/auth?allowed_groups=%s" .Values.oauth2ProxyHost .Values.admin_group }}
       host: {{ .Values.host }}
       tls:
         - hosts:
@@ -53,7 +53,7 @@ data:
   {{- $secretRef := .Values.s3.accessKeySecret }}
   {{- $s3_secret := get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
   # See https://longhorn.io/docs/1.2.4/snapshots-and-backups/backup-and-restore/set-backup-target/#set-up-aws-s3-backupstore
-  AWS_ACCESS_KEY_ID: {{ .Values.s3.accessKeyID | b64enc }}
+  AWS_ACCESS_KEY_ID: {{ .Values.s3.access_key_id | b64enc }}
   AWS_SECRET_ACCESS_KEY: {{ $s3_secret }}
   AWS_ENDPOINTS: {{ printf "https://%s" .Values.s3.endpoint | b64enc }}
   VIRTUAL_HOSTED_STYLE: dHJ1ZQ== # true

@@ -3,31 +3,25 @@
   connection: local
   roles:
     - role: clear-known-hosts
-      when: "(clearKnownHosts is defined) and clearKnownHosts and (clearKnownHosts != 'false')"
+      when: "(clear_known_hosts is defined) and clear_known_hosts and (clear_known_hosts != 'false')"
     - role: auto-trust
-      when: "(autoTrustRemotes is defined) and autoTrustRemotes and (autoTrustRemotes != 'false')"
+      when: "(auto_trust_remotes is defined) and auto_trust_remotes and (auto_trust_remotes != 'false')"
 
 - name: Run setup for all nodes
   hosts: all
   become: true
   roles:
-    - role: node-setup
-      vars:
-        main_control_host: "{{ hostvars[groups['control_plane'][0]]['ansible_host'] }}"
-        control_plane: "{{ 'control_plane' in group_names }}"
+    - role: node
+  tasks:
+    - name: Add host to control_nodes group, if flag is set
+      when: "control_node"
+      ansible.builtin.add_host:
+        name: "{{ ansible_host }}"
+        groups: control_nodes
 
-- name: Run setup for all control nodes
-  hosts: control_plane
-  become: true
-  roles:
-    - role: control-node-setup
-
-- name: Setup infrastructure
-  hosts: control_plane
+- name: Setup infrastructure via kubectl from one of the control hosts
+  hosts: control_nodes
   run_once: true
   become: true
   roles:
-    - role: infra-setup
-      environment:
-        K8S_AUTH_KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+    - role: infrastructure
