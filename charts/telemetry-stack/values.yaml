@@ -1,7 +1,7 @@
 host: ""
 
-oidcClient:
-  idpURL: ""
+oidc_client:
+  idp_url: ""
   id: ""
   secret:
     namespace: null
@@ -23,7 +23,7 @@ smtp: # For admin notifications
   host: ""
   port: ""
   user: ""
-  passwordSecret:
+  password_secret:
     namespace: null
     name: ""
     key: "secret"
@@ -33,8 +33,8 @@ admin_email: ""
 
 admin_group: ""
 
-clusterIssuer: "acme"
+cluster_issuer: "acme"
 
-externalDNSManager: "cluster"
+external_dns_manager: "cluster"
 
 bootstrap: false # Set to true to install in bootstrap mode (minimum deployment to support core functions and CRs)

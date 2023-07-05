@@ -1,15 +1,15 @@
 clients:
   oidc: []
   #    - id: ""
-  #      redirectURIs:
+  #      redirect_uris:
   #        - https://example.com/path
   saml: []
   #    - id: ""
-  #      rootURL: ""
-  #      assertionConsumer:
+  #      root_url: ""
+  #      assertion_consumer:
   #        method: "post" # "redirect" or "post"
   #        url: "" # may be relative
-  #      logoutService:
+  #      logout_service:
   #        method: "post" # "redirect" or "post"
   #        url: "" # may be relative
 
@@ -25,14 +25,14 @@ smtp:
   from_address: ""
   username: ""
   starttls: false
-  passwordSecret:
+  password_secret:
     namespace: null
     name: ""
     key: "password"
 
 org:
   name: ""
-  defaultLocale: "en_US"
+  default_locale: "en_US"
   tagline: ""
   logoURL: ""
 
@@ -40,13 +40,13 @@ admin_idp:
   type: "oidc"
   issuer_url: ""
   client_id: ""
-  clientSecret:
+  client_secret:
     namespace: null
     name: ""
     key: "secret"
 
 admin_group: ""
 
-clusterIssuer: "acme"
+cluster_issuer: "acme"
 
-externalDNSManager: "cluster"
+external_dns_manager: "cluster"

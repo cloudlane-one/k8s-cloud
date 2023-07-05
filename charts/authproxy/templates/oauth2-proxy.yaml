@@ -4,7 +4,7 @@ metadata:
   name: oidc-client
 type: Opaque
 data:
-  {{- $secretRef := .Values.oidcClient.secret }}
+  {{- $secretRef := .Values.oidc_client.secret }}
   secret: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
 ---
 apiVersion: v1
@@ -34,14 +34,14 @@ spec:
     - kind: Secret
       name: oidc-client
       valuesKey: secret
-      targetPath: config.clientSecret
+      targetPath: config.client_secret
     - kind: Secret
       name: cookies
       valuesKey: secret
       targetPath: config.cookieSecret
   values:
     config:
-      client_id: {{ .Values.oidcClient.id }}
+      clientId: {{ .Values.oidc_client.id }}
       clientSecret: "" # injected
       cookieSecret: "" # injected
       configFile: |-
@@ -49,7 +49,7 @@ spec:
         whitelist_domains = [ {{ printf ".%s" .Values.domain | quote }} ]
         provider = "oidc"
         provider_display_name = {{ printf "SSO for %s" .Values.org.name | quote }}
-        oidc_issuer_url = {{ .Values.oidcClient.idpURL }}
+        oidc_issuer_url = {{ .Values.oidc_client.idp_url }}
         redirect_url = {{ printf "https://%s/callback" .Values.host }} # TODO: insert correct url
         set_xauthrequest = true
         set_authorization_header = true
@@ -66,8 +66,8 @@ spec:
     ingress:
       enabled: true
       annotations:
-        cert-manager.io/cluster-issuer: {{ .Values.clusterIssuer }}
-        external-dns.alpha.kubernetes.io/managed-by: {{ .Values.externalDNSManager }}
+        cert-manager.io/cluster-issuer: {{ .Values.cluster_issuer }}
+        external-dns.alpha.kubernetes.io/managed-by: {{ .Values.external_dns_manager }}
       hosts:
         - {{ .Values.host }}
       tls:

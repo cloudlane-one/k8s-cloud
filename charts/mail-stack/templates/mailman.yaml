@@ -236,7 +236,7 @@ metadata:
   name: oidc-client
 type: Opaque
 data:
-  {{- $secretRef := .Values.oidcClient.secret }}
+  {{- $secretRef := .Values.oidc_client.secret }}
   secret: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
 ---
 apiVersion: v1
@@ -256,9 +256,9 @@ data:
                 {
                     "id": "local-sso",  # 30 characters or less
                     "name": {{ printf "%s SSO" .Values.org.name | quote }},
-                    "server_url": {{ .Values.oidcClient.idpURL | quote }},
+                    "server_url": {{ .Values.oidc_client.idp_url | quote }},
                     "APP": {
-                        "client_id": {{ .Values.oidcClient.id | quote }},
+                        "client_id": {{ .Values.oidc_client.id | quote }},
                         "secret": os.environ["OIDC_CLIENT_SECRET"],
                     },
                 },
@@ -499,8 +499,8 @@ kind: Ingress
 metadata:
   name: mailman
   annotations:
-    cert-manager.io/cluster-issuer: {{ .Values.clusterIssuer }}
-    external-dns.alpha.kubernetes.io/managed-by: {{ .Values.externalDNSManager }}
+    cert-manager.io/cluster-issuer: {{ .Values.cluster_issuer }}
+    external-dns.alpha.kubernetes.io/managed-by: {{ .Values.external_dns_manager }}
 spec:
   tls:
     - hosts:

@@ -72,20 +72,20 @@ spec:
           # See: https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/configure-authentication/generic-oauth/
           enabled: true
           name: Admin OIDC
-          client_id: {{ .Values.oidcClient.id }}
+          client_id: {{ .Values.oidc_client.id }}
           client_secret: "" # injected
           scopes: openid,profile,email,groups
-          auth_url: {{ printf "%s/auth" .Values.oidcClient.idpURL | quote }}
-          token_url: {{ printf "%s/token" .Values.oidcClient.idpURL | quote }}
-          api_url: {{ printf "%s/userinfo" .Values.oidcClient.idpURL | quote }}
+          auth_url: {{ printf "%s/auth" .Values.oidc_client.idp_url | quote }}
+          token_url: {{ printf "%s/token" .Values.oidc_client.idp_url | quote }}
+          api_url: {{ printf "%s/userinfo" .Values.oidc_client.idp_url | quote }}
           allow_sign_up: true
           allowed_groups: {{ .Values.admin_group | quote }}
           role_attribute_path: "contains(groups[*], {{ .Values.admin_group | squote }}) && 'Admin' || 'Viewer'"
       ingress:
         enabled: true
         annotations:
-          cert-manager.io/cluster-issuer: {{ .Values.clusterIssuer }}
-          external-dns.alpha.kubernetes.io/managed-by: {{ .Values.externalDNSManager }}
+          cert-manager.io/cluster-issuer: {{ .Values.cluster_issuer }}
+          external-dns.alpha.kubernetes.io/managed-by: {{ .Values.external_dns_manager }}
         hosts:
           - {{ .Values.host }}
         tls:
@@ -221,7 +221,7 @@ metadata:
   name: smtp-creds
 type: Opaque
 data:
-  {{- $passRef := .Values.smtp.passwordSecret }}
+  {{- $passRef := .Values.smtp.password_secret }}
   password: {{ (lookup "v1" "Secret" (default .Release.Namespace $passRef.namespace) $passRef.name).data | get $passRef.key }}
 ---
 apiVersion: v1
@@ -230,7 +230,7 @@ metadata:
   name: oidc-client
 type: Opaque
 data:
-  {{- $secretRef := .Values.oidcClient.secret }}
+  {{- $secretRef := .Values.oidc_client.secret }}
   secret: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
 ---
 {{- end }}

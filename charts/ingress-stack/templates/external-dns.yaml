@@ -5,7 +5,7 @@ metadata:
   name: dns-token
 type: Opaque
 data:
-  {{- $secretRef := .Values.externalDNS.tokenSecret }}
+  {{- $secretRef := .Values.external_dns.token_secret }}
   secret: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2

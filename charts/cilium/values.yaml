@@ -1,11 +1,11 @@
 host: ""
 
-oauth2ProxyHost: ""
+oauth2_proxy_host: ""
 
 admin_group: ""
 
-clusterIssuer: "acme"
+cluster_issuer: "acme"
 
-externalDNSManager: "cluster"
+external_dns_manager: "cluster"
 
 bootstrap: false # Set to true to install in bootstrap mode (minimum deployment to support core functions and CRs)

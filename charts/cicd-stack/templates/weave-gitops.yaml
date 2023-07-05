@@ -5,10 +5,10 @@ metadata:
   name: oidc-auth
 type: Opaque
 data:
-  issuer_url: {{ .Values.oidcClient.idpURL | b64enc }}
-  client_id: {{ .Values.oidcClient.id | b64enc }}
-  {{- $secretRef := .Values.oidcClient.secret }}
-  clientSecret: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
+  issuer_url: {{ .Values.oidc_client.idp_url | b64enc }}
+  client_id: {{ .Values.oidc_client.id | b64enc }}
+  {{- $secretRef := .Values.oidc_client.secret }}
+  client_secret: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
   redirectURL: {{ printf "https://%s/oauth2/callback" .Values.host | b64enc }}
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
@@ -37,8 +37,8 @@ spec:
     ingress:
       enabled: true
       annotations:
-        cert-manager.io/cluster-issuer: {{ .Values.clusterIssuer }}
-        external-dns.alpha.kubernetes.io/managed-by: {{ .Values.externalDNSManager }}
+        cert-manager.io/cluster-issuer: {{ .Values.cluster_issuer }}
+        external-dns.alpha.kubernetes.io/managed-by: {{ .Values.external_dns_manager }}
       hosts:
         - host: {{ .Values.host }}
           paths:

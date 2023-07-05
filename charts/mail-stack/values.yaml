@@ -1,12 +1,12 @@
-oidcClient:
-  idpURL: ""
+oidc_client:
+  idp_url: ""
   id: ""
   secret:
     namespace: null
     name: ""
     key: "secret"
 
-oauth2ProxyHost: ""
+oauth2_proxy_host: ""
 
 domain: ""
 
@@ -22,6 +22,6 @@ org:
   name: ""
   logoURL: ""
 
-clusterIssuer: "acme"
+cluster_issuer: "acme"
 
-externalDNSManager: "cluster"
+external_dns_manager: "cluster"

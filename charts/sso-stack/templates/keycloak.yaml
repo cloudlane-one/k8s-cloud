@@ -60,12 +60,12 @@ spec:
     auth:
       adminUser: admin
       existingSecret: idp-admin
-      passwordSecretKey: password
+      password_secretKey: password
     ingress:
       enabled: true
       annotations:
-        cert-manager.io/cluster-issuer: {{ .Values.clusterIssuer }}
-        external-dns.alpha.kubernetes.io/managed-by: {{ .Values.externalDNSManager }}
+        cert-manager.io/cluster-issuer: {{ .Values.cluster_issuer }}
+        external-dns.alpha.kubernetes.io/managed-by: {{ .Values.external_dns_manager }}
       hostname: {{ .Values.hosts.keycloak }}
       tls: true
     extraVolumes:
@@ -102,6 +102,16 @@ spec:
           value: "no-delete" # Do not delete existing clients, just add new ones
         - name: import.var-substitution.enabled
           value: "true"
+        - name: IDP_CERT
+          valueFrom:
+            secretKeyRef:
+              name: idp-cert
+              key: tls.crt
+        - name: IDP_CERT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: idp-cert
+              key: tls.key
         - name: ADMIN_OIDC_SECRET
           valueFrom:
             secretKeyRef:
@@ -143,7 +153,7 @@ spec:
           adminEventsEnabled: true
           adminEventsDetailsEnabled: true
           internationalizationEnabled: true
-          defaultLocale: {{ index (.Values.org.defaultLocale | splitList "_") 0 }}
+          defaultLocale: {{ index (.Values.org.default_locale | splitList "_") 0 }}
           displayName: {{ printf "%s Login" .Values.org.name }}
           displayNameHtml: {{ printf "<div class=\"kc-logo-text\"><span>%s Login</span></div>" .Values.org.name }}
           smtpServer:
@@ -166,9 +176,9 @@ spec:
                 subComponents: {}
                 config: 
                   privateKey:
-                    - {{ index $idp_cert "tls.key" | b64dec | quote }}
+                    - "$(env:IDP_CERT_SECRET)" # from env var
                   certificate:
-                    - {{ index $idp_cert "tls.crt" | b64dec | quote }} 
+                    - "$(env:IDP_CERT)" # from env var
                   priority: ["200"] 
                   algorithm: ["RS256"]
               - name: "aes-generated"
@@ -214,7 +224,7 @@ spec:
               # authenticateByDefault: false
               # linkOnly: false
               config:
-                client_id: admin-oidc
+                clientId: admin-oidc
                 clientAuthMethod: client_secret_post
                 clientSecret: "$(env:ADMIN_OIDC_SECRET)" # from env var
                 tokenUrl: {{ printf "https://%s/tokens" .Values.hosts.dex }}
@@ -278,14 +288,14 @@ spec:
                     aggregate.attrs: ''
           clients: 
             {{ range $client := .Values.clients.oidc -}}
-            - client_id: {{ $client.id }}
+            - clientId: {{ $client.id }}
               name: {{ $client.id }}
               description: "Internal OIDC client"
               enabled: true
               clientAuthenticatorType: client-secret
               secret: "$(env:OIDC_SECRET.{{ $client.id }})" # from env var
               redirectUris: 
-              {{ range $uri := $client.redirectURIs -}}
+              {{ range $uri := $client.redirect_uris -}}
                 - {{ $uri }}
               {{ end -}}
               webOrigins: 
@@ -299,12 +309,12 @@ spec:
                 - is_admin
             {{ end -}}
             {{ range $client := .Values.clients.saml -}}
-            - client_id: {{ $client.id }}
+            - clientId: {{ $client.id }}
               protocol: saml
               name: {{ $client.id }}
               description: "Internal SAML client"
               enabled: true
-              rootUrl: {{ $client.rootURL }}
+              rootUrl: {{ $client.root_url }}
               redirectUris: 
                 - "*"
               webOrigins: 
@@ -317,18 +327,18 @@ spec:
                 saml.signature.algorithm: RSA_SHA256
                 saml.assertion.signature: "true"
                 saml_name_id_format: email
-                {{ if eq $client.assertionConsumer.method "post" -}}
-                saml_assertion_consumer_url_post: {{ $client.assertionConsumer.url }}
+                {{ if eq $client.assertion_consumer.method "post" -}}
+                saml_assertion_consumer_url_post: {{ $client.assertion_consumer.url }}
                 {{ end -}}
-                {{ if eq $client.assertionConsumer.method "redirect" -}}
-                saml_assertion_consumer_url_redirect: {{ $client.assertionConsumer.url }}
+                {{ if eq $client.assertion_consumer.method "redirect" -}}
+                saml_assertion_consumer_url_redirect: {{ $client.assertion_consumer.url }}
                 {{ end -}}
-                {{ if $client.logoutService -}}
-                {{ if eq $client.logoutService.method "post" -}}
-                saml_single_logout_service_url_post: {{ $client.logoutService.url }}
+                {{ if $client.logout_service -}}
+                {{ if eq $client.logout_service.method "post" -}}
+                saml_single_logout_service_url_post: {{ $client.logout_service.url }}
                 {{ end -}}
-                {{ if eq $client.logoutService.method "redirect" -}}
-                saml_single_logout_service_url_redirect: {{ $client.logoutService.url }}
+                {{ if eq $client.logout_service.method "redirect" -}}
+                saml_single_logout_service_url_redirect: {{ $client.logout_service.url }}
                 {{- end }}
                 {{- end }}
               protocolMappers:

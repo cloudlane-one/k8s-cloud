@@ -1,6 +1,6 @@
 {{- if not .Values.bootstrap }}
 apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
+kind: cluster_issuer
 metadata:
   name: acme
 spec:

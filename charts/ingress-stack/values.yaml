@@ -2,9 +2,9 @@ domain: "" # The public root domain of this cluster (e.g. "example.org")
 
 cluster_name: "cluster" # Name for this cluster (unique for the supplied domain)
 
-externalDNS:
+external_dns:
   # Currently only Digitalocean provider supported.
-  tokenSecret:
+  token_secret:
     namespace: null
     name: ""
     key: "token"
