@@ -132,7 +132,7 @@ spec:
               key: tls.crt
         {{- end }}
       configuration: 
-        main.yaml:
+        main.yaml: |
           enabled: true
           realm: main
           registrationAllowed: true
