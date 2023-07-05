@@ -118,7 +118,7 @@ spec:
         - name: SAML_CERT.{{ $client.id }}
           valueFrom:
             secretKeyRef:
-              name: {{ printf "saml-cert.%s" (index .Values.clients.saml $i) }}
+              name: {{ printf "saml-cert.%s" $client.id }}
               key: tls.crt
         {{- end }}
       configuration: 
