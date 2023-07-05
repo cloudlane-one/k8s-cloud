@@ -248,7 +248,7 @@ spec:
               identityProviderAlias: admin-oidc
               identityProviderMapper: "oidc-advanced-group-idp-mapper"
               config:
-                claims: {{ printf "[{\"key\": \"groups\",\"value\": %s}]" (.Values.admin_group | quote) | quote }}
+                claims: {{ printf "[{\"key\": \"groups\",\"value\": %s}]" (.Values.admin_group | quote) | squote }}
                 group: {{ .Values.admin_group | quote }}
                 # syncMode: FORCE
           clientScopes:
