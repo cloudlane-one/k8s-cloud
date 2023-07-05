@@ -1,5 +1,7 @@
 domain: "" # The public root domain of this cluster (e.g. "example.org")
 
+admin_email: ""
+
 cluster_name: "cluster" # Name for this cluster (unique for the supplied domain)
 
 external_dns:
