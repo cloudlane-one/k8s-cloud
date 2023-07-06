@@ -6,7 +6,7 @@ metadata:
 type: Opaque
 data:
   {{- $secretRef := .Values.external_dns.token_secret }}
-  secret: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
+  digitalocean_api_token: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
@@ -38,7 +38,7 @@ spec:
     provider: digitalocean
     digitalocean:
       secretName: dns-token
-    annotationFilter: {{ printf "external-dns.alpha.kubernetes.io/managed-by in (%s)" .Values.cluster_name | quote }}
+    annotationFilter: {{ printf "external-dns.alpha.kubernetes.io/managed-by = %s" .Values.cluster_name | quote }}
     serviceMonitor:
       enabled: true
 {{- end }}
