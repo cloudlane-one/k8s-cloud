@@ -36,8 +36,6 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: oauth2-proxy
-  dependsOn:
-    - name: keycloak-config
   valuesFrom:
     - kind: Secret
       name: oidc-client
