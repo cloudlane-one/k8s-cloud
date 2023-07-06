@@ -19,11 +19,6 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: dex
-  valuesFrom:
-    - kind: Secret
-      name: admin-oidc
-      valuesKey: secret
-      targetPath: "config.staticClients[0].secret"
   values:
     rbac:
       createClusterScoped: false
@@ -34,6 +29,11 @@ spec:
         valueFrom:
           secretKeyRef:
             name: admin-idp-client
+            key: secret
+      - name: ADMIN_OIDC_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: admin-oidc
             key: secret
     config:
       # See https://dexidp.io/docs/storage/ for more options
@@ -63,7 +63,7 @@ spec:
             {{- end }}
       staticClients:
         - id: admin-oidc
-          secret: "" # injected
+          secret: $ADMIN_OIDC_SECRET
           name: "Admin OIDC"
           redirectURIs:
             - {{ printf "https://%s/realms/main" .Values.hosts.keycloak }}
