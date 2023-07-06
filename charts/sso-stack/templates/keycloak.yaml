@@ -132,7 +132,7 @@ spec:
               key: tls.crt
         {{- end }}
       configuration: 
-        main.yaml: |
+        main.yaml:
           enabled: true
           realm: main
           registrationAllowed: true
@@ -159,14 +159,14 @@ spec:
           smtpServer:
             port: {{ .Values.smtp.port | quote }}
             host: {{ .Values.smtp.host }}
-            {{ if not .Values.smtp.starttls -}}
+            {{- if not .Values.smtp.starttls }}
             ssl: 'true'
             {{- else -}}
             starttls: 'true'
             {{- end }}
             auth: 'true'
             from: {{ .Values.smtp.from_address }}
-            user: {{ .Values.smtp.username | quote }}
+            user: {{ .Values.smtp.user | quote }}
             password: "" # injected
           loginTheme: k8s-cloud
           components:
@@ -380,7 +380,7 @@ spec:
                     attribute.nameformat: urn:oasis:names:tc:SAML:2.0:attrname-format:uri
                     friendly.name: surname
                     user.attribute: lastName
-            {{ end -}}
+            {{- end }}
 ---
 apiVersion: v1
 kind: ConfigMap

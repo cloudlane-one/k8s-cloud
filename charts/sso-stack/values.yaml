@@ -22,8 +22,8 @@ hosts:
 smtp:
   host: ""
   port: ""
+  user: ""
   from_address: ""
-  username: ""
   starttls: false
   password_secret:
     namespace: null
