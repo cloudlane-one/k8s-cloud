@@ -64,7 +64,7 @@ spec:
           host: {{ printf "%s:%s" .Values.smtp.host .Values.smtp.port | quote }}
           user: {{ .Values.smtp.user }}
           password: "" # injected
-          from_address: {{ .Value.smtp.from_address }}
+          from_address: {{ .Values.smtp.from_address }}
         auth:
           oauth_auto_login: true
           disable_login_form: true
