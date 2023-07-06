@@ -1,6 +1,6 @@
 - name: Check whether host is already known
   loop: "{{ groups['all'] }}"
-  ansible.builtin.command: "ssh-keygen -F {{ hostvars[item].ansible_host }}"
+  ansible.builtin.command: "ssh-keygen -F {{ hostvars[item].inventory_hostname }}"
   changed_when: false
   failed_when: false
   ignore_errors: true
@@ -9,7 +9,7 @@
 - name: Generate new lines for known_hosts
   loop: "{{ known_hosts_check.results }}"
   when: "item.rc != 0"
-  ansible.builtin.command: "ssh-keyscan -H {{ hostvars[item.item].ansible_host }}"
+  ansible.builtin.command: "ssh-keyscan -H {{ hostvars[item.item].inventory_hostname }}"
   register: known_hosts_entries
   changed_when: true
 

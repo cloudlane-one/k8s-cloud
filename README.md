@@ -77,7 +77,7 @@ ansible-galaxy install -r requirements.yaml
 
 ### Provide configuration
 
-List the IPs or public domains of your hosts, which you intend to become k8s nodes, in a file called `./<YOURCLUSTERNAME>.hosts.ini` within the project directory. Replace `<YOURCLUSTERNAME>` with an arbitrary alphanumeric name for your cluster. Simply write one IP / domain per line, like so:
+List the IPs or public domains of your hosts, which you intend to become k8s nodes, in a file called `./$CLUSTER_NAME.hosts.ini` within the project directory. Replace `$CLUSTER_NAME` with an arbitrary alphanumeric name for your cluster. Simply write one IP / domain per line, like so:
 
 ```ini
 123.456.789
@@ -85,18 +85,21 @@ my.domain.com
 111.111.111
 ```
 
-By default, the first listed host ist used as the sole control-plane node. If you want to have multiple control hosts, select them via adding `control_node=true` behind their IP / domain, like so:
+By default, the first listed host is used as the sole control-plane node. If you want to have multiple control hosts, separate them into an explicit group called `control_nodes`, like so:
 
 ```ini
-123.456.789 control_node=true
+123.456.789
 my.domain.com control_node=true
-my-other.domain.com control_node=true
+
+[control_nodes]
 111.111.111
+222.222.222
+my-other.domain.com control_node=true
 ```
 
 Note that it is recommended to have either one or at least 3 control plane nodes. Make sure you store the hosts file somewhere safe.
 
-Then copy the default config values file `./config.yaml` to `./<YOURCLUSTERNAME>.config.yaml` in the and the secrets template file `./secrets.yaml` to `./<YOURCLUSTERNAME>.secrets.yaml`. Fill in the required values and change the optional ones to your liking. Replace `<YOURCLUSTERNAME>` with the chosen name for your cluster. Make sure you store these files somewhere safe.
+Then copy the default config values file `./config.yaml` to `./$CLUSTER_NAME.config.yaml` in the and the secrets template file `./secrets.yaml` to `./$CLUSTER_NAME.secrets.yaml`. Fill in the required values and change the optional ones to your liking. Replace `$CLUSTER_NAME` with the chosen name for your cluster. Make sure you store these files somewhere safe.
 
 ### Setup the cluster
 
@@ -106,12 +109,12 @@ To setup all you provided hosts as kubernetes nodes and join them into a single 
 
 ```bash
 ansible-playbook setup.yaml \
-   -i hosts.ini \
-   -e @<YOURCLUSTERNAME>.config.yaml \
-   -e @<YOURCLUSTERNAME>.secrets.yaml
+   -i $CLUSTER_NAME.hosts.ini \
+   -e @$CLUSTER_NAME.config.yaml \
+   -e @$CLUSTER_NAME.secrets.yaml
 ```
 
-Replace `<YOURCLUSTERNAME>` with the chosen name for your cluster.
+Replace `$CLUSTER_NAME` with the chosen name for your cluster.
 
 > If you recently rebuilt the OS on any of the hosts and thereby lost its public key, make sure to also update (or at least delete) its `known_hosts` entry, otherwise Ansible will throw an error. You can also append `-e clear_known_hosts=true` to above command to delete the `known_hosts` entries for all hosts in the inventory before executing the setup.
 

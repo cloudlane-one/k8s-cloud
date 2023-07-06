@@ -10,18 +10,23 @@
 - name: Run setup for all nodes
   hosts: all
   become: true
+  vars:
+    control_nodes: "{{ groups['control_nodes'] | default([]) }}"
   roles:
     - role: node
   tasks:
-    - name: Add host to control_nodes group, if flag is set
-      when: "control_node"
+    - name: Add first host to control_nodes group, if group wasn't explicitly created
+      when: "'control_nodes' not in groups and inventory_hostname == groups['all'][0]"
       ansible.builtin.add_host:
-        name: "{{ ansible_host }}"
+        name: "{{ inventory_hostname }}"
         groups: control_nodes
 
 - name: Setup infrastructure via kubectl from one of the control hosts
+  tags: infra
   hosts: control_nodes
   run_once: true
   become: true
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   roles:
     - role: infrastructure

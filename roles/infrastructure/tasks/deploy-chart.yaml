@@ -1,3 +1,7 @@
+- name: Chart details
+  ansible.builtin.debug:
+    msg: "Deploying chart {{ chart['name'] }} into namespace {{ chart['namespace'] }}"
+
 - name: Ensure chart namespace exists
   kubernetes.core.k8s:
     wait: true
@@ -30,7 +34,7 @@
               name: base-repo
               namespace: flux-system
             reconcileStrategy: Revision
-        values: "{{ chart['values'] }}"
+        values: "{{ chart['values'] | combine({'bootstrap': false}) }}"
 
 - name: Reconcile HelmRelease
   ansible.builtin.command: "flux reconcile hr {{ chart['name'] }} -n {{ chart['namespace'] }}"

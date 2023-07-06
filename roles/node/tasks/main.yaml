@@ -1,9 +1,14 @@
+- name: Check whether whether control nodes were given explicitly
+  ansible.builtin.set_fact:
+    control_nodes_given: "{{ control_nodes | length > 0 }}"
+
 - name: Determine the main control host (first to join the cluster)
   ansible.builtin.set_fact:
-    main_control_node: "{{ (control_nodes | length > 0) | ternary(control_nodes[0], all_hosts[0]) }}"
-  vars:
-    all_hosts: "{{ hostvars | dict2items | map(attribute='value.ansible_host') }}"
-    control_nodes: "{{ hostvars | dict2items | selectattr('value.control_node', 'eq', true) | map(attribute='value.ansible_host') }}"
+    main_control_node: "{{ control_nodes_given | ternary(control_nodes[0], groups['all'][0]) }}"
+
+- name: Check whether this host is supposed to be a control node
+  ansible.builtin.set_fact:
+    control_node: "{{ inventory_hostname in control_nodes or inventory_hostname == main_control_node }}"
 
 - name: Pick the correct names for system packages to be installed
   block:
@@ -92,7 +97,7 @@
         mode: "0700"
 
     - name: Install k3s on first node and download config
-      when: "ansible_host == main_control_node"
+      when: "inventory_hostname == main_control_node"
       block:
         - name: Run k3s install script for first control node
           ansible.builtin.command:
@@ -117,7 +122,7 @@
               - config
               - set-cluster
               - default
-              - "--server=https://{{ ansible_host }}:6443"
+              - "--server=https://{{ inventory_hostname }}:6443"
           environment:
             KUBECONFIG: /tmp/kubeconfig.yaml
           changed_when: true
@@ -135,7 +140,7 @@
             flat: true
 
     - name: Upload config and join additional node
-      when: "ansible_host != main_control_node"
+      when: "inventory_hostname != main_control_node"
       block:
         - name: Upload join token file
           ansible.builtin.copy:

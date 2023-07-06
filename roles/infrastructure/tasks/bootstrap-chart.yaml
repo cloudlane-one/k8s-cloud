@@ -1,3 +1,7 @@
+- name: Chart details
+  ansible.builtin.debug:
+    msg: "Bootstrapping chart {{ chart.name }} into namespace {{ chart.namespace }}"
+
 - name: Ensure chart namespace exists
   kubernetes.core.k8s:
     wait: true

@@ -10,10 +10,9 @@
     name: fluxcd
     release_namespace: flux-system
     create_namespace: true
-    chart_repo_url: "^2"
+    chart_repo_url: https://fluxcd-community.github.io/helm-charts
     chart_ref: flux2
-    chart_version: https://fluxcd-community.github.io/helm-charts
-    dependency_update: true
+    chart_version: "^2"
     values:
       policies:
         enabled: false
@@ -138,7 +137,7 @@
       namespace: longhorn-system
       values:
         host: "{{ subdomains.storage }}.{{ domain }}"
-        oauth2ProxyHost: "{{ subdomains.auth }}.{{ domain }}"
+        oauth2_proxy_host: "{{ subdomains.auth }}.{{ domain }}"
         admin_group: "{{ admin_group }}"
         s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
 
@@ -186,8 +185,8 @@
       values:
         domain: "{{ domain }}"
         cluster_name: "{{ cluster_name }}"
-        externalDNS:
-          tokenSecret:
+        external_dns:
+          token_secret:
             namespace: kube-system
             name: external-dns
             key: secret
@@ -207,8 +206,8 @@
                 - "https://{{ subdomains.auth }}.{{ domain }}/oauth2/callback"
                 - "http://localhost:8000/"
                 - "https://*.{{ domain }}/*"
-        smtp: "{{ smtp | combine({'passwordSecret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
-        admin_idp: "{{ admin_idp | combine({'clientSecret': {'name': 'admin-idp-client', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
+        smtp: "{{ smtp | combine({'password_secret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
+        admin_idp: "{{ admin_idp | combine({'client_secret': {'name': 'admin-idp-client', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
 
     - name: authproxy
       namespace: sso-system
@@ -216,8 +215,8 @@
         domain: "{{ domain }}"
         org: "{{ org }}"
         host: "{{ subdomains.auth }}.{{ domain }}"
-        oidcClient:
-          idpURL: "https://{{ subdomains.idp }}.{{ domain }}/realms/main"
+        oidc_client:
+          idp_url: "https://{{ subdomains.idp }}.{{ domain }}/realms/main"
           id: "cluster-oidc"
           secret:
             name: "oidc-client.cluster-oidc"
@@ -229,8 +228,8 @@
         domain: "{{ domain }}"
         org: "{{ org }}"
         host: "{{ subdomains.telemetry }}.{{ domain }}"
-        oidcClient:
-          idpURL: "https://{{ subdomains.idp }}.{{ domain }}/realms/main"
+        oidc_client:
+          idp_url: "https://{{ subdomains.idp }}.{{ domain }}/realms/main"
           id: "cluster-oidc"
           secret:
             name: "oidc-client.cluster-oidc"
@@ -238,14 +237,14 @@
         admin_email: "{{ admin_email }}"
         admin_group: "{{ admin_group }}"
         s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.logs}) }}"
-        smtp: "{{ smtp | combine({'passwordSecret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
+        smtp: "{{ smtp | combine({'password_secret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
 
     - name: cicd-stack
       namespace: flux-system
       values:
         host: "{{ subdomains.gitops }}.{{ domain }}"
-        oidcClient:
-          idpURL: "https://{{ subdomains.idp }}.{{ domain }}/realms/main"
+        oidc_client:
+          idp_url: "https://{{ subdomains.idp }}.{{ domain }}/realms/main"
           id: "cluster-oidc"
           secret:
             name: "oidc-client.cluster-oidc"
@@ -255,5 +254,5 @@
       namespace: kube-system
       values:
         host: "{{ subdomains.control }}.{{ domain }}"
-        oauth2ProxyHost: "{{ subdomains.auth }}.{{ domain }}"
+        oauth2_proxy_host: "{{ subdomains.auth }}.{{ domain }}"
         admin_group: "{{ admin_group }}"
