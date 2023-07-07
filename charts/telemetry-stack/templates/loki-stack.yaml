@@ -34,7 +34,7 @@ spec:
     - kind: Secret
       name: s3-access-key
       valuesKey: secret
-      targetPath: loki.storage_config.aws.secret_access_key
+      targetPath: loki.config.storage_config.aws.secret_access_key
   values:
     loki:
       isDefault: false
