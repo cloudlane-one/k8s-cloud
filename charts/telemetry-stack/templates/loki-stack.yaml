@@ -67,7 +67,7 @@ spec:
             endpoint: {{ .Values.s3.endpoint }}
             region: {{ .Values.s3.region }}
             access_key_id: {{ .Values.s3.access_key_id | quote }}
-            secret_access_key: "" # injected
+            # secret_access_key: "" # injected, see above
         limits_config:
           retention_period: 168h
 {{- end }}
