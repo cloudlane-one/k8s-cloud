@@ -5,10 +5,10 @@ metadata:
   name: oidc-auth
 type: Opaque
 data:
-  issuer_url: {{ .Values.oidc_client.idp_url | b64enc }}
-  client_id: {{ .Values.oidc_client.id | b64enc }}
+  issuerURL: {{ .Values.oidc_client.idp_url | b64enc }}
+  clientID: {{ .Values.oidc_client.id | b64enc }}
   {{- $secretRef := .Values.oidc_client.secret }}
-  client_secret: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
+  clientSecret: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
   redirectURL: {{ printf "https://%s/oauth2/callback" .Values.host | b64enc }}
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
