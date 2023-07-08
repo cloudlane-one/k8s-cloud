@@ -102,8 +102,10 @@ spec:
       extraEnvVars:
         - name: IMPORT_MANAGED_CLIENT
           value: "no-delete" # Do not delete existing clients, just add new ones
-        - name: import.var-substitution.enabled
+        - name: IMPORT_VARSUBSTITUTION_ENABLED
           value: "true"
+        - name: LOGGING_LEVEL_ROOT
+          value: "debug"
         - name: IDP_CERT
           valueFrom:
             secretKeyRef:
