@@ -47,7 +47,7 @@ spec:
       targetPath: config.cookieSecret
   values:
     config:
-      clientId: {{ .Values.oidc_client.id }}
+      clientID: {{ .Values.oidc_client.id }}
       # clientSecret: "" # injected via valuesFrom
       # cookieSecret: "" # injected via valuesFrom
       configFile: |-
