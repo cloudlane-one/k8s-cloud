@@ -217,7 +217,7 @@
         org: "{{ org }}"
         host: "{{ subdomains.auth }}.{{ domain }}"
         oidc_client:
-          idp_url: "https://{{ subdomains.idp }}.{{ domain }}/realms/main"
+          idp_url: "https://{{ subdomains.idp }}.{{ domain }}/realms/master"
           id: "cluster-oidc"
           secret:
             namespace: sso-system
@@ -231,7 +231,7 @@
         org: "{{ org }}"
         host: "{{ subdomains.telemetry }}.{{ domain }}"
         oidc_client:
-          idp_url: "https://{{ subdomains.idp }}.{{ domain }}/realms/main"
+          idp_url: "https://{{ subdomains.idp }}.{{ domain }}/realms/master"
           id: "cluster-oidc"
           secret:
             namespace: sso-system
@@ -247,7 +247,7 @@
       values:
         host: "{{ subdomains.gitops }}.{{ domain }}"
         oidc_client:
-          idp_url: "https://{{ subdomains.idp }}.{{ domain }}/realms/main"
+          idp_url: "https://{{ subdomains.idp }}.{{ domain }}/realms/master"
           id: "cluster-oidc"
           secret:
             namespace: sso-system

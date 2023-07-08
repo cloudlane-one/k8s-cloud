@@ -66,7 +66,7 @@ spec:
           secret: $ADMIN_OIDC_SECRET
           name: "Admin OIDC"
           redirectURIs:
-            - {{ printf "https://%s/realms/main" .Values.hosts.keycloak }}
+            - {{ printf "https://%s/realms/master" .Values.hosts.keycloak }}
       oauth2:
         skipApprovalScreen: true
     ingress:
