@@ -234,7 +234,7 @@ spec:
                 clientId: admin-oidc
                 clientAuthMethod: client_secret_post
                 clientSecret: "$(env:ADMIN_OIDC_SECRET)" # from env var
-                tokenUrl: {{ printf "https://%s/tokens" .Values.hosts.dex }}
+                tokenUrl: {{ printf "https://%s/token" .Values.hosts.dex }}
                 authorizationUrl: {{ printf "https://%s/auth" .Values.hosts.dex }}
                 validateSignature: "true"
                 useJwksUrl: "true"
