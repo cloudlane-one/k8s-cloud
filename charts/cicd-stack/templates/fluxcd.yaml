@@ -21,7 +21,7 @@ spec:
   interval: 1h
   values:
     policies:
-      enabled: false
+      create: false
 {{- if not .Values.bootstrap }}
     prometheus:
       podMonitor:

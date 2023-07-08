@@ -15,7 +15,7 @@
     chart_version: "^2"
     values:
       policies:
-        enabled: false
+        create: false
 
 - name: Ensure base GitRepository exists
   kubernetes.core.k8s:
