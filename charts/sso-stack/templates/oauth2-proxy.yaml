@@ -9,15 +9,6 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: oidc-client
-type: Opaque
-data:
-  {{- $secretRef := .Values.oidc_client.secret }}
-  secret: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
----
-apiVersion: v1
-kind: Secret
-metadata:
   name: cookies
 type: Opaque
 data:
@@ -38,7 +29,7 @@ spec:
         name: oauth2-proxy
   valuesFrom:
     - kind: Secret
-      name: oidc-client
+      name: authproxy-oidc-client
       valuesKey: secret
       targetPath: config.clientSecret
     - kind: Secret
@@ -47,7 +38,7 @@ spec:
       targetPath: config.cookieSecret
   values:
     config:
-      clientID: {{ .Values.oidc_client.id }}
+      clientID: authproxy-oidc
       # clientSecret: "" # injected via valuesFrom
       # cookieSecret: "" # injected via valuesFrom
       configFile: |-
@@ -55,8 +46,8 @@ spec:
         whitelist_domains = [ {{ printf ".%s" .Values.domain | quote }} ]
         provider = "oidc"
         provider_display_name = {{ printf "SSO for %s" .Values.org.name | quote }}
-        oidc_issuer_url = {{ .Values.oidc_client.idp_url | quote }}
-        redirect_url = {{ printf "https://%s/oauth2/callback" .Values.host | quote }}
+        oidc_issuer_url = {{ printf "https://%s/realms/master" .Values.hosts.keycloak | quote }}
+        redirect_url = {{ printf "https://%s/oauth2/callback" .Values.hosts.authproxy | quote }}
         set_xauthrequest = true
         set_authorization_header = true
         pass_authorization_header = true
@@ -72,8 +63,8 @@ spec:
         cert-manager.io/cluster-issuer: {{ .Values.cluster_issuer }}
         external-dns.alpha.kubernetes.io/managed-by: {{ .Values.external_dns_manager }}
       hosts:
-        - {{ .Values.host }}
+        - {{ .Values.hosts.authproxy }}
       tls:
         - hosts:
-            - {{ .Values.host }}
+            - {{ .Values.hosts.authproxy }}
           secretName: oauth2-proxy-cert

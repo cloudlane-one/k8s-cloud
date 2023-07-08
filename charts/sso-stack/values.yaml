@@ -17,7 +17,7 @@ domain: ""
 
 hosts:
   keycloak: ""
-  dex: ""
+  authproxy: ""
 
 smtp:
   host: ""

@@ -119,10 +119,10 @@ spec:
             secretKeyRef:
               name: idp-cert
               key: tls.key
-        - name: ADMIN_OIDC_SECRET
+        - name: AUTHPROXY_OIDC_SECRET
           valueFrom:
             secretKeyRef:
-              name: admin-oidc
+              name: authproxy-oidc-client
               key: secret
         {{- range $client := .Values.clients.oidc }}
         - name: OIDC_SECRET.{{ $client.id }}
@@ -220,44 +220,8 @@ spec:
                 - admin
                 - create-realm
                 - default-roles-master
-          identityProviders:
-            - alias: admin-oidc
-              displayName: "Admin OIDC"
-              providerId: oidc
-              enabled: true
-              trustEmail: true
-              # firstBrokerLoginFlowAlias: "first broker login"
-              # storeToken: false
-              # authenticateByDefault: false
-              # linkOnly: false
-              config:
-                clientId: admin-oidc
-                clientAuthMethod: client_secret_post
-                clientSecret: "$(env:ADMIN_OIDC_SECRET)" # from env var
-                tokenUrl: {{ printf "https://%s/token" .Values.hosts.dex }}
-                authorizationUrl: {{ printf "https://%s/auth" .Values.hosts.dex }}
-                validateSignature: "true"
-                useJwksUrl: "true"
-                jwksUrl: {{ printf "https://%s/keys" .Values.hosts.dex }}
-                syncMode: FORCE
-                defaultScope: "email groups profile openid"
-                guiOrder: 0
-                # backchannelSupported: true
-          identityProviderMappers:
-            - name: admin-oidc-email-mapper
-              identityProviderAlias: admin-oidc
-              identityProviderMapper: "oidc-user-attribute-idp-mapper"
-              config:
-                claim: email
-                user.attribute: email
-                # syncMode: FORCE
-            - name: admin-oidc-group-mapper
-              identityProviderAlias: admin-oidc
-              identityProviderMapper: "oidc-advanced-group-idp-mapper"
-              config:
-                claims: {{ printf "[{\"key\": \"groups\",\"value\": %s}]" (.Values.admin_group | quote) | squote }}
-                group: {{ .Values.admin_group | quote }}
-                # syncMode: FORCE
+              groups:
+                - {{ .Values.admin_group | quote }}
           clientScopes:
             - name: groups
               protocol: openid-connect
@@ -294,6 +258,20 @@ spec:
                     multivalued: 'false'
                     aggregate.attrs: ''
           clients: 
+            - clientId: authproxy-oidc
+              name: authproxy-oidc
+              description: "Authproxy OIDC client"
+              enabled: true
+              clientAuthenticatorType: client-secret
+              secret: "$(env:AUTHPROXY_OIDC_SECRET)" # from env var
+              redirectUris:
+                - "https://{{ .Values.hosts.authproxy }}/oauth2/callback"
+              webOrigins: 
+                - "*"
+              defaultClientScopes:
+                - email
+                - profile
+                - groups
             {{ range $client := .Values.clients.oidc -}}
             - clientId: {{ $client.id }}
               name: {{ $client.id }}

@@ -39,7 +39,6 @@ cluster_name: "cluster" # Name for this cluster (unique for the supplied domain)
 restore_from_backup: null
 
 subdomains:
-  oidc: "oidc"
   idp: "idp"
   auth: "auth"
   control: "control"

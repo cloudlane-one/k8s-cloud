@@ -198,32 +198,17 @@
         org: "{{ org }}"
         hosts:
           keycloak: "{{ subdomains.idp }}.{{ domain }}"
-          dex: "{{ subdomains.oidc }}.{{ domain }}"
+          authproxy: "{{ subdomains.auth }}.{{ domain }}"
         clients:
           oidc:
             - id: cluster-oidc
               redirect_uris:
-                - "https://{{ subdomains.auth }}.{{ domain }}/oauth2/callback"
                 - "https://{{ subdomains.telemetry }}.{{ domain }}/login/generic_oauth"
                 - "https://{{ subdomains.gitops }}.{{ domain }}/oauth2/callback"
                 - "http://localhost:8000/"
         smtp: "{{ smtp | combine({'password_secret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
         admin_idp: "{{ admin_idp | combine({'client_secret': {'name': 'admin-idp-client', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
         admin_group: "{{ admin_group }}"
-
-    - name: authproxy
-      namespace: sso-system
-      values:
-        domain: "{{ domain }}"
-        org: "{{ org }}"
-        host: "{{ subdomains.auth }}.{{ domain }}"
-        oidc_client:
-          idp_url: "https://{{ subdomains.idp }}.{{ domain }}/realms/master"
-          id: "cluster-oidc"
-          secret:
-            namespace: sso-system
-            name: "oidc-client.cluster-oidc"
-            key: secret
 
     - name: telemetry-stack
       namespace: telemetry-system
