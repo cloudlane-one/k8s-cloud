@@ -8,12 +8,6 @@ org:
   tagline: ""
   logoURL: ""
 
-admin_idp:
-  type: "oidc"
-  issuer_url: ""
-  client_id: ""
-  # Put the client secret in ./<CLUSTER_NAME>.secrets.yaml
-
 smtp: # For admin notifications
   host: ""
   port: ""
@@ -31,7 +25,6 @@ s3_buckets:
   logs: ""
 
 admin_email: ""
-admin_group: ""
 
 vcluster: false # Set to true to create a vcluster on top of a k3s host cluster
 cluster_name: "cluster" # Name for this cluster (unique for the supplied domain)

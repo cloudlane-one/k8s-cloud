@@ -112,8 +112,6 @@
       data:
         secret: "{{ vars[item.inventoryKey] | b64encode }}"
   loop:
-    - inventoryKey: admin_idp_client_secret
-      name: admin-idp-client
     - inventoryKey: smtp_password
       name: smtp
     - inventoryKey: s3_access_key_secret
@@ -138,7 +136,7 @@
       values:
         host: "{{ subdomains.storage }}.{{ domain }}"
         oauth2_proxy_host: "{{ subdomains.auth }}.{{ domain }}"
-        admin_group: "{{ admin_group }}"
+        admin_group: "cluster-admins"
         s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
 
     - name: backup-stack
@@ -169,7 +167,7 @@
     - name: admin-rbac
       namespace: kube-system
       values:
-        admin_group: "{{ admin_group }}"
+        admin_group: "cluster-admins"
 
     - name: crypto-storage
       namespace: longhorn-system
@@ -207,8 +205,7 @@
                 - "https://{{ subdomains.gitops }}.{{ domain }}/oauth2/callback"
                 - "http://localhost:8000/"
         smtp: "{{ smtp | combine({'password_secret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
-        admin_idp: "{{ admin_idp | combine({'client_secret': {'name': 'admin-idp-client', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
-        admin_group: "{{ admin_group }}"
+        admin_group: "cluster-admins"
 
     - name: telemetry-stack
       namespace: telemetry-system
@@ -224,7 +221,7 @@
             name: "oidc-client.cluster-oidc"
             key: secret
         admin_email: "{{ admin_email }}"
-        admin_group: "{{ admin_group }}"
+        admin_group: "cluster-admins"
         s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.logs}) }}"
         smtp: "{{ smtp | combine({'password_secret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
         node_endpoints: "{{ groups['all'] }}"
@@ -246,4 +243,4 @@
       values:
         host: "{{ subdomains.control }}.{{ domain }}"
         oauth2_proxy_host: "{{ subdomains.auth }}.{{ domain }}"
-        admin_group: "{{ admin_group }}"
+        admin_group: "cluster-admins"
