@@ -314,6 +314,7 @@ spec:
                 - groups
                 - roles
                 - is_admin
+                - offline_access
             {{ end -}}
             {{ range $client := .Values.clients.saml -}}
             - clientId: {{ $client.id }}
