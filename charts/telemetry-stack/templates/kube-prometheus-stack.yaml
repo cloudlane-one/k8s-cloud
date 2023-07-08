@@ -84,9 +84,9 @@ spec:
           client_id: {{ .Values.oidc_client.id }}
           client_secret: "" # injected
           scopes: openid,profile,email,groups
-          auth_url: {{ printf "%s/auth" .Values.oidc_client.idp_url | quote }}
-          token_url: {{ printf "%s/token" .Values.oidc_client.idp_url | quote }}
-          api_url: {{ printf "%s/userinfo" .Values.oidc_client.idp_url | quote }}
+          auth_url: {{ printf "%s/protocol/openid-connect/auth" .Values.oidc_client.idp_url | quote }}
+          token_url: {{ printf "%s/protocol/openid-connect/token" .Values.oidc_client.idp_url | quote }}
+          api_url: {{ printf "%s/protocol/openid-connect/userinfo" .Values.oidc_client.idp_url | quote }}
           allow_sign_up: true
           allowed_groups: {{ .Values.admin_group | quote }}
           role_attribute_path: "contains(groups[*], {{ .Values.admin_group | squote }}) && 'Admin' || 'Viewer'"
