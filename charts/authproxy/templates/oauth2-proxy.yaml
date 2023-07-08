@@ -56,7 +56,7 @@ spec:
         provider = "oidc"
         provider_display_name = {{ printf "SSO for %s" .Values.org.name | quote }}
         oidc_issuer_url = {{ .Values.oidc_client.idp_url | quote }}
-        redirect_url = {{ printf "https://%s/callback" .Values.host | quote }} # TODO: insert correct url
+        redirect_url = {{ printf "https://%s/oauth2/callback" .Values.host | quote }}
         set_xauthrequest = true
         set_authorization_header = true
         pass_authorization_header = true
