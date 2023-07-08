@@ -34,6 +34,10 @@ spec:
   interval: 1h
   timeout: '30m0s' # Setting up public domains for OIDC takes time.
   values:
+    adminUser:
+      create: false
+    additionalArgs:
+      - --auth-methods=oidc
     ingress:
       enabled: true
       annotations:
