@@ -3,7 +3,7 @@ kind: Secret
 metadata:
   name: {{ .Values.name }}
 stringData:
-  CRYPTO_KEY_VALUE: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.name "key" "CRYPTO_KEY_VALUE" "providedValues" (list "") "context" $) }}
+  CRYPTO_KEY_VALUE: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.name "key" "CRYPTO_KEY_VALUE" "providedValues" (list "") "length" 16 "context" $) }}
   CRYPTO_KEY_PROVIDER: "secret"
   CRYPTO_KEY_CIPHER: "aes-xts-plain64"
   CRYPTO_KEY_HASH: "sha256"

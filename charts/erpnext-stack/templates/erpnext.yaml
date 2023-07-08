@@ -4,7 +4,7 @@ metadata:
   name: admin
 type: Opaque
 data:
-  password: {{ include "common.secrets.passwords.manage" (dict "secret" "admin" "key" "password" "providedValues" (list "") "context" $) }}
+  password: {{ include "common.secrets.passwords.manage" (dict "secret" "admin" "key" "password" "providedValues" (list "") "length" 16 "context" $) }}
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository

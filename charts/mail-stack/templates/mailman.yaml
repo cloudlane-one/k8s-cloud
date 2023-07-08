@@ -1,6 +1,6 @@
-{{- $pg_admin_pw := include "common.secrets.passwords.manage" (dict "secret" "postgresql-passwords" "key" "postgres-password" "providedValues" (list "") "context" $) | trimAll "\"" -}}
-{{- $pg_user_pw := include "common.secrets.passwords.manage" (dict "secret" "postgresql-passwords" "key" "password" "providedValues" (list "") "context" $) | trimAll "\"" -}}
-{{- $pg_repl_pw := include "common.secrets.passwords.manage" (dict "secret" "postgresql-passwords" "key" "replication-password" "providedValues" (list "") "context" $) | trimAll "\"" -}}
+{{- $pg_admin_pw := include "common.secrets.passwords.manage" (dict "secret" "postgresql-passwords" "key" "postgres-password" "providedValues" (list "") "length" 16 "context" $) | trimAll "\"" -}}
+{{- $pg_user_pw := include "common.secrets.passwords.manage" (dict "secret" "postgresql-passwords" "key" "password" "providedValues" (list "") "length" 16 "context" $) | trimAll "\"" -}}
+{{- $pg_repl_pw := include "common.secrets.passwords.manage" (dict "secret" "postgresql-passwords" "key" "replication-password" "providedValues" (list "") "length" 16 "context" $) | trimAll "\"" -}}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -17,7 +17,7 @@ metadata:
   name: hyperkitty-key
 type: Opaque
 data:
-  api-key: {{ include "common.secrets.passwords.manage" (dict "secret" "hyperkitty-key" "key" "api-key" "providedValues" (list "") "context" $) }}
+  api-key: {{ include "common.secrets.passwords.manage" (dict "secret" "hyperkitty-key" "key" "api-key" "providedValues" (list "") "length" 16 "context" $) }}
 ---
 apiVersion: v1
 kind: Secret
@@ -25,7 +25,7 @@ metadata:
   name: mailman-admin
 type: Opaque
 data:
-  password: {{ include "common.secrets.passwords.manage" (dict "secret" "mailman-admin" "key" "password" "providedValues" (list "") "context" $) }}
+  password: {{ include "common.secrets.passwords.manage" (dict "secret" "mailman-admin" "key" "password" "providedValues" (list "") "length" 16 "context" $) }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -228,7 +228,7 @@ metadata:
   name: django-secret
 type: Opaque
 data:
-  secret: {{ include "common.secrets.passwords.manage" (dict "secret" "django-secret" "key" "secret" "providedValues" (list "") "context" $) }}
+  secret: {{ include "common.secrets.passwords.manage" (dict "secret" "django-secret" "key" "secret" "providedValues" (list "") "length" 16 "context" $) }}
 ---
 apiVersion: v1
 kind: Secret

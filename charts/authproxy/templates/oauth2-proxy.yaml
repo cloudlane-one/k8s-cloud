@@ -21,7 +21,7 @@ metadata:
   name: cookies
 type: Opaque
 data:
-  secret: {{ include "common.secrets.passwords.manage" (dict "secret" "cookies" "key" "secret" "providedValues" (list "") "context" $) }}
+  secret: {{ include "common.secrets.passwords.manage" (dict "secret" "cookies" "key" "secret" "providedValues" (list "") "length" 16 "context" $) }}
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
