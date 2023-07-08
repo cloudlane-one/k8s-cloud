@@ -50,4 +50,6 @@ spec:
             - {{ .Values.host }}
     metrics:
       enabled: false
+    networkPolicy:
+      create: false
 {{- end }}
