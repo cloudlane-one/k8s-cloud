@@ -41,7 +41,7 @@ spec:
       enabled: false
     kubeScheduler:
       enabled: false
-{{- else -}}
+{{- else }}
   valuesFrom:
     - kind: Secret
       name: smtp-creds
