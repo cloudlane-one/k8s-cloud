@@ -202,7 +202,7 @@
         clients:
           oidc:
             - id: cluster-oidc
-              redirectURIs:
+              redirect_uris:
                 - "https://{{ subdomains.auth }}.{{ domain }}/oauth2/callback"
                 - "http://localhost:8000/"
                 - "https://*.{{ domain }}/*"
