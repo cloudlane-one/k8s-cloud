@@ -203,7 +203,7 @@ spec:
                   priority: ["100"]
                   algorithm: ["HS256"]
           groups: 
-            - name: {{ .Values.admin_group }}
+            - name: {{ .Values.admin_group | quote }}
               realmRoles: 
                 - admin
               attributes:
