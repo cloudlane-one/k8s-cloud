@@ -104,7 +104,7 @@ spec:
           value: "no-delete" # Do not delete existing clients, just add new ones
         - name: IMPORT_VARSUBSTITUTION_ENABLED
           value: "true"
-        - name: LOGGING_LEVEL_ROOT
+        - name: LOGGING_LEVEL_HTTP
           value: "debug"
         - name: IDP_CERT
           valueFrom:
