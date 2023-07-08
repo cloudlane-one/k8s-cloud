@@ -57,6 +57,8 @@ spec:
       valuesKey: password
       targetPath: "keycloakConfigCli.configuration.main\\.yaml.smtpServer.password"
   values:
+    production: true
+    proxy: edge
     auth:
       adminUser: admin
       existingSecret: idp-admin
