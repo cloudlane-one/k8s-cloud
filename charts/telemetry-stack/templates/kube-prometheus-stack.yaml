@@ -214,6 +214,14 @@ spec:
                     singleEmail: true
     alertmanager:
       enabled: true
+    {{- if (len .Values.node_endpoints) > 0 }}
+    kubeControllerManager:
+      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
+    kubeProxy:
+      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
+    kubeScheduler:
+      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
+    {{- end }}
 ---
 apiVersion: v1
 kind: Secret

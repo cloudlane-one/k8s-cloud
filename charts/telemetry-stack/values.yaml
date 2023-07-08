@@ -33,6 +33,9 @@ admin_email: ""
 
 admin_group: ""
 
+# Pass public k8s node ips so that k3s metrics endpoints can be monitored
+node_endpoints: []
+
 cluster_issuer: "acme"
 
 external_dns_manager: "cluster"
