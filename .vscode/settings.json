@@ -4,5 +4,11 @@
   "files.associations": {
     "main.yaml": "ansible",
     "setup.yaml": "ansible"
-  }
+  },
+  "terminal.integrated.env.windows": {
+    "KUBECONFIG": "${workspaceFolder}/kubeconfig.yaml"
+  },
+  "terminal.integrated.env.linux": {
+    "KUBECONFIG": "${workspaceFolder}/kubeconfig.yaml"
+  },
 }
