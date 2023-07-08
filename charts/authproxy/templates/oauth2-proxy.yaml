@@ -40,7 +40,7 @@ spec:
     - kind: Secret
       name: oidc-client
       valuesKey: secret
-      targetPath: config.client_secret
+      targetPath: config.clientSecret
     - kind: Secret
       name: cookies
       valuesKey: secret
@@ -48,8 +48,8 @@ spec:
   values:
     config:
       clientId: {{ .Values.oidc_client.id }}
-      clientSecret: "" # injected
-      cookieSecret: "" # injected
+      # clientSecret: "" # injected via valuesFrom
+      # cookieSecret: "" # injected via valuesFrom
       configFile: |-
         upstreams = "file:///dev/null"
         whitelist_domains = [ {{ printf ".%s" .Values.domain | quote }} ]
