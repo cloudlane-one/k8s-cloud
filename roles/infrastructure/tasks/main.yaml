@@ -250,7 +250,7 @@
             name: "oidc-client.cluster-oidc"
             key: secret
 
-    - name: k8s-dashboard
+    - name: control-stack
       namespace: kube-system
       values:
         host: "{{ subdomains.control }}.{{ domain }}"

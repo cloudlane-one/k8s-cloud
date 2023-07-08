@@ -1,6 +1,6 @@
 apiVersion: v2
-name: cilium
-description: Cilium + extras
+name: control-stack
+description: k8s-dashboard with proper config and extras
 type: application
 version: "0.0.1"
 appVersion: "0.0.1"
