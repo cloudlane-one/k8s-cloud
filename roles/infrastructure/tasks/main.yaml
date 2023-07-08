@@ -219,6 +219,7 @@
           idp_url: "https://{{ subdomains.idp }}.{{ domain }}/realms/main"
           id: "cluster-oidc"
           secret:
+            namespace: sso-system
             name: "oidc-client.cluster-oidc"
             key: secret
 
@@ -232,6 +233,7 @@
           idp_url: "https://{{ subdomains.idp }}.{{ domain }}/realms/main"
           id: "cluster-oidc"
           secret:
+            namespace: sso-system
             name: "oidc-client.cluster-oidc"
             key: secret
         admin_email: "{{ admin_email }}"
@@ -247,6 +249,7 @@
           idp_url: "https://{{ subdomains.idp }}.{{ domain }}/realms/main"
           id: "cluster-oidc"
           secret:
+            namespace: sso-system
             name: "oidc-client.cluster-oidc"
             key: secret
 
