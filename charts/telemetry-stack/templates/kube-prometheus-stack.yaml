@@ -33,7 +33,15 @@ spec:
   upgrade:
     crds: CreateReplace
   timeout: '10m0s' # Account for slow performance of cluster on first setup.
-{{- if not .Values.bootstrap }}
+{{- if .Values.bootstrap }}
+  values:
+    kubeControllerManager:
+      enabled: false
+    kubeProxy:
+      enabled: false
+    kubeScheduler:
+      enabled: false
+{{- else -}}
   valuesFrom:
     - kind: Secret
       name: smtp-creds
