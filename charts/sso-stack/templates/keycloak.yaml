@@ -70,6 +70,9 @@ spec:
         external-dns.alpha.kubernetes.io/managed-by: {{ .Values.external_dns_manager }}
       hostname: {{ .Values.hosts.keycloak }}
       tls: true
+    extraEnvVars:
+      - name: KC_FEATURES
+        value: 'declarative-user-profile,recovery-codes'
     extraVolumes:
       - name: theme-login
         configMap:
