@@ -55,7 +55,7 @@ spec:
     - kind: Secret
       name: smtp-creds
       valuesKey: password
-      targetPath: "keycloakConfigCli.configuration.main\\.yaml.smtpServer.password"
+      targetPath: "keycloakConfigCli.configuration.master\\.yaml.smtpServer.password"
   values:
     production: true
     proxy: edge
@@ -136,9 +136,9 @@ spec:
               key: tls.crt
         {{- end }}
       configuration: 
-        main.yaml:
+        master.yaml:
           enabled: true
-          realm: main
+          realm: master
           registrationAllowed: true
           registrationEmailAsUsername: false
           rememberMe: true
