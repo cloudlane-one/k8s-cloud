@@ -1,0 +1,11 @@
+host: ""
+
+image:
+  repository: frappe/erpnext
+  tag: v14.29.1
+  pullPolicy: IfNotPresent
+
+cluster_issuer: "acme"
+external_dns_manager: "cluster"
+
+storage_class: longhorn-crypto # Must support RWX.
