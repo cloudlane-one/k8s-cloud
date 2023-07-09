@@ -8,7 +8,7 @@ s3:
   endpoint: "" # Domain without protocol of your S3 endpoint (e.g. "s3.example.org")
   region: "eu-central-1" # Required by Longhorn, just leave the default if you don't have zones
   access_key_id: "" # Your S3 access key id
-  accessKeySecret:
+  access_key_secret:
     # Your S3 access key secret
     namespace: null
     name: ""

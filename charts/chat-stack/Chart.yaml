@@ -1,6 +1,6 @@
 apiVersion: v2
-name: erpnext-stack
-description: ERPNext with SSO and some useful extras
+name: chat-stack
+description: Rocket.Chat with SSO and some useful extras
 type: application
 version: "0.0.1"
 appVersion: "0.0.1"

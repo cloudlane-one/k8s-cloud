@@ -18,7 +18,7 @@ metadata:
   name: s3-backup-credentials
 type: Opaque
 data:
-  {{- $secretRef := .Values.s3.accessKeySecret }}
+  {{- $secretRef := .Values.s3.access_key_secret }}
   {{- $s3_secret := get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key | b64dec }}
   cloud: {{ printf "[default]\naws_access_key_id=%s\naws_secret_access_key=%s" .Values.s3.access_key_id $s3_secret | b64enc }}
 ---

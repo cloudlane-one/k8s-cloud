@@ -1,0 +1,171 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: bitnami
+spec:
+  interval: 1h
+  url: https://charts.bitnami.com/bitnami
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: wordpress-autoconfig
+data:
+  setup.sh: |
+    #!/bin/bash
+    echo 'installing plugins...'
+    for PLUGIN in $(cat plugins.txt); do
+      echo "installing $PLUGIN"
+      wp plugin install $PLUGIN --activate
+    done
+    echo 'installing plugins... done'
+    echo 'loading options...'
+    while IFS="=" read -r NAME VALUE
+    do 
+      echo "$VALUE" | wp option update $NAME
+    done < options.txt
+    echo 'loading options... done'
+    echo 'wordpress all set up.'
+  plugins.txt: |
+    bogo
+    broken-link-checker
+    duplicate-page
+    forminator
+    matomo
+    permalink-manager
+    public-post-preview
+    wordpress-seo
+    wp-mail-smtp
+  options.txt: |
+    default_role=contributor
+    blogdescription={{ .Values.org.tagline }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: smtp
+type: Opaque
+data:
+  {{- $passRef := .Values.smtp.password_secret }}
+  smtp-password: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $passRef.namespace) $passRef.name).data) $passRef.key }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: wordpress-mariadb
+type: Opaque
+data:
+  mariadb-password: {{ include "common.secrets.passwords.manage" (dict "secret" "wordpress-mariadb" "key" "mariadb-password" "providedValues" (list "") "context" $) }}
+  mariadb-root-password: {{ include "common.secrets.passwords.manage" (dict "secret" "wordpress-mariadb" "key" "mariadb-root-password" "providedValues" (list "") "context" $) }}
+  mariadb-replication-password: {{ include "common.secrets.passwords.manage" (dict "secret" "wordpress-mariadb" "key" "mariadb-replication-password" "providedValues" (list "") "context" $) }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: wordpress-memcached
+type: Opaque
+data:
+  memcached-password: {{ include "common.secrets.passwords.manage" (dict "secret" "wordpress-memcached" "key" "memcached-password" "providedValues" (list "") "context" $) }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: wordpress-admin
+type: Opaque
+data:
+  wordpress-password: {{ include "common.secrets.passwords.manage" (dict "secret" "wordpress-admin" "key" "wordpress-password" "providedValues" (list "") "length" 16 "context" $) }}
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: wordpress
+spec:
+  interval: 10m
+  chart:
+    spec:
+      chart: wordpress
+      version: "^16"
+      sourceRef:
+        kind: HelmRepository
+        name: bitnami
+  timeout: 15m0s # Increase timeout to be sure.
+  values:
+    wordpressUsername: admin
+    wordpressEmail: {{ .Values.admin_email }}
+    existingSecret: wordpress-admin
+    wordpressBlogName: {{ .Values.org.name | quote }}
+    wordpressScheme: https
+    wordpressExtraConfigContent: | 
+      define( 'WPLANG', {{ .Values.org.default_locale | quote }} );
+    wordpressConfigureCache: true
+    extraVolumes:
+      - name: autoconfig
+        configMap:
+          name: wordpress-autoconfig
+    extraVolumeMounts:
+      - name: autoconfig
+        mountPath: /autoconfig
+        readOnly: true
+    customPostInitScripts:
+      autoconfig.sh: |
+        #!/bin/bash
+        cd /autoconfig
+        bash ./setup.sh
+    smtpHost: {{ .Values.smtp.host }}
+    smtpPort: {{ .Values.smtp.port | quote }}
+    smtpUser: {{ .Values.smtp.user | quote }}
+    smtpProtocol: ssl
+    smtpExistingSecret: smtp
+    service:
+      type: ClusterIP
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+    mariadb:
+      enabled: true
+      auth:
+        existingSecret: wordpress-mariadb
+      primary:
+        persistence:
+          enabled: true
+          size: 4Gi
+    memcached:
+      enabled: true
+      auth:
+        username: wordpress
+        existingPasswordSecret: wordpress-memcached
+    updateStrategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+    persistence:
+      enabled: true
+      size: 4Gi
+      accessModes:
+        - ReadWriteMany
+    ingress:
+      enabled: true
+      {{ with .Values.host -}}
+      {{- if eq (. | splitList "." | first) "www" -}}
+      {{- $root_domain := . | splitList "." | rest | join "." -}}
+      hostname: {{ $root_domain }}
+      extraTls:
+        - hosts:
+            - {{ $root_domain }}
+            - {{ . }}
+          secretName: {{ printf "%s-multi-tls" $root_domain }}
+      annotations:
+        cert-manager.io/cluster-issuer: {{ .Values.cluster_issuer }}
+        external-dns.alpha.kubernetes.io/managed-by: {{ .Values.external_dns_manager }}
+        nginx.ingress.kubernetes.io/proxy-body-size: 4G
+        nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
+      {{- else -}}
+      hostname: {{ . }}
+      tls: true
+      annotations:
+        cert-manager.io/cluster-issuer: {{ .Values.cluster_issuer }}
+        external-dns.alpha.kubernetes.io/managed-by: {{ .Values.external_dns_manager }}
+        nginx.ingress.kubernetes.io/proxy-body-size: 4G
+      {{- end -}}
+      {{- end }}

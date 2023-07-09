@@ -137,12 +137,12 @@
         host: "{{ subdomains.storage }}.{{ domain }}"
         oauth2_proxy_host: "{{ subdomains.auth }}.{{ domain }}"
         admin_group: "cluster-admins"
-        s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
+        s3: "{{ s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
 
     - name: backup-stack
       namespace: backup-system
       values:
-        s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
+        s3: "{{ s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
 
 - name: Apply backup restoration
   when: "restore_from_backup"
@@ -222,7 +222,7 @@
             key: secret
         admin_email: "{{ admin_email }}"
         admin_group: "cluster-admins"
-        s3: "{{ s3 | combine({'accessKeySecret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.logs}) }}"
+        s3: "{{ s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.logs}) }}"
         smtp: "{{ smtp | combine({'password_secret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
         node_endpoints: "{{ groups['all'] }}"
 

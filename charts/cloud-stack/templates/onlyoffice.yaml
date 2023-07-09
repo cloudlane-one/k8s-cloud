@@ -1,0 +1,134 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: bitnami
+spec:
+  interval: 1h
+  url: https://charts.bitnami.com/bitnami
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: onlyoffice
+spec:
+  interval: 1h
+  url: https://download.onlyoffice.com/charts/stable
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: onlyoffice-rabbitmq
+  version: "^12"
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: rabbitmq
+      sourceRef:
+        kind: HelmRepository
+        name: bitnami
+  timeout: 10m0s # Increase timeout to be sure.
+  values:
+    auth:
+      username: onlyoffice
+      existingPasswordSecret: onlyoffice-rabbitmq
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: onlyoffice-redis
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: redis
+      version: "^17"
+      sourceRef:
+        kind: HelmRepository
+        name: bitnami
+  timeout: 10m0s # Increase timeout to be sure.
+  values:
+    architecture: standalone
+    auth:
+      existingSecret: onlyoffice-redis
+      existingSecretPasswordKey: password
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: postgresql
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: onlyoffice-postgres
+      version: "^12"
+      sourceRef:
+        kind: HelmRepository
+        name: bitnami
+  timeout: 10m0s # Increase timeout to be sure.
+  values:
+    auth:
+      database: onlyoffice
+      username: onlyoffice
+      existingSecret: onlyoffice-postgres
+    primary:
+      persistence:
+        size: 4Gi
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: onlyoffice
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: docs
+      version: "^3"
+      sourceRef:
+        kind: HelmRepository
+        name: onlyoffice
+  timeout: 10m0s # Increase timeout to be sure.
+  values:
+    jwt:
+      existingSecret: onlyofficejwt
+    connections:
+      dbType: postgres
+      dbHost: onlyoffice-postgres
+      dbName: onlyoffice
+      dbUser: onlyoffice
+      dbSecretKeyName: password
+      dbExistingSecret: onlyoffice-postgres
+      redisHost: onlyoffice-redis
+      redisSecretKeyName: password
+      redisExistingSecret: onlyoffice-redis
+      amqpType: rabbitmq
+      amqpHost: onlyoffice-rabbitmq
+      amqpUser: onlyoffice
+      amqpSecretKeyName: rabbitmq-password
+      amqpExistingSecret: onlyoffice-rabbitmq
+    persistence:
+      storageClass: null
+      size: 4Gi
+    ingress:
+      enabled: true
+      annotations:
+        cert-manager.io/cluster-issuer: {{ .Values.cluster_issuer }}
+        external-dns.alpha.kubernetes.io/managed-by: {{ .Values.external_dns_manager }}
+      host: {{ .Values.hosts.onlyoffice }}
+      ssl:
+        enabled: true
+        secret: onlyoffice-tls

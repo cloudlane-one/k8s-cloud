@@ -5,7 +5,7 @@ metadata:
   name: s3-access-key
 type: Opaque
 data:
-  {{- $secretRef := .Values.s3.accessKeySecret }}
+  {{- $secretRef := .Values.s3.access_key_secret }}
   secret: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2

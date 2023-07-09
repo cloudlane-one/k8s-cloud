@@ -1,7 +1,14 @@
-host: ""
+hosts:
+  nextcloud: ""
+  onlyoffice: ""
+
+org:
+  name: ""
+  default_locale: "en_US"
+  tagline: ""
+  logoURL: ""
 
 oidc_client:
-  # Only works with keycloak currently.
   idp_url: ""
   id: ""
   secret:
@@ -30,15 +37,6 @@ smtp: # For admin notifications
     key: "secret"
   from_address: ""
 
-admin_email: ""
-
-admin_group: ""
-
-# Pass public k8s node ips so that k3s metrics endpoints can be monitored
-node_endpoints: []
-
 cluster_issuer: "acme"
 
 external_dns_manager: "cluster"
-
-bootstrap: false # Set to true to install in bootstrap mode (minimum deployment to support core functions and CRs)
