@@ -1,0 +1,6 @@
+apiVersion: v2
+name: namespace-isolation
+description: Isolate target namespace via NetworkPolicy
+type: application
+version: "0.0.1"
+appVersion: "0.0.1"

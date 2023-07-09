@@ -11,6 +11,29 @@
       metadata:
         name: "{{ chart['namespace'] }}"
 
+- name: Ensure chart namespace is isolated via network policy
+  kubernetes.core.k8s:
+    wait: true
+    wait_condition:
+      type: Ready
+      status: "True"
+    definition:
+      apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      metadata:
+        name: namespace-isolation
+        namespace: "{{ chart['namespace'] }}"
+      spec:
+        interval: 1h
+        chart:
+          spec:
+            chart: "./charts/namespace-isolation"
+            sourceRef:
+              kind: GitRepository
+              name: base-repo
+              namespace: flux-system
+            reconcileStrategy: Revision
+
 - name: Ensure HelmRelease for chart exists
   kubernetes.core.k8s:
     wait: true

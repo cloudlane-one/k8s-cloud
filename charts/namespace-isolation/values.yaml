@@ -1,0 +1,5 @@
+system_namespaces:
+  - kube-system
+  - ingress-system
+  - telemetry-system
+ingress_whitelist: [] # Whitelist of selectors pasted into NetworkPolicy.spec.ingress.from
