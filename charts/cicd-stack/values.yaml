@@ -9,7 +9,8 @@ oidc_client:
     key: "secret"
 
 cluster_issuer: "acme"
-
 external_dns_manager: "cluster"
+
+letsencrypt_staging: false
 
 bootstrap: false # Set to true to install in bootstrap mode (minimum deployment to support core functions and CRs)
