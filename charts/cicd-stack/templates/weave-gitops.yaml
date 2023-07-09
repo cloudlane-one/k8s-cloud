@@ -1,4 +1,4 @@
-{{- if not .Values.bootstrap and not .Values.letsencrypt_staging }}
+{{- if and (not .Values.bootstrap) (not .Values.letsencrypt_staging) }}
 # Disable weave-gitops entirely when letsencrypt_staging=true, as it offers no tls-skip-verify option.
 apiVersion: v1
 kind: Secret
