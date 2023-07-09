@@ -15,7 +15,7 @@ parameters:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: s3-backup-credentials
+  name: s3
 type: Opaque
 data:
   {{- $secretRef := .Values.s3.access_key_secret }}
@@ -39,7 +39,7 @@ spec:
   chart:
     spec:
       chart: velero
-      version: "^2"
+      version: "^4.1"
       sourceRef:
         kind: HelmRepository
         name: vmware-tanzu
@@ -49,36 +49,44 @@ spec:
     crds: CreateReplace
   timeout: '10m0s' # Account for slow performance of cluster on first setup.
   values:
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+    upgradeCRDs: true
     credentials:
-      existingSecret: s3-backup-credentials
+      useSecret: true
+      existingSecret: s3
+    configuration:
+      provider: aws
+      features: EnableCSI
+      backupStorageLocation:
+        - name: default
+          provider: aws
+          bucket: {{ .Values.s3.bucket }}
+          prefix: velero
+          config:
+            region: {{ .Values.s3.region }}
+            s3Url: {{ printf "https://%s" .Values.s3.endpoint }}
+            serverSideEncryption: AES256
+      volumeSnapshotLocation:
+        - name: default
+          provider: aws
+          config:
+            region: {{ .Values.s3.region }}
     initContainers:
       - name: velero-plugin-for-csi
-        image: velero/velero-plugin-for-csi:latest
+        image: velero/velero-plugin-for-csi:v0.5.0
         imagePullPolicy: IfNotPresent
         volumeMounts:
           - mountPath: /target
             name: plugins
       - name: velero-plugin-for-aws
-        image: velero/velero-plugin-for-aws:latest
+        image: velero/velero-plugin-for-aws:v1.7.0
         imagePullPolicy: IfNotPresent
         volumeMounts:
           - mountPath: /target
             name: plugins
-    snapshotsEnabled: true
-    configuration:
-      provider: aws
-      features: EnableCSI
-      backupStorageLocation:
-        name: default
-        bucket: {{ .Values.s3.bucket }}
-        prefix: velero
-        config:
-          region: {{ .Values.s3.region }}
-          s3Url: {{ printf "https://%s" .Values.s3.endpoint }}
-      volumeSnapshotLocation:
-        name: default
-        config:
-          region: {{ .Values.s3.region }}
     schedules:
       full-backup:
         disabled: false
@@ -89,11 +97,8 @@ spec:
             - "*"
           includeClusterResources: true
           snapshotVolumes: true
+          storageLocation: default
           ttl: "7d"
-    metrics:
-      enabled: true
-      serviceMonitor:
-        enabled: true
 ---
 apiVersion: v1
 kind: ConfigMap
