@@ -98,6 +98,9 @@ spec:
           allow_sign_up: true
           allowed_groups: {{ .Values.admin_group | quote }}
           role_attribute_path: "contains(groups[*], {{ .Values.admin_group | squote }}) && 'Admin' || 'Viewer'"
+          {{- if .Values.letsencrypt_staging }}
+          tls_skip_verify_insecure: true
+          {{- end }}
       ingress:
         enabled: true
         annotations:

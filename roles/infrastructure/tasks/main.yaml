@@ -188,6 +188,7 @@
             namespace: kube-system
             name: external-dns
             key: secret
+        letsencrypt_staging: "{{ letsencrypt_staging }}"
 
     - name: sso-stack
       namespace: sso-system
@@ -206,6 +207,7 @@
                 - "http://localhost:8000/"
         smtp: "{{ smtp | combine({'password_secret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
         admin_group: "cluster-admins"
+        letsencrypt_staging: "{{ letsencrypt_staging }}"
 
     - name: telemetry-stack
       namespace: telemetry-system
@@ -225,6 +227,7 @@
         s3: "{{ s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.logs}) }}"
         smtp: "{{ smtp | combine({'password_secret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
         node_endpoints: "{{ groups['all'] }}"
+        letsencrypt_staging: "{{ letsencrypt_staging }}"
 
     - name: cicd-stack
       namespace: flux-system
@@ -237,6 +240,7 @@
             namespace: sso-system
             name: "oidc-client.cluster-oidc"
             key: secret
+        letsencrypt_staging: "{{ letsencrypt_staging }}"
 
     - name: control-stack
       namespace: kube-system

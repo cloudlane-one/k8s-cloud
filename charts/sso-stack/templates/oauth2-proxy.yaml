@@ -43,6 +43,7 @@ spec:
       clientID: authproxy-oidc
       # clientSecret: "" # injected via valuesFrom
       # cookieSecret: "" # injected via valuesFrom
+      # Reference for below config: https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/
       configFile: |-
         upstreams = "file:///dev/null"
         whitelist_domains = [ {{ printf ".%s" .Values.domain | quote }} ]
@@ -59,6 +60,9 @@ spec:
         cookie_refresh = "300s"
         email_domains = "*"
         scope = "email groups profile openid"
+        {{- if .Values.letsencrypt_staging }}
+        ssl_insecure_skip_verify = true
+        {{- end }}
     ingress:
       enabled: true
       annotations:
