@@ -129,14 +129,13 @@
   loop:
     - name: upgrade-controller
       namespace: kube-system
-      values: {}
 
     - name: namespace-isolation
       namespace: longhorn-system
 
     - name: storage-stack
       namespace: longhorn-system
-      values:
+      chart_values:
         host: "{{ subdomains.storage }}.{{ domain }}"
         oauth2_proxy_host: "{{ subdomains.auth }}.{{ domain }}"
         admin_group: "cluster-admins"
@@ -147,7 +146,7 @@
 
     - name: backup-stack
       namespace: backup-system
-      values:
+      chart_values:
         s3: "{{ s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
 
 - name: Apply backup restoration
@@ -172,12 +171,12 @@
   loop:
     - name: admin-rbac
       namespace: kube-system
-      values:
+      chart_values:
         admin_group: "cluster-admins"
 
     - name: crypto-storage
       namespace: longhorn-system
-      values:
+      chart_values:
         cluster_fqn: "{{ cluster_fqn }}"
 
     - name: namespace-isolation
@@ -185,14 +184,13 @@
 
     - name: cert-stack
       namespace: cert-system
-      values: {}
 
     - name: namespace-isolation
       namespace: ingress-system
 
     - name: ingress-stack
       namespace: ingress-system
-      values:
+      chart_values:
         domain: "{{ domain }}"
         cluster_name: "{{ cluster_name }}"
         external_dns:
@@ -204,7 +202,7 @@
 
     - name: sso-stack
       namespace: sso-system
-      values:
+      chart_values:
         domain: "{{ domain }}"
         org: "{{ org }}"
         hosts:
@@ -227,7 +225,7 @@
 
     - name: telemetry-stack
       namespace: telemetry-system
-      values:
+      chart_values:
         domain: "{{ domain }}"
         org: "{{ org }}"
         host: "{{ subdomains.telemetry }}.{{ domain }}"
@@ -250,7 +248,7 @@
 
     - name: cicd-stack
       namespace: flux-system
-      values:
+      chart_values:
         host: "{{ subdomains.gitops }}.{{ domain }}"
         oidc_client:
           idp_url: "https://{{ subdomains.idp }}.{{ domain }}/realms/master"
@@ -263,7 +261,7 @@
 
     - name: control-stack
       namespace: kube-system
-      values:
+      chart_values:
         host: "{{ subdomains.control }}.{{ domain }}"
         oauth2_proxy_host: "{{ subdomains.auth }}.{{ domain }}"
         admin_group: "cluster-admins"
