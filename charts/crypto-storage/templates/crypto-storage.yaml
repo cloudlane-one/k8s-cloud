@@ -21,7 +21,7 @@ metadata:
 provisioner: driver.longhorn.io
 allowVolumeExpansion: true
 parameters:
-  # nodeSelector: "{{ .Values.cluster_fqn }}" # TODO: Uncomment once #30 is solved.
+  nodeSelector: {{ .Values.cluster_fqn }}
   numberOfReplicas: "2"
   dataLocality: best-effort
   staleReplicaTimeout: "2880" # 48 hours in minutes

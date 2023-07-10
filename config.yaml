@@ -27,11 +27,11 @@ s3_buckets:
 admin_email: ""
 
 vcluster: false # Set to true to create a vcluster on top of a k3s host cluster
-cluster_name: "cluster" # Name for this cluster (unique for the supplied domain)
 
 restore_from_backup: null
 
 subdomains:
+  cluster: "cluster"
   idp: "idp"
   auth: "auth"
   control: "control"

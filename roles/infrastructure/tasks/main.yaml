@@ -1,7 +1,30 @@
 - name: Set dynamic facts
   ansible.builtin.set_fact:
-    cluster_fqn: "cluster.{{ domain }}"
+    cluster_fqn: "{{ subdomains.cluster }}.{{ domain }}"
     charts_dir: "{{ playbook_dir }}/charts"
+
+- name: Get all k8s nodes
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Node
+  register: all_k8s_nodes
+
+- name: Filter out nodes as per inventory
+  ansible.builtin.set_fact:
+    inventory_nodes: "{{ all_k8s_nodes.resources | json_query(node_filter) | json_query(node_extractor) }}"
+  vars:
+    node_filter: '[?contains({{ groups["all"] }}, metadata.annotations."k3s.io/external-ip")]'
+    node_extractor: '[].metadata.annotations."k3s.io/hostname"'
+
+- name: Add cluster FQN as label to all inventory nodes
+  kubernetes.core.k8s:
+    state: patched
+    kind: Node
+    name: "{{ item }}"
+    definition:
+      metadata:
+        labels: "{{ {cluster_fqn: '1'} }}"
+  loop: "{{ inventory_nodes }}"
 
 - name: Ensure FluxCD is deployed
   kubernetes.core.helm:
@@ -47,13 +70,30 @@
     - name: storage-stack
       namespace: longhorn-system
 
+- name: Add cluster FQN as label to all Longhorn nodes in inventory
+  kubernetes.core.k8s:
+    state: patched
+    api_version: longhorn.io/v1beta2
+    kind: Node
+    namespace: longhorn-system
+    name: "{{ item }}"
+    definition:
+      spec:
+        tags:
+          - "{{ cluster_fqn }}"
+  loop: "{{ inventory_nodes }}"
+
+- name: Set KUBECONFIG to host cluster
+  ansible.builtin.set_fact:
+    kubeconfig: "{{ lookup('ansible.builtin.env', 'KUBECONFIG') }}"
+
 - name: Setup vcluster
   when: "vcluster"
   block:
     - name: Create vcluster for domain
       kubernetes.core.helm:
         wait: true
-        name: "{{ cluster_fqn }}"
+        name: vcluster
         release_namespace: "{{ cluster_fqn }}"
         chart_repo_url: https://charts.loft.sh
         chart_ref: vcluster
@@ -79,9 +119,23 @@
               pods:
                 enabled: true
 
-    - name: Switch kubecontext to vcluster
-      ansible.builtin.command: "vcluster connect {{ cluster_fqn }}"
-      changed_when: true
+    - name: Get vcluster KUBECONFIG
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Secret
+        namespace: "{{ cluster_fqn }}"
+        name: vc-vcluster
+      register: virtual_kubeconfig
+
+    - name: Save vcluster KUBECONFIG to file
+      ansible.builtin.copy:
+        content: "{{ virtual_kubeconfig.resources.data.config | b64decode }}"
+        dest: /tmp/virtual-kubeconfig.yaml
+        mode: '0644'
+
+    - name: Set KUBECONFIG to vcluster
+      ansible.builtin.set_fact:
+        kubeconfig: "{{ lookup('ansible.builtin.env', 'KUBECONFIG') }}"
 
 - name: Bootstrap cluster infrastructure
   ansible.builtin.include_tasks:
@@ -89,6 +143,8 @@
     apply:
       vars:
         chart: "{{ item }}"
+      environment:
+        KUBECONFIG: "{{ kubeconfig }}"
   loop:
     - name: cert-stack
       namespace: cert-system
@@ -101,6 +157,7 @@
 
 - name: Ensure all required secrets exist
   kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
     wait: true
     definition:
       apiVersion: v1
@@ -126,6 +183,8 @@
     apply:
       vars:
         chart: "{{ item }}"
+      environment:
+        KUBECONFIG: "{{ kubeconfig }}"
   loop:
     - name: upgrade-controller
       namespace: kube-system
@@ -152,6 +211,7 @@
 - name: Apply backup restoration
   when: "restore_from_backup"
   kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
     wait: true
     definition:
       apiVersion: velero.io/v1
@@ -168,6 +228,8 @@
     apply:
       vars:
         chart: "{{ item }}"
+      environment:
+        KUBECONFIG: "{{ kubeconfig }}"
   loop:
     - name: admin-rbac
       namespace: kube-system
@@ -192,7 +254,6 @@
       namespace: ingress-system
       chart_values:
         domain: "{{ domain }}"
-        cluster_name: "{{ cluster_name }}"
         external_dns:
           token_secret:
             namespace: kube-system
@@ -265,3 +326,55 @@
         host: "{{ subdomains.control }}.{{ domain }}"
         oauth2_proxy_host: "{{ subdomains.auth }}.{{ domain }}"
         admin_group: "cluster-admins"
+
+- name: Expose k8s API via Ingress
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    wait: true
+    definition:
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: k8s-api
+        namespace: default
+        annotations:
+          external-dns.alpha.kubernetes.io/managed-by: cluster
+          nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+          nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+      spec:
+        rules:
+          - host: "{{ cluster_fqn }}"
+            http:
+              paths:
+                - backend:
+                    service:
+                      name: kubernetes
+                      port:
+                        number: 443
+                  path: /
+                  pathType: ImplementationSpecific
+
+- name: Copy default kubeconfig file
+  ansible.builtin.copy:
+    remote_src: true
+    src: "{{ kubeconfig }}"
+    dest: /tmp/kubeconfig.yaml
+    mode: '0644'
+
+- name: Change server address of copied kubeconfig to public cluster FQN
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - config
+      - set-cluster
+      - default
+      - "--server=https://{{ cluster_fqn }}"
+  environment:
+    KUBECONFIG: /tmp/kubeconfig.yaml
+  changed_when: true
+
+- name: Download kubeconfig file
+  ansible.builtin.fetch:
+    src: /tmp/kubeconfig.yaml
+    dest: "{{ playbook_dir }}/{{ cluster_fqn }}.yaml"
+    flat: true
