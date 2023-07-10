@@ -39,6 +39,8 @@ spec:
     digitalocean:
       secretName: dns-token
     annotationFilter: {{ printf "external-dns.alpha.kubernetes.io/managed-by = %s" .Values.cluster_name | quote }}
-    serviceMonitor:
+    metrics:
       enabled: true
+      serviceMonitor:
+        enabled: true
 {{- end }}
