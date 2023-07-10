@@ -376,12 +376,3 @@ spec:
                     friendly.name: surname
                     user.attribute: lastName
             {{- end }}
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: grafana-dashboards
-  labels:
-    grafana_dashboard: "1"
-data:
-{{ (.Files.Glob "config/dashboard-*.json").AsConfig | indent 2 }}
