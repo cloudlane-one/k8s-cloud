@@ -11,10 +11,11 @@ data:
     .login-pf body {
       background: rgb(226, 231, 240);
     }
+    {{- if .Values.org.logoURL }}
     div.kc-logo-text {
       background-image: url({{ .Values.org.logoURL }});
       background-size: contain;
-      height: 150px;
+      height: 100px;
       background-position: center;
     }
     @media (max-width: 767px) {
@@ -28,6 +29,7 @@ data:
         padding: 20px 0 0 0;
       }
     }
+    {{- end }}
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
