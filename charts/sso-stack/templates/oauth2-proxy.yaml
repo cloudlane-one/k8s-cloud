@@ -39,6 +39,10 @@ spec:
       valuesKey: secret
       targetPath: config.cookieSecret
   values:
+    metrics:
+      enabled: true
+      servicemonitor:
+        enabled: true
     config:
       clientID: authproxy-oidc
       # clientSecret: "" # injected via valuesFrom

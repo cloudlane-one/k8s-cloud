@@ -102,6 +102,12 @@ spec:
         mkdir ./resources/css
         cp /opt/k8s-cloud/themes/login/styles.css ./resources/css
         cd ..
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+      prometheusRule:
+        enabled: true
     keycloakConfigCli:
       enabled: true
       extraEnvVars:
