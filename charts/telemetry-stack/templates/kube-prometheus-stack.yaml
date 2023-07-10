@@ -235,7 +235,7 @@ spec:
               # refer to https://prometheus.io/docs/alerting/latest/configuration/#time_interval-0
               time_intervals:
                 - times:
-                    - start_time: '23:00'
+                    - start_time: '00:00'
                       end_time: '07:00'
         policies.yaml:
           apiVersion: 1
