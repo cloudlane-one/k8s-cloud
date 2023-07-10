@@ -95,7 +95,6 @@ metadata:
     grafana_dashboard: "1"
 data:
 {{ (.Files.Glob "config/grafana-dashboards/longhorn*").AsConfig | indent 2 }}
-{{- end }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
@@ -104,5 +103,5 @@ metadata:
     prometheus: longhorn
     role: alert-rules
   name: longhorn
-spec:
-{{ .Files.Get "config/alert-rules.yaml" | indent 2 }}
+spec: {{ .Files.Get "config/alert-rules.yaml" | nindent 2 }}
+{{- end }}
