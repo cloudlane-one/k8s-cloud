@@ -227,6 +227,26 @@ spec:
                   settings:
                     addresses: {{ .Values.admin_email }}
                     singleEmail: true
+        mute-times.yaml:
+          apiVersion: 1
+          muteTimes:
+            - orgId: 1
+              name: default
+              # refer to https://prometheus.io/docs/alerting/latest/configuration/#time_interval-0
+              time_intervals:
+                - times:
+                    - start_time: '23:00'
+                      end_time: '07:00'
+        policies.yaml:
+          apiVersion: 1
+          policies:
+            - orgId: 1
+              receiver: default
+              group_by: ['...']
+              matchers:
+                - severity =~ "error|critical"
+              mute_time_intervals:
+                - default
     alertmanager:
       enabled: true
     {{- if gt (len .Values.node_endpoints) 0 }}
