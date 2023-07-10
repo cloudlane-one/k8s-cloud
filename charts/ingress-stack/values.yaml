@@ -1,15 +1,4 @@
-domain: "" # The public root domain of this cluster (e.g. "example.org")
-
 admin_email: ""
-
-cluster_name: "cluster" # Name for this cluster (unique for the supplied domain)
-
-external_dns:
-  # Currently only Digitalocean provider supported.
-  token_secret:
-    namespace: null
-    name: ""
-    key: "token"
 
 letsencrypt_staging: false # If true, uses Letsencrypt staging APIs instead of production ones. Prevents execeeding API limits.
 

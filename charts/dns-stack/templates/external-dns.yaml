@@ -1,4 +1,3 @@
-{{- if not .Values.bootstrap }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -43,4 +42,3 @@ spec:
       enabled: true
       serviceMonitor:
         enabled: true
-{{- end }}

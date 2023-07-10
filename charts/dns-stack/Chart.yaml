@@ -1,6 +1,6 @@
 apiVersion: v2
-name: ingress-stack
-description: NGINX ingress controller + extras
+name: dns-stack
+description: external-dns + extras
 type: application
 version: "0.0.1"
 appVersion: "0.0.1"

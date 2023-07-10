@@ -69,6 +69,10 @@
   loop:
     - name: storage-stack
       namespace: longhorn-system
+    - name: cert-stack
+      namespace: cert-system
+    - name: ingress-stack
+      namespace: ingress-system
 
 - name: Add cluster FQN as label to all Longhorn nodes in inventory
   kubernetes.core.k8s:
@@ -110,6 +114,10 @@
               enabled: true
               enableScheduler: true
               nodeSelector: "{{ cluster_fqn }}=1"
+            ingresses:
+              enabled: true
+            networkpolicies:
+              enabled: true
           isolation:
             enabled: true
           proxy:
@@ -146,10 +154,6 @@
       environment:
         KUBECONFIG: "{{ kubeconfig }}"
   loop:
-    - name: cert-stack
-      namespace: cert-system
-    - name: ingress-stack
-      namespace: ingress-system
     - name: telemetry-stack
       namespace: telemetry-system
     - name: cicd-stack
@@ -201,6 +205,20 @@
         s3: "{{ s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
 
     - name: namespace-isolation
+      namespace: cert-system
+
+    - name: cert-stack
+      namespace: cert-system
+
+    - name: namespace-isolation
+      namespace: ingress-system
+
+    - name: ingress-stack
+      namespace: ingress-system
+      chart_values:
+        letsencrypt_staging: "{{ letsencrypt_staging }}"
+
+    - name: namespace-isolation
       namespace: backup-system
 
     - name: backup-stack
@@ -242,24 +260,16 @@
         cluster_fqn: "{{ cluster_fqn }}"
 
     - name: namespace-isolation
-      namespace: cert-system
+      namespace: dns-system
 
-    - name: cert-stack
-      namespace: cert-system
-
-    - name: namespace-isolation
-      namespace: ingress-system
-
-    - name: ingress-stack
-      namespace: ingress-system
+    - name: dns-stack
+      namespace: dns-system
       chart_values:
-        domain: "{{ domain }}"
         external_dns:
           token_secret:
             namespace: kube-system
             name: external-dns
             key: secret
-        letsencrypt_staging: "{{ letsencrypt_staging }}"
 
     - name: sso-stack
       namespace: sso-system
