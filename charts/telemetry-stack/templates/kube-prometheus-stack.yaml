@@ -220,9 +220,9 @@ spec:
           apiVersion: 1
           contactPoints:
             - orgId: 1
-              name: default
+              name: grafana-default-email
               receivers:
-                - uid: default-email-receiver
+                - uid: grafana-default-email
                   type: email
                   settings:
                     addresses: {{ .Values.admin_email }}
@@ -241,12 +241,15 @@ spec:
           apiVersion: 1
           policies:
             - orgId: 1
-              receiver: default
+              receiver: grafana-default-email
               group_by: ['...']
               matchers:
                 - severity =~ "error|critical"
-              mute_time_intervals:
-                - default
+              routes:
+                - receiver: grafana-default-email
+                  mute_time_intervals:
+                    - default
+                  continue: false
     alertmanager:
       enabled: true
     {{- if gt (len .Values.node_endpoints) 0 }}
