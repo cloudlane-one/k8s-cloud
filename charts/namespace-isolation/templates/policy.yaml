@@ -3,22 +3,18 @@ kind: NetworkPolicy
 metadata:
   name: namespace-isolation
 spec:
-  egress:
-    - {}
-  ingress:
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: {{ .Release.Namespace }}
-        {{- range .Values.namespace_whitelist }}
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: {{ . }}
-        {{- end }}
-        {{- if gt (len .Values.selector_whitelist) 0 }}
-        {{- .Values.selector_whitelist | toYaml | nindent 8 }}
-        {{- end }}
   podSelector: {}
   policyTypes:
     - Ingress
-    - Egress
+  ingress:
+    - from:
+        - podSelector: {}
+    {{- range .Values.namespace_whitelist }}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ . }}
+    {{- end }}
+    {{- if gt (len .Values.selector_whitelist) 0 }}
+    - from: {{- .Values.selector_whitelist | toYaml | nindent 8 }}
+    {{- end }}
