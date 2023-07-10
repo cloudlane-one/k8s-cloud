@@ -52,9 +52,33 @@ spec:
       valuesKey: secret
       targetPath: "grafana.grafana\\.ini.auth\\.generic_oauth.client_secret"
   values:
+    {{- if gt (len .Values.node_endpoints) 0 }}
     defaultRules:
       rules:
         general: false
+    kubeControllerManager:
+      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
+    kubeProxy:
+      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
+    kubeScheduler:
+      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
+    {{- else }}
+    defaultRules:
+      rules:
+        general: false
+        kubeControllerManager: false
+        kubeProxy: false
+        kubeSchedulerAlerting: false
+        kubeSchedulerRecording: false
+    kubeControllerManager:
+      enabled: false
+    kubeProxy:
+      enabled: false
+    kubeScheduler:
+      enabled: false
+    {{- end }}
+    alertmanager:
+      enabled: true
     prometheusOperator:
       admissionWebhooks:
         timeoutSeconds: 30 # Prevent timeouts during helm upgrade
@@ -261,16 +285,6 @@ spec:
                   mute_time_intervals:
                     - always
                   continue: false
-    alertmanager:
-      enabled: true
-    {{- if gt (len .Values.node_endpoints) 0 }}
-    kubeControllerManager:
-      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
-    kubeProxy:
-      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
-    kubeScheduler:
-      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
-    {{- end }}
 ---
 apiVersion: v1
 kind: Secret
