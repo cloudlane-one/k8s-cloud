@@ -12,6 +12,7 @@
         name: "{{ chart['namespace'] }}"
 
 - name: Ensure chart namespace is isolated via network policy
+  when: "chart['namespace'] != 'kube-system'"
   kubernetes.core.k8s:
     wait: true
     wait_condition:

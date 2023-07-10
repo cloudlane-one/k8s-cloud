@@ -7,13 +7,16 @@ spec:
     - {}
   ingress:
     - from:
-        {{- range .Values.system_namespaces }}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Release.Namespace }}
+        {{- range .Values.namespace_whitelist }}
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: {{ . }}
         {{- end }}
-        {{- if gt (len .Values.ingress_whitelist) 0 }}
-        {{- .Values.ingress_whitelist | toYaml | nindent 8 }}
+        {{- if gt (len .Values.selector_whitelist) 0 }}
+        {{- .Values.selector_whitelist | toYaml | nindent 8 }}
         {{- end }}
   podSelector: {}
   policyTypes:
