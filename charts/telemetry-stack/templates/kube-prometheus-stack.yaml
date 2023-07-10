@@ -220,9 +220,9 @@ spec:
           apiVersion: 1
           contactPoints:
             - orgId: 1
-              name: grafana-default-email
+              name: default
               receivers:
-                - uid: grafana-default-email
+                - uid: default
                   type: email
                   settings:
                     addresses: {{ .Values.admin_email }}
@@ -237,18 +237,29 @@ spec:
                 - times:
                     - start_time: '00:00'
                       end_time: '07:00'
+            - orgId: 1
+              name: always
+              # refer to https://prometheus.io/docs/alerting/latest/configuration/#time_interval-0
+              time_intervals:
+                - times:
+                    - start_time: '00:00'
+                      end_time: '24:00'
         policies.yaml:
           apiVersion: 1
           policies:
             - orgId: 1
-              receiver: grafana-default-email
+              receiver: default
               group_by: ['...']
-              matchers:
-                - severity =~ "error|critical"
               routes:
-                - receiver: grafana-default-email
+                - receiver: default
+                  matchers:
+                    - severity =~ "error|critical"
                   mute_time_intervals:
                     - default
+                  continue: false
+                - receiver: default
+                  mute_time_intervals:
+                    - always
                   continue: false
     alertmanager:
       enabled: true
