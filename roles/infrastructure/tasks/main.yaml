@@ -131,6 +131,9 @@
       namespace: kube-system
       values: {}
 
+    - name: namespace-isolation
+      namespace: longhorn-system
+
     - name: storage-stack
       namespace: longhorn-system
       values:
@@ -138,6 +141,9 @@
         oauth2_proxy_host: "{{ subdomains.auth }}.{{ domain }}"
         admin_group: "cluster-admins"
         s3: "{{ s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
+
+    - name: namespace-isolation
+      namespace: backup-system
 
     - name: backup-stack
       namespace: backup-system
@@ -174,9 +180,15 @@
       values:
         cluster_fqn: "{{ cluster_fqn }}"
 
+    - name: namespace-isolation
+      namespace: cert-system
+
     - name: cert-stack
       namespace: cert-system
       values: {}
+
+    - name: namespace-isolation
+      namespace: ingress-system
 
     - name: ingress-stack
       namespace: ingress-system
@@ -210,6 +222,9 @@
         admin_email: "{{ admin_email }}"
         letsencrypt_staging: "{{ letsencrypt_staging }}"
 
+    - name: namespace-isolation
+      namespace: telemetry-system
+
     - name: telemetry-stack
       namespace: telemetry-system
       values:
@@ -229,6 +244,9 @@
         smtp: "{{ smtp | combine({'password_secret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
         node_endpoints: "{{ groups['all'] }}"
         letsencrypt_staging: "{{ letsencrypt_staging }}"
+
+    - name: namespace-isolation
+      namespace: flux-system
 
     - name: cicd-stack
       namespace: flux-system
