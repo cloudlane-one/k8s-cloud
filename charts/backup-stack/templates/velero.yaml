@@ -53,6 +53,8 @@ spec:
       enabled: true
       serviceMonitor:
         enabled: true
+      prometheusRule:
+        enabled: true
     upgradeCRDs: true
     credentials:
       useSecret: true
