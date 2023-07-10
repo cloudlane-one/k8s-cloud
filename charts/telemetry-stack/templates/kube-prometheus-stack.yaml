@@ -94,8 +94,8 @@ spec:
               accessModes: ["ReadWriteOnce"]
               resources:
                 requests:
-                  storage: 8Gi
-        retention: 7d
+                  storage: 12Gi
+        retention: 2d
     grafana:
       admin:
         existingSecret: grafana-admin
