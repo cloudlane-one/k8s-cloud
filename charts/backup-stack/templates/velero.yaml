@@ -58,7 +58,6 @@ spec:
       useSecret: true
       existingSecret: s3
     configuration:
-      provider: aws
       features: EnableCSI
       backupStorageLocation:
         - name: default
