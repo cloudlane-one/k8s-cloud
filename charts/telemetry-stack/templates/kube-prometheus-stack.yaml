@@ -52,6 +52,9 @@ spec:
       valuesKey: secret
       targetPath: "grafana.grafana\\.ini.auth\\.generic_oauth.client_secret"
   values:
+    defaultRules:
+      rules:
+        general: false
     prometheusOperator:
       admissionWebhooks:
         timeoutSeconds: 30 # Prevent timeouts during helm upgrade
