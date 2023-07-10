@@ -207,6 +207,7 @@
                 - "http://localhost:8000/"
         smtp: "{{ smtp | combine({'password_secret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
         admin_group: "cluster-admins"
+        admin_email: "{{ admin_email }}"
         letsencrypt_staging: "{{ letsencrypt_staging }}"
 
     - name: telemetry-stack

@@ -214,6 +214,7 @@ spec:
           users:
             - username: admin
               enabled: true
+              email: {{ .Values.admin_email }}
               emailVerified: true
               requiredActions: []
               realmRoles:
