@@ -30,6 +30,7 @@ spec:
         name: bitnami
   timeout: '10m0s' # Account for slow performance of cluster on first setup.
   values:
+    policy: {{ .Values.policy }}
     domainFilters:
       - {{ .Values.domain }}
     sources:
