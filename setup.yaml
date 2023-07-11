@@ -16,7 +16,7 @@
     - role: node
   tasks:
     - name: Add first host to control_nodes group, if group wasn't explicitly created
-      when: "'control_nodes' not in groups and inventory_hostname == groups['all'][0]"
+      when: "not vcluster and 'control_nodes' not in groups and inventory_hostname == groups['all'][0]"
       ansible.builtin.add_host:
         name: "{{ inventory_hostname }}"
         groups: control_nodes

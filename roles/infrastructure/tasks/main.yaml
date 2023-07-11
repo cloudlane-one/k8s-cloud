@@ -121,7 +121,7 @@
         name: vcluster
         release_namespace: "{{ cluster_fqn }}"
         chart_repo_url: https://charts.loft.sh
-        chart_ref: vcluster
+        chart_ref: kubernetes
         chart_version: "^0.15"
         values:
           sync:
@@ -147,24 +147,17 @@
                 enabled: true
               pods:
                 enabled: true
-
-    - name: Get vcluster KUBECONFIG
-      kubernetes.core.k8s_info:
-        api_version: v1
-        kind: Secret
-        namespace: "{{ cluster_fqn }}"
-        name: vc-vcluster
-      register: virtual_kubeconfig
+          syncer:
+            extraArgs:
+              - "--tls-san={{ cluster_fqn }}"
 
     - name: Save vcluster KUBECONFIG to file
-      ansible.builtin.copy:
-        content: "{{ virtual_kubeconfig.resources.data.config | b64decode }}"
-        dest: /tmp/virtual-kubeconfig.yaml
-        mode: '0644'
+      ansible.builtin.command: "vcluster connect kubernetes -n {{ cluster_fqn }} --update-current=false --server=https://{{ cluster_fqn }}"
+      changed_when: true
 
     - name: Set KUBECONFIG to vcluster
       ansible.builtin.set_fact:
-        kubeconfig: "{{ ansible_env.KUBECONFIG }}"
+        kubeconfig: "./kubeconfig.yaml"
 
 - name: Copy default kubeconfig file
   ansible.builtin.copy:
@@ -395,10 +388,11 @@
       kind: Ingress
       metadata:
         name: k8s-api
-        namespace: default
+        namespace: "{{ vcluster | ternary(cluster_fqn, 'default') }}"
         annotations:
           nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
           nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+          nginx.ingress.kubernetes.io/ssl-redirect: "true"
       spec:
         rules:
           - host: "{{ cluster_fqn }}"
