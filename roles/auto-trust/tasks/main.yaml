@@ -15,6 +15,7 @@
 
 - name: Add lines to known_hosts
   loop: "{{ known_hosts_entries.results }}"
+  when: "item.stdout is defined"
   ansible.builtin.lineinfile:
     dest: ~/.ssh/known_hosts
     line: "{{ item.stdout }}"
