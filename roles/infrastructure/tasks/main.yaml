@@ -74,7 +74,18 @@
     - name: ingress-stack
       namespace: ingress-system
 
+- name: Get list of current Longhorn node tags
+  loop: "{{ inventory_nodes }}"
+  kubernetes.core.k8s_info:
+    api_version: longhorn.io/v1beta2
+    kind: Node
+    namespace: longhorn-system
+    name: "{{ item }}"
+  register: lhn_info
+
 - name: Add cluster FQN as label to all Longhorn nodes in inventory
+  loop: "{{ lhn_info.results }}"
+  when: "cluster_fqn not in item.resources[0].spec.tags"
   kubernetes.core.k8s:
     state: patched
     api_version: longhorn.io/v1beta2
@@ -85,11 +96,10 @@
       spec:
         tags:
           - "{{ cluster_fqn }}"
-  loop: "{{ inventory_nodes }}"
 
 - name: Set KUBECONFIG to host cluster
   ansible.builtin.set_fact:
-    kubeconfig: "{{ lookup('ansible.builtin.env', 'KUBECONFIG') }}"
+    kubeconfig: "{{ ansible_env.KUBECONFIG }}"
 
 - name: Setup vcluster
   when: "vcluster"
@@ -143,7 +153,7 @@
 
     - name: Set KUBECONFIG to vcluster
       ansible.builtin.set_fact:
-        kubeconfig: "{{ lookup('ansible.builtin.env', 'KUBECONFIG') }}"
+        kubeconfig: "{{ ansible_env.KUBECONFIG }}"
 
 - name: Bootstrap cluster infrastructure
   ansible.builtin.include_tasks:
@@ -265,11 +275,11 @@
     - name: dns-stack
       namespace: dns-system
       chart_values:
-        external_dns:
-          token_secret:
-            namespace: kube-system
-            name: external-dns
-            key: secret
+        domain: "{{ domain }}"
+        token_secret:
+          namespace: kube-system
+          name: external-dns
+          key: secret
 
     - name: sso-stack
       namespace: sso-system

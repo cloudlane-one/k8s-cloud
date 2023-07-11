@@ -1,8 +1,8 @@
-cluster_name: "cluster" # Name for this cluster (unique for domain)
+domain: ""
+cluster_name: "cluster"
 
-external_dns:
-  # Currently only Digitalocean provider supported.
-  token_secret:
-    namespace: null
-    name: ""
-    key: "token"
+# Currently only Digitalocean provider supported.
+token_secret:
+  namespace: null
+  name: ""
+  key: "token"

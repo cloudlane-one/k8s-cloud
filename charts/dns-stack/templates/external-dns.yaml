@@ -4,7 +4,7 @@ metadata:
   name: dns-token
 type: Opaque
 data:
-  {{- $secretRef := .Values.external_dns.token_secret }}
+  {{- $secretRef := .Values.token_secret }}
   digitalocean_api_token: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
@@ -30,14 +30,15 @@ spec:
         name: bitnami
   timeout: '10m0s' # Account for slow performance of cluster on first setup.
   values:
+    domainFilters:
+      - {{ .Values.domain }}
     sources:
       - service
       - ingress
-    txtOwnerId: {{ .Values.cluster_name | quote }}
+    txtOwnerId: {{ printf "%s.%s" .Values.cluster_name .Values.domain | quote }}
     provider: digitalocean
     digitalocean:
       secretName: dns-token
-    annotationFilter: {{ printf "external-dns.alpha.kubernetes.io/managed-by = %s" .Values.cluster_name | quote }}
     metrics:
       enabled: true
       serviceMonitor:
