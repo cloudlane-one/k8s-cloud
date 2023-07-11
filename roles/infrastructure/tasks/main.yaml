@@ -2,126 +2,49 @@
   ansible.builtin.set_fact:
     cluster_fqn: "{{ subdomains.cluster }}.{{ domain }}"
     charts_dir: "{{ playbook_dir }}/charts"
+    cluster_name: "{{ vcluster | ternary(domain | replace('.', '-'), 'default') }}"
 
-- name: Get all k8s nodes
-  kubernetes.core.k8s_info:
-    api_version: v1
-    kind: Node
-  register: all_k8s_nodes
+- name: Get current kubectl context
+  ansible.builtin.command: "kubectl config current-context"
+  changed_when: false
+  register: default_ctx
 
-- name: Filter out nodes as per inventory
-  ansible.builtin.set_fact:
-    inventory_nodes: "{{ all_k8s_nodes.resources | json_query(node_filter) | json_query(node_extractor) }}"
-  vars:
-    node_filter: '[?contains({{ groups["all"] }}, metadata.annotations."k3s.io/external-ip")]'
-    node_extractor: '[].metadata.annotations."k3s.io/hostname"'
+- name: Ensure cluster FQN label is applied to nodes
+  block:
+    - name: Get all k8s nodes
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Node
+      register: all_k8s_nodes
 
-- name: Add cluster FQN as label to all inventory nodes
-  kubernetes.core.k8s:
-    state: patched
-    kind: Node
-    name: "{{ item }}"
-    definition:
-      metadata:
-        labels: "{{ {cluster_fqn: '1'} }}"
-  loop: "{{ inventory_nodes }}"
-
-- name: Ensure FluxCD is deployed
-  kubernetes.core.helm:
-    wait: true
-    timeout: 10m
-    name: fluxcd
-    release_namespace: flux-system
-    create_namespace: true
-    chart_repo_url: https://fluxcd-community.github.io/helm-charts
-    chart_ref: flux2
-    chart_version: "^2"
-    values:
-      policies:
-        create: false
-
-- name: Ensure base GitRepository exists
-  kubernetes.core.k8s:
-    wait: true
-    definition:
-      apiVersion: source.toolkit.fluxcd.io/v1
-      kind: GitRepository
-      metadata:
-        name: base-repo
-        namespace: flux-system
-      spec:
-        interval: 1h
-        url: "{{ base_repo }}"
-        ref:
-          branch: "{{ base_branch }}"
-
-- name: Reconcile base git repo
-  ansible.builtin.command: "flux reconcile source git base-repo -n flux-system"
-  changed_when: true
-
-- name: Bootstrap host-cluster infrastructure
-  when: "not vcluster"
-  ansible.builtin.include_tasks:
-    file: bootstrap-chart.yaml
-    apply:
+    - name: Filter out nodes as per inventory
+      ansible.builtin.set_fact:
+        inventory_nodes: "{{ all_k8s_nodes.resources | json_query(node_filter) | json_query(node_extractor) }}"
       vars:
-        chart: "{{ item }}"
-  loop:
-    - name: storage-stack
-      namespace: longhorn-system
-    - name: cert-stack
-      namespace: cert-system
-    - name: ingress-stack
-      namespace: ingress-system
+        node_filter: '[?contains({{ groups["all"] }}, metadata.annotations."k3s.io/external-ip")]'
+        node_extractor: '[].metadata.annotations."k3s.io/hostname"'
 
-- name: Wait for Longhorn admission webhook to become available or next step will fail
-  kubernetes.core.k8s_info:
-    kind: Deployment
-    wait: true
-    name: longhorn-admission-webhook
-    namespace: longhorn-system
-    wait_timeout: 300
-    wait_condition:
-      type: Available
-      status: "True"
+    - name: Add cluster FQN as label to all inventory nodes
+      loop: "{{ inventory_nodes }}"
+      kubernetes.core.k8s:
+        state: patched
+        kind: Node
+        name: "{{ item }}"
+        definition:
+          metadata:
+            labels: "{{ {cluster_fqn: '1'} }}"
 
-- name: Get list of current Longhorn node tags
-  loop: "{{ inventory_nodes }}"
-  kubernetes.core.k8s_info:
-    api_version: longhorn.io/v1beta2
-    kind: Node
-    namespace: longhorn-system
-    name: "{{ item }}"
-  register: lhn_info
-
-- name: Add cluster FQN as label to all Longhorn nodes in inventory
-  loop: "{{ lhn_info.results }}"
-  when: "cluster_fqn not in item.resources[0].spec.tags"
-  kubernetes.core.k8s:
-    state: patched
-    api_version: longhorn.io/v1beta2
-    kind: Node
-    namespace: longhorn-system
-    name: "{{ item.resources[0].metadata.name }}"
-    definition:
-      spec:
-        tags:
-          - "{{ cluster_fqn }}"
-
-- name: Set KUBECONFIG to host cluster
-  ansible.builtin.set_fact:
-    kubeconfig: "{{ ansible_env.KUBECONFIG }}"
-
-- name: Setup vcluster
+- name: Ensure vcluster for domain exists
   when: "vcluster"
   block:
     - name: Create vcluster for domain
       kubernetes.core.helm:
         wait: true
         name: vcluster
-        release_namespace: "{{ cluster_fqn }}"
+        release_namespace: "{{ cluster_name }}"
+        create_namespace: true
         chart_repo_url: https://charts.loft.sh
-        chart_ref: kubernetes
+        chart_ref: vcluster
         chart_version: "^0.15"
         values:
           sync:
@@ -139,8 +62,6 @@
               enabled: true
             networkpolicies:
               enabled: true
-          isolation:
-            enabled: true
           proxy:
             metricsServer:
               nodes:
@@ -150,57 +71,127 @@
           syncer:
             extraArgs:
               - "--tls-san={{ cluster_fqn }}"
+          serviceCIDR: "10.43.0.0/16,2001:cafe:42:1::/112"
 
-    - name: Save vcluster KUBECONFIG to file
-      ansible.builtin.command: "vcluster connect kubernetes -n {{ cluster_fqn }} --update-current=false --server=https://{{ cluster_fqn }}"
+    - name: Switch kube-context to vcluster
+      vars:
+        used_ports: "{{ ansible_facts.tcp_listen | map(attribute='port') | list }}"
+      ansible.builtin.set_fact:
+        vcluster_port: "{{ range(1024, 65535) | list | difference(used_ports) | first }}"
+
+    - name: Switch kube-context to vcluster
+      vars:
+        connect_args: "--kube-config-context-name {{ cluster_name }} --local-port {{ vcluster_port }}"
+      ansible.builtin.shell: "nohup vcluster connect vcluster -n {{ cluster_name }} {{ connect_args }} </dev/null >/dev/null 2>&1 &"
+      changed_when: true
+      register: vcluster_connect
+
+    - name: Wait for port-forwarded vcluster API to become available
+      ansible.builtin.wait_for:
+        host: localhost
+        port: 10232
+        timeout: 120
+
+- name: Ensure kubeconfig file is available on local machine
+  block:
+    - name: Copy default kubeconfig file
+      ansible.builtin.copy:
+        remote_src: true
+        src: "{{ ansible_env.KUBECONFIG }}"
+        dest: /tmp/kubeconfig.yaml
+        mode: '0644'
+
+    - name: Change server address of copied kubeconfig to public cluster FQN
+      ansible.builtin.command:
+        argv:
+          - kubectl
+          - config
+          - set-cluster
+          - "{{ cluster_name }}"
+          - "--server=https://{{ cluster_fqn }}"
+      environment:
+        KUBECONFIG: /tmp/kubeconfig.yaml
       changed_when: true
 
-    - name: Set KUBECONFIG to vcluster
-      ansible.builtin.set_fact:
-        kubeconfig: "./kubeconfig.yaml"
+    - name: Download kubeconfig file
+      ansible.builtin.fetch:
+        src: /tmp/kubeconfig.yaml
+        dest: "{{ playbook_dir }}/{{ cluster_name }}.kubeconfig.yaml"
+        flat: true
 
-- name: Copy default kubeconfig file
-  ansible.builtin.copy:
-    remote_src: true
-    src: "{{ kubeconfig }}"
-    dest: /tmp/kubeconfig.yaml
-    mode: '0644'
+- name: Ensure GitOps is setup
+  block:
+    - name: Check if FluxCD release already exists
+      kubernetes.core.helm_info:
+        name: fluxcd
+        release_namespace: flux-system
+      register: existing_fluxcd
 
-- name: Change server address of copied kubeconfig to public cluster FQN
-  ansible.builtin.command:
-    argv:
-      - kubectl
-      - config
-      - set-cluster
-      - default
-      - "--server=https://{{ cluster_fqn }}"
-  environment:
-    KUBECONFIG: /tmp/kubeconfig.yaml
-  changed_when: true
+    - name: Deploy FluxCD
+      when: "existing_fluxcd.status is undefined or existing_fluxcd.status.keys() | length == 0"
+      kubernetes.core.helm:
+        wait: true
+        timeout: 10m
+        name: fluxcd
+        release_namespace: flux-system
+        create_namespace: true
+        chart_repo_url: https://fluxcd-community.github.io/helm-charts
+        chart_ref: flux2
+        chart_version: "^2"
+        values:
+          policies:
+            create: false
 
-- name: Download kubeconfig file
-  ansible.builtin.fetch:
-    src: /tmp/kubeconfig.yaml
-    dest: "{{ playbook_dir }}/{{ cluster_fqn }}.k3s.yaml"
-    flat: true
+    - name: Ensure base GitRepository exists
+      kubernetes.core.k8s:
+        wait: true
+        definition:
+          apiVersion: source.toolkit.fluxcd.io/v1
+          kind: GitRepository
+          metadata:
+            name: base-repo
+            namespace: flux-system
+          spec:
+            interval: 1h
+            url: "{{ base_repo }}"
+            ref:
+              branch: "{{ base_branch }}"
 
-- name: Bootstrap cluster infrastructure
-  ansible.builtin.include_tasks:
-    file: bootstrap-chart.yaml
-    apply:
-      vars:
-        chart: "{{ item }}"
-      environment:
-        KUBECONFIG: "{{ kubeconfig }}"
-  loop:
-    - name: telemetry-stack
-      namespace: telemetry-system
-    - name: cicd-stack
-      namespace: flux-system
+    - name: Reconcile base git repo
+      ansible.builtin.command: "flux reconcile source git base-repo -n flux-system"
+      changed_when: true
+
+- name: Bootstrap components with CRDs and other hard dependecies (via minimal-config release)
+  block:
+    - name: Bootstrap host-cluster infrastructure
+      when: "not vcluster"
+      ansible.builtin.include_tasks:
+        file: bootstrap-chart.yaml
+        apply:
+          vars:
+            chart: "{{ item }}"
+      loop:
+        - name: storage-stack
+          namespace: longhorn-system
+        - name: cert-stack
+          namespace: cert-system
+        - name: ingress-stack
+          namespace: ingress-system
+
+    - name: Bootstrap cluster infrastructure
+      ansible.builtin.include_tasks:
+        file: bootstrap-chart.yaml
+        apply:
+          vars:
+            chart: "{{ item }}"
+      loop:
+        - name: telemetry-stack
+          namespace: telemetry-system
+        - name: cicd-stack
+          namespace: flux-system
 
 - name: Ensure all required secrets exist
   kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
     wait: true
     definition:
       apiVersion: v1
@@ -226,8 +217,8 @@
     apply:
       vars:
         chart: "{{ item }}"
-      environment:
-        KUBECONFIG: "{{ kubeconfig }}"
+  loop_control:
+    label: "{{ item.name }} in {{ item.namespace }}"
   loop:
     - name: upgrade-controller
       namespace: kube-system
@@ -268,10 +259,47 @@
       chart_values:
         s3: "{{ s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
 
-- name: Apply backup restoration
-  when: "restore_from_backup"
+- name: Ensure cluster FQN label is applied to Longhorn nodes
+  when: "not vcluster"
+  block:
+    - name: Get list of current Longhorn node tags
+      loop: "{{ inventory_nodes }}"
+      kubernetes.core.k8s_info:
+        api_version: longhorn.io/v1beta2
+        kind: Node
+        namespace: longhorn-system
+        name: "{{ item }}"
+        wait: true
+        wait_timeout: 180
+        wait_condition:
+          type: Ready
+          status: "True"
+      register: lhn_info
+
+    - name: Ensure cluster FQN is tag on all Longhorn nodes in inventory
+      loop: "{{ lhn_info.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+      vars:
+        existing_tags: "{{ item.resources[0].spec.tags }}"
+        lhn_name: "{{ item.resources[0].metadata.name }}"
+      kubernetes.core.k8s:
+        state: patched
+        api_version: longhorn.io/v1beta2
+        kind: Node
+        namespace: longhorn-system
+        name: "{{ lhn_name }}"
+        definition:
+          spec:
+            tags: "{{ (existing_tags + [cluster_fqn]) | unique | list }}"
+      register: lhn_patch_result
+      retries: 6 # Longhorn CRD webhook tends to be unavailable at times.
+      delay: 20
+      until: "lhn_patch_result is not failed"
+
+- name: Apply backup restoration, if supplied
+  when: "not vcluster and restore_from_backup"
   kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
     wait: true
     definition:
       apiVersion: velero.io/v1
@@ -282,14 +310,40 @@
       spec:
         backupName: "{{ restore_from_backup }}"
 
+- name: Expose k8s API via Ingress
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: k8s-api
+        namespace: default
+        annotations:
+          nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+          nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+          nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      spec:
+        rules:
+          - host: "{{ cluster_fqn }}"
+            http:
+              paths:
+                - backend:
+                    service:
+                      name: kubernetes
+                      port:
+                        number: 443
+                  path: /
+                  pathType: ImplementationSpecific
+
 - name: Ensure HelmReleases for cluster infrastructure exist
   ansible.builtin.include_tasks:
     file: deploy-chart.yaml
     apply:
       vars:
         chart: "{{ item }}"
-      environment:
-        KUBECONFIG: "{{ kubeconfig }}"
+  loop_control:
+    label: "{{ item.name }} in {{ item.namespace }}"
   loop:
     - name: admin-rbac
       namespace: kube-system
@@ -379,29 +433,24 @@
         oauth2_proxy_host: "{{ subdomains.auth }}.{{ domain }}"
         admin_group: "cluster-admins"
 
-- name: Expose k8s API via Ingress
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    wait: true
-    definition:
-      apiVersion: networking.k8s.io/v1
-      kind: Ingress
-      metadata:
-        name: k8s-api
-        namespace: "{{ vcluster | ternary(cluster_fqn, 'default') }}"
-        annotations:
-          nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-          nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-          nginx.ingress.kubernetes.io/ssl-redirect: "true"
-      spec:
-        rules:
-          - host: "{{ cluster_fqn }}"
-            http:
-              paths:
-                - backend:
-                    service:
-                      name: kubernetes
-                      port:
-                        number: 443
-                  path: /
-                  pathType: ImplementationSpecific
+- name: Reset kubectl context to default
+  when: "vcluster"
+  ansible.builtin.command: "kubectl config use-context {{ default_ctx.stdout }}"
+  changed_when: true
+
+- name: Terminate port-forwarding to vcluster
+  when: "vcluster"
+  vars:
+    pid: "{{ ansible_facts.tcp_listen | selectattr('port', '==', vcluster_port) | map(attribute='pid') | list | first }}"
+  ansible.builtin.command: "kill -SIGTERM {{ pid }}"
+  changed_when: true
+
+- name: Ensure vcluster namespace is isolated
+  when: "vcluster"
+  ansible.builtin.include_tasks:
+    file: deploy-chart.yaml
+    apply:
+      vars:
+        chart:
+          name: namespace-isolation
+          namespace: "{{ cluster_name }}"

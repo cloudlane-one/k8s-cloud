@@ -1,4 +1,5 @@
 - name: Perform localhost setup steps, if according flags are set
+  tags: nodes
   hosts: localhost
   connection: local
   roles:
@@ -8,15 +9,17 @@
       when: "(auto_trust_remotes is defined) and auto_trust_remotes and (auto_trust_remotes != 'false')"
 
 - name: Run setup for all nodes
+  tags: nodes
   hosts: all
   become: true
   vars:
     control_nodes: "{{ groups['control_nodes'] | default([]) }}"
   roles:
     - role: node
+      when: "not vcluster"
   tasks:
     - name: Add first host to control_nodes group, if group wasn't explicitly created
-      when: "not vcluster and 'control_nodes' not in groups and inventory_hostname == groups['all'][0]"
+      when: "'control_nodes' not in groups and inventory_hostname == groups['all'][0]"
       ansible.builtin.add_host:
         name: "{{ inventory_hostname }}"
         groups: control_nodes

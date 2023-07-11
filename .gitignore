@@ -7,15 +7,13 @@ Chart.lock
 *.local.*
 
 # Files containing secrets & custom config
-/kubeconfig*.yaml
-/kubeconfig*.yml
-/kubeconfig*
+/*kubeconfig*.yaml
+/*kubeconfig*.yml
 /join-token
 /*.hosts.ini
 /*.config.yaml
 /*.secrets.yaml
 /*.values.yaml
-/*.k3s.yaml
 
 # Do not commit lockfil
 /poetry.lock
