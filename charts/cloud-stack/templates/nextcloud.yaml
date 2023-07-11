@@ -80,8 +80,7 @@ spec:
           hosts:
             - {{ .Values.hostnames.nextcloud }}
       annotations:
-        cert-manager.io/cluster-issuer: {{ .Values.cluster_issuer }}
-        external-dns.alpha.kubernetes.io/managed-by: {{ .Values.external_dns_manager }}
+        kubernetes.io/tls-acme: "true"
         nginx.ingress.kubernetes.io/proxy-body-size: 4G
         nginx.ingress.kubernetes.io/server-snippet: |-
           server_tokens off;

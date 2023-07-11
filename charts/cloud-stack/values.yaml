@@ -36,7 +36,3 @@ smtp: # For admin notifications
     name: ""
     key: "secret"
   from_address: ""
-
-cluster_issuer: "acme"
-
-external_dns_manager: "cluster"

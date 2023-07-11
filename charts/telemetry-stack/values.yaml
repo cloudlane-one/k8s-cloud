@@ -37,9 +37,6 @@ admin_group: ""
 # Pass public k8s node ips so that k3s metrics endpoints can be monitored (if not vcluster)
 node_endpoints: []
 
-cluster_issuer: "acme"
-external_dns_manager: "cluster"
-
 letsencrypt_staging: false
 
 bootstrap: false # Set to true to install in bootstrap mode (minimum deployment to support core functions and CRs)

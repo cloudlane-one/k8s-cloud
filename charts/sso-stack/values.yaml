@@ -39,7 +39,4 @@ org:
 admin_group: ""
 admin_email: ""
 
-cluster_issuer: "acme"
-external_dns_manager: "cluster"
-
 letsencrypt_staging: false

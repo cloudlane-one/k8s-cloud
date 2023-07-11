@@ -31,6 +31,14 @@ spec:
       enabled: true
       servicemonitor:
         enabled: true
+    ingressShim:
+      defaultIssuerKind: ClusterIssuer
+      defaultIssuerGroup: cert-manager.io
+      {{- if not .Values.letsencrypt_staging }}
+      defaultIssuerName: letsencrypt
+      {{- else }}
+      defaultIssuerName: letsencrypt-staging
+      {{- end }}
 ---
 apiVersion: v1
 kind: ConfigMap

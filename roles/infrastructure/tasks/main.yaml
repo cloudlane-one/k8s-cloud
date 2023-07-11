@@ -74,6 +74,17 @@
     - name: ingress-stack
       namespace: ingress-system
 
+- name: Wait for Longhorn admission webhook to become available or next step will fail
+  kubernetes.core.k8s_info:
+    kind: Deployment
+    wait: true
+    name: longhorn-admission-webhook
+    namespace: longhorn-system
+    wait_timeout: 300
+    wait_condition:
+      type: Available
+      status: "True"
+
 - name: Get list of current Longhorn node tags
   loop: "{{ inventory_nodes }}"
   kubernetes.core.k8s_info:
@@ -91,7 +102,7 @@
     api_version: longhorn.io/v1beta2
     kind: Node
     namespace: longhorn-system
-    name: "{{ item }}"
+    name: "{{ item.resources[0].metadata.name }}"
     definition:
       spec:
         tags:
@@ -154,6 +165,31 @@
     - name: Set KUBECONFIG to vcluster
       ansible.builtin.set_fact:
         kubeconfig: "{{ ansible_env.KUBECONFIG }}"
+
+- name: Copy default kubeconfig file
+  ansible.builtin.copy:
+    remote_src: true
+    src: "{{ kubeconfig }}"
+    dest: /tmp/kubeconfig.yaml
+    mode: '0644'
+
+- name: Change server address of copied kubeconfig to public cluster FQN
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - config
+      - set-cluster
+      - default
+      - "--server=https://{{ cluster_fqn }}"
+  environment:
+    KUBECONFIG: /tmp/kubeconfig.yaml
+  changed_when: true
+
+- name: Download kubeconfig file
+  ansible.builtin.fetch:
+    src: /tmp/kubeconfig.yaml
+    dest: "{{ playbook_dir }}/{{ cluster_fqn }}.k3s.yaml"
+    flat: true
 
 - name: Bootstrap cluster infrastructure
   ansible.builtin.include_tasks:
@@ -219,14 +255,17 @@
 
     - name: cert-stack
       namespace: cert-system
+      chart_values:
+        admin_email: "{{ admin_email }}"
+        base_repo: "{{ base_repo }}"
+        base_branch: "{{ base_branch }}"
+        letsencrypt_staging: "{{ letsencrypt_staging }}"
 
     - name: namespace-isolation
       namespace: ingress-system
 
     - name: ingress-stack
       namespace: ingress-system
-      chart_values:
-        letsencrypt_staging: "{{ letsencrypt_staging }}"
 
     - name: namespace-isolation
       namespace: backup-system
@@ -358,7 +397,6 @@
         name: k8s-api
         namespace: default
         annotations:
-          external-dns.alpha.kubernetes.io/managed-by: cluster
           nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
           nginx.ingress.kubernetes.io/ssl-passthrough: "true"
       spec:
@@ -373,28 +411,3 @@
                         number: 443
                   path: /
                   pathType: ImplementationSpecific
-
-- name: Copy default kubeconfig file
-  ansible.builtin.copy:
-    remote_src: true
-    src: "{{ kubeconfig }}"
-    dest: /tmp/kubeconfig.yaml
-    mode: '0644'
-
-- name: Change server address of copied kubeconfig to public cluster FQN
-  ansible.builtin.command:
-    argv:
-      - kubectl
-      - config
-      - set-cluster
-      - default
-      - "--server=https://{{ cluster_fqn }}"
-  environment:
-    KUBECONFIG: /tmp/kubeconfig.yaml
-  changed_when: true
-
-- name: Download kubeconfig file
-  ansible.builtin.fetch:
-    src: /tmp/kubeconfig.yaml
-    dest: "{{ playbook_dir }}/{{ cluster_fqn }}.yaml"
-    flat: true

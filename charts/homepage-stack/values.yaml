@@ -17,7 +17,3 @@ smtp: # For admin notifications
   from_address: ""
 
 admin_email: ""
-
-cluster_issuer: "acme"
-
-external_dns_manager: "cluster"

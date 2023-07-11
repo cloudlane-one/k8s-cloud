@@ -499,8 +499,7 @@ kind: Ingress
 metadata:
   name: mailman
   annotations:
-    cert-manager.io/cluster-issuer: {{ .Values.cluster_issuer }}
-    external-dns.alpha.kubernetes.io/managed-by: {{ .Values.external_dns_manager }}
+    kubernetes.io/tls-acme: "true"
 spec:
   tls:
     - hosts:

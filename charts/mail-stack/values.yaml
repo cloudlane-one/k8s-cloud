@@ -21,7 +21,3 @@ useMailuProxyAuth: true
 org:
   name: ""
   logoURL: ""
-
-cluster_issuer: "acme"
-
-external_dns_manager: "cluster"

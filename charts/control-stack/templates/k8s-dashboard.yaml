@@ -26,8 +26,7 @@ spec:
     ingress:
       enabled: true
       annotations:
-        cert-manager.io/cluster-issuer: {{ .Values.cluster_issuer }}
-        external-dns.alpha.kubernetes.io/managed-by: {{ .Values.external_dns_manager }}
+        kubernetes.io/tls-acme: "true"
         # As described in this docs section: https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/#configuring-for-use-with-the-nginx-auth_request-directive
         nginx.ingress.kubernetes.io/auth-response-headers: Authorization
         nginx.ingress.kubernetes.io/auth-signin: {{ printf "https://%s/oauth2/start?rd=$scheme%%3A%%2F%%2F$host$escaped_request_uri" .Values.oauth2_proxy_host }}
