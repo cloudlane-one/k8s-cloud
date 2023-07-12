@@ -37,7 +37,7 @@
 - name: Ensure vcluster for domain exists
   when: "vcluster"
   block:
-    - name: Create vcluster for domain
+    - name: Ensure vcluster helm release exists
       kubernetes.core.helm:
         wait: true
         name: vcluster
@@ -71,7 +71,11 @@
           syncer:
             extraArgs:
               - "--tls-san={{ cluster_fqn }}"
-          serviceCIDR: "10.43.0.0/16,2001:cafe:42:1::/112"
+          vcluster:
+            extraArgs:
+              - "--kube-apiserver-arg=oidc-issuer-url=https://{{ subdomains.idp }}.{{ domain }}/realms/master"
+              - "--kube-apiserver-arg=oidc-client-id=cluster-oidc"
+              - "--kube-apiserver-arg=oidc-groups-claim=groups"
 
     - name: Switch kube-context to vcluster
       vars:
