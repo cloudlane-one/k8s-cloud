@@ -450,8 +450,9 @@
         k3s: true
         vcluster: "{{ vcluster }}"
 
-    - name: namespace-isolation
-      namespace: flux-system
+    # # Produces 502 bad gateway when trying to access weave-gitops via ingress
+    # - name: namespace-isolation
+    #   namespace: flux-system
 
     - name: cicd-stack
       namespace: flux-system
