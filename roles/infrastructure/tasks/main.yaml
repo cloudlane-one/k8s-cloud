@@ -440,8 +440,9 @@
         name: vcluster
       register: vcluster_pids
 
-    - name: Terminate port-forwarding to vcluster
-      loop: "{{ vcluster_pids.pids }}"
+    - name: Terminate extraneous port-forwarders to vcluster
+      when: "vcluster_pids.pids | length > 1"
+      loop: "{{ vcluster_pids.pids[1:] }}"
       ansible.builtin.command: "kill -SIGTERM {{ item }}"
       changed_when: true
 
