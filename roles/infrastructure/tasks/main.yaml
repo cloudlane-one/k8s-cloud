@@ -1,8 +1,16 @@
 - name: Set dynamic facts
+  vars:
+    suffix: "{{ domain | community.dns.get_public_suffix }}"
+    main_name: "{{ domain | replace(suffix, '') | split('.') | last }}"
   ansible.builtin.set_fact:
     cluster_fqn: "{{ subdomains.cluster }}.{{ domain }}"
     charts_dir: "{{ playbook_dir }}/charts"
     cluster_name: "{{ vcluster | ternary(domain | replace('.', '-'), 'default') }}"
+    registered_domain: "{{ main_name }}{{ suffix }}"
+
+- name: Print domain info
+  ansible.builtin.debug:
+    msg: "Setting up cluster '{{ cluster_fqn }}' for domain '{{ domain }}' on registered domain '{{ registered_domain }}'"
 
 - name: Get current kubectl context
   ansible.builtin.command: "kubectl config current-context"
@@ -372,7 +380,7 @@
     - name: dns-stack
       namespace: dns-system
       chart_values:
-        domain: "{{ domain }}"
+        domain: "{{ registered_domain }}"
         token_secret:
           namespace: kube-system
           name: external-dns
