@@ -428,9 +428,6 @@
         admin_email: "{{ admin_email }}"
         letsencrypt_staging: "{{ letsencrypt_staging }}"
 
-    - name: namespace-isolation
-      namespace: telemetry-system
-
     - name: telemetry-stack
       namespace: telemetry-system
       chart_values:
