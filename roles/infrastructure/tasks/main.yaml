@@ -268,7 +268,7 @@
         admin_group: "cluster-admins"
         s3: "{{ s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
 
-    # # Can't isolate cert-system with current policy approach. 
+    # # Can't isolate cert-system with current policy approach.
     # # This is due to k8s api server trying to call cert-manager webhook and timing out.
     # - name: namespace-isolation
     #   namespace: cert-system
