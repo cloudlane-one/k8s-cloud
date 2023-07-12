@@ -41,6 +41,8 @@ spec:
       enabled: false
     kubeScheduler:
       enabled: false
+    nodeExporter:
+      enabled: false
 {{- else }}
   valuesFrom:
     - kind: Secret

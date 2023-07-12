@@ -2,15 +2,9 @@
   ansible.builtin.debug:
     msg: "Deploying chart {{ chart.name }} into namespace {{ chart.namespace }}"
 
-- name: Get current kubectl context
-  ansible.builtin.command: "kubectl config current-context"
-  changed_when: false
-  register: current_ctx
-
 - name: Ensure chart namespace exists
-  environment:
-    K8S_AUTH_CONTEXT: "{{ kube_context | default(current_ctx.stdout) }}"
   kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
     wait: true
     definition:
       apiVersion: v1
@@ -19,9 +13,8 @@
         name: "{{ chart.namespace }}"
 
 - name: Ensure HelmRelease for chart exists
-  environment:
-    K8S_AUTH_CONTEXT: "{{ kube_context | default(current_ctx.stdout) }}"
   kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
     wait: true
     wait_timeout: 600
     wait_condition:
@@ -46,9 +39,8 @@
         values: "{{ chart.chart_values | default({}) | combine({'bootstrap': false}) }}"
 
 - name: Reconcile HelmRelease
-  vars:
-    context: "{{ kube_context | default('') }}"
-    context_arg: "{{ context | ternary('--context=' + context, '') }}"
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
   ansible.builtin.command:
     argv:
       - flux
@@ -56,5 +48,4 @@
       - hr
       - "{{ chart.name }}"
       - "-n={{ chart.namespace }}"
-      - "{{ context_arg }}"
   changed_when: true

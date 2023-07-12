@@ -4,6 +4,7 @@
 
 - name: Ensure chart namespace exists
   kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
     wait: true
     definition:
       apiVersion: v1
@@ -13,6 +14,7 @@
 
 - name: Check if chart release already exists
   kubernetes.core.helm_info:
+    kubeconfig: "{{ kubeconfig }}"
     name: "{{ chart.name }}"
     release_namespace: "{{ chart.namespace }}"
   register: existing_release
@@ -20,6 +22,7 @@
 - name: Bootstrap chart release, if it doesn't exist yet
   when: "existing_release.status is undefined or existing_release.status.keys() | length == 0"
   kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
     wait: true
     wait_timeout: 600
     wait_condition:

@@ -5,19 +5,18 @@
   ansible.builtin.set_fact:
     cluster_fqn: "{{ subdomains.cluster }}.{{ domain }}"
     charts_dir: "{{ playbook_dir }}/charts"
-    cluster_name: "{{ vcluster | ternary(domain | replace('.', '-'), 'default') }}"
+    cluster_namespace: "{{ domain | replace('.', '-') }}"
     registered_domain: "{{ main_name }}{{ suffix }}"
+    host_kubeconfig: "{{ ansible_env.KUBECONFIG }}"
+    kubeconfig: "{{ ansible_env.KUBECONFIG }}"
 
 - name: Print domain info
   ansible.builtin.debug:
     msg: "Setting up cluster '{{ cluster_fqn }}' for domain '{{ domain }}' on registered domain '{{ registered_domain }}'"
 
-- name: Get current kubectl context
-  ansible.builtin.command: "kubectl config current-context"
-  changed_when: false
-  register: default_ctx
-
 - name: Ensure cluster FQN label is applied to nodes
+  environment:
+    K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
   block:
     - name: Get all k8s nodes
       kubernetes.core.k8s_info:
@@ -44,13 +43,16 @@
 
 - name: Ensure vcluster for domain exists
   when: "vcluster"
+  environment:
+    K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
+    KUBECONFIG: "{{ host_kubeconfig }}"
   block:
     - name: Ensure vcluster helm release exists
       kubernetes.core.helm:
         wait: true
         timeout: "10m0s"
         name: vcluster
-        release_namespace: "{{ cluster_name }}"
+        release_namespace: "{{ cluster_namespace }}"
         create_namespace: true
         chart_repo_url: https://charts.loft.sh
         chart_ref: vcluster
@@ -98,12 +100,16 @@
       ansible.builtin.set_fact:
         vcluster_port: "{{ range(5000, 30000) | list | difference(used_ports) | random }}"
 
-    - name: Switch kube-context to vcluster
+    - name: Generate kubeconfig for vcluster
       vars:
-        connect_args: "--kube-config-context-name {{ cluster_name }} --local-port {{ vcluster_port }}"
-      ansible.builtin.shell: "nohup vcluster connect vcluster -n {{ cluster_name }} {{ connect_args }} </dev/null >/dev/null 2>&1 &"
+        connect_flags:
+          - "--namespace={{ cluster_namespace }}"
+          - "--local-port={{ vcluster_port }}"
+          - "--update-current=false"
+          - "--kube-config=/tmp/virtual-kubeconfig.yaml"
+          - "--kube-config-context-name={{ cluster_namespace }}"
+      ansible.builtin.shell: "nohup vcluster connect vcluster {{ connect_flags | join(' ') }} </dev/null >/dev/null 2>&1 &"
       changed_when: true
-      register: vcluster_connect
 
     - name: Print port where vcluster listens
       ansible.builtin.debug:
@@ -115,34 +121,76 @@
         port: "{{ vcluster_port }}"
         timeout: 120
 
+    - name: Activate vcluster kubeconfig
+      ansible.builtin.set_fact:
+        kubeconfig: /tmp/virtual-kubeconfig.yaml
+
 - name: Ensure kubeconfig file is available on local machine
   block:
-    - name: Copy default kubeconfig file
+    - name: Check for local kubeconfig
+      delegate_to: localhost
+      become: false
+      ansible.builtin.stat:
+        path: "{{ playbook_dir }}/{{ local_kubeconfig }}"
+      register: local_kubeconfig_file
+
+    - name: Copy and merge local config file
+      when: "local_kubeconfig_file.stat.exists"
+      block:
+        - name: Copy local kubeconfig to remote
+          ansible.builtin.copy:
+            src: "{{ playbook_dir }}/{{ local_kubeconfig }}"
+            dest: /tmp/local-kubeconfig.yaml
+            mode: '0644'
+
+        - name: Merge local kubeconfig with remote
+          environment:
+            KUBECONFIG: "{{ kubeconfig }}:/tmp/local-kubeconfig.yaml"
+          ansible.builtin.command:
+            argv:
+              - kubectl
+              - config
+              - view
+              - --flatten
+          register: merged_kubeconfig
+          changed_when: false
+
+        - name: Save merged kubeconfig to file
+          ansible.builtin.copy:
+            content: "{{ merged_kubeconfig.stdout }}"
+            dest: /tmp/public-kubeconfig.yaml
+            mode: '0644'
+
+    - name: Copy remote kubeconfig file
+      when: "not local_kubeconfig_file.stat.exists"
       ansible.builtin.copy:
         remote_src: true
-        src: "{{ ansible_env.KUBECONFIG }}"
-        dest: /tmp/kubeconfig.yaml
+        src: "{{ kubeconfig }}"
+        dest: /tmp/public-kubeconfig.yaml
         mode: '0644'
 
     - name: Change server address of copied kubeconfig to public cluster FQN
+      environment:
+        KUBECONFIG: /tmp/public-kubeconfig.yaml
       ansible.builtin.command:
         argv:
           - kubectl
           - config
           - set-cluster
-          - "{{ cluster_name }}"
+          - "{{ cluster_namespace }}"
           - "--server=https://{{ cluster_fqn }}"
-      environment:
-        KUBECONFIG: /tmp/kubeconfig.yaml
       changed_when: true
 
     - name: Download kubeconfig file
       ansible.builtin.fetch:
-        src: /tmp/kubeconfig.yaml
-        dest: "{{ playbook_dir }}/{{ cluster_name }}.kubeconfig.yaml"
+        src: /tmp/public-kubeconfig.yaml
+        dest: "{{ playbook_dir }}/kubeconfig.yaml"
         flat: true
 
 - name: Ensure GitOps is setup
+  environment:
+    K8S_AUTH_KUBECONFIG: "{{ kubeconfig }}"
+    KUBECONFIG: "{{ kubeconfig }}"
   block:
     - name: Check if FluxCD release already exists
       kubernetes.core.helm_info:
@@ -184,18 +232,6 @@
       ansible.builtin.command: "flux reconcile source git base-repo -n flux-system"
       changed_when: true
 
-# # This has to be disabled until sso-stack can handle Network Policies. See issue #37
-# - name: Ensure vcluster namespace is isolated
-#   when: "vcluster"
-#   ansible.builtin.include_tasks:
-#     file: deploy-chart.yaml
-#     apply:
-#       vars:
-#         chart:
-#           name: namespace-isolation
-#           namespace: "{{ cluster_name }}"
-#         kube_context: default
-
 - name: Bootstrap components with CRDs and other hard dependecies (via minimal-config release)
   block:
     - name: Bootstrap host-cluster infrastructure
@@ -205,6 +241,7 @@
         apply:
           vars:
             chart: "{{ item }}"
+            kubeconfig: "{{ host_kubeconfig }}"
       loop:
         - name: storage-stack
           namespace: longhorn-system
@@ -219,6 +256,7 @@
         apply:
           vars:
             chart: "{{ item }}"
+            kubeconfig: "{{ kubeconfig }}"
       loop:
         - name: telemetry-stack
           namespace: telemetry-system
@@ -226,6 +264,8 @@
           namespace: flux-system
 
 - name: Ensure all required secrets exist
+  environment:
+    K8S_AUTH_KUBECONFIG: "{{ kubeconfig }}"
   kubernetes.core.k8s:
     wait: true
     definition:
@@ -252,6 +292,7 @@
     apply:
       vars:
         chart: "{{ item }}"
+        kubeconfig: "{{ host_kubeconfig }}"
   loop_control:
     label: "{{ item.name }} in {{ item.namespace }}"
   loop:
@@ -298,7 +339,7 @@
 
 - name: Expose k8s API via Ingress
   environment:
-    K8S_AUTH_CONTEXT: default
+    K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
   kubernetes.core.k8s:
     wait: true
     definition:
@@ -306,7 +347,7 @@
       kind: Ingress
       metadata:
         name: k8s-api
-        namespace: "{{ cluster_name }}"
+        namespace: "{{ vcluster | ternary(cluster_namespace, 'default') }}"
         annotations:
           nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
           nginx.ingress.kubernetes.io/ssl-passthrough: "true"
@@ -330,7 +371,7 @@
 
 - name: Ensure cluster FQN label is applied to Longhorn nodes
   environment:
-    K8S_AUTH_CONTEXT: default
+    K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
   block:
     - name: Get list of current Longhorn node tags
       loop: "{{ inventory_nodes }}"
@@ -369,6 +410,8 @@
 
 - name: Apply backup restoration, if supplied
   when: "not vcluster and restore_from_backup"
+  environment:
+    K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
   kubernetes.core.k8s:
     wait: true
     definition:
@@ -386,6 +429,7 @@
     apply:
       vars:
         chart: "{{ item }}"
+        kubeconfig: "{{ kubeconfig }}"
   loop_control:
     label: "{{ item.name }} in {{ item.namespace }}"
   loop:
@@ -475,13 +519,9 @@
         oauth2_proxy_host: "{{ subdomains.auth }}.{{ domain }}"
         admin_group: "cluster-admins"
 
-- name: Reset cluster context
+- name: Cleanup port forwarding
   when: "vcluster"
   block:
-    - name: Reset kubectl context to default
-      ansible.builtin.command: "kubectl config use-context {{ default_ctx.stdout }}"
-      changed_when: true
-
     - name: Get PIDs of running vcluster port-forwarders
       community.general.pids:
         name: vcluster

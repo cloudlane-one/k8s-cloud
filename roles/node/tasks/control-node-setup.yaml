@@ -68,10 +68,10 @@
   when: "which_vcluster.rc != 0"
   ansible.builtin.get_url:
     url: https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64
-    dest: /tmp/vcluster
+    dest: /tmp/vcluster-cli
     mode: "0700"
 
 - name: Install VCluster CLI
   when: "which_vcluster.rc != 0"
-  ansible.builtin.command: "install -c -m 0755 /tmp/vcluster /usr/local/bin"
+  ansible.builtin.command: "install -c -m 0755 /tmp/vcluster-cli /usr/local/bin"
   changed_when: true
