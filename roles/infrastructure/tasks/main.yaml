@@ -48,12 +48,13 @@
     - name: Ensure vcluster helm release exists
       kubernetes.core.helm:
         wait: true
+        timeout: "10m0s"
         name: vcluster
         release_namespace: "{{ cluster_name }}"
         create_namespace: true
         chart_repo_url: https://charts.loft.sh
         chart_ref: vcluster
-        chart_version: "^0.15"
+        chart_version: "'^0.15.3 || 0.15.3-beta.0'" # Need this fix: https://github.com/loft-sh/vcluster/pull/1089
         values:
           sync:
             persistentvolumes:
@@ -257,8 +258,8 @@
     - name: upgrade-controller
       namespace: kube-system
 
-    - name: namespace-isolation
-      namespace: longhorn-system
+    # - name: namespace-isolation
+    #   namespace: longhorn-system
 
     - name: storage-stack
       namespace: longhorn-system
@@ -281,14 +282,14 @@
         base_branch: "{{ base_branch }}"
         letsencrypt_staging: "{{ letsencrypt_staging }}"
 
-    - name: namespace-isolation
-      namespace: ingress-system
+    # - name: namespace-isolation
+    #   namespace: ingress-system
 
     - name: ingress-stack
       namespace: ingress-system
 
-    - name: namespace-isolation
-      namespace: backup-system
+    # - name: namespace-isolation
+    #   namespace: backup-system
 
     - name: backup-stack
       namespace: backup-system
@@ -398,8 +399,8 @@
       chart_values:
         cluster_fqn: "{{ cluster_fqn }}"
 
-    - name: namespace-isolation
-      namespace: dns-system
+    # - name: namespace-isolation
+    #   namespace: dns-system
 
     - name: dns-stack
       namespace: dns-system
