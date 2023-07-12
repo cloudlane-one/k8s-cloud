@@ -77,11 +77,14 @@
               - "--kube-apiserver-arg=oidc-client-id=cluster-oidc"
               - "--kube-apiserver-arg=oidc-groups-claim=groups"
 
+    - name: Gather facts on listening ports
+      community.general.listen_ports_facts:
+
     - name: Switch kube-context to vcluster
       vars:
         used_ports: "{{ ansible_facts.tcp_listen | map(attribute='port') | list }}"
       ansible.builtin.set_fact:
-        vcluster_port: "{{ range(1024, 65535) | list | difference(used_ports) | first }}"
+        vcluster_port: "{{ range(5000, 30000) | list | difference(used_ports) | random }}"
 
     - name: Switch kube-context to vcluster
       vars:
@@ -90,10 +93,14 @@
       changed_when: true
       register: vcluster_connect
 
+    - name: Print port where vcluster listens
+      ansible.builtin.debug:
+        msg: "VCluster API is being forwarded to port {{ vcluster_port }} on localhost"
+
     - name: Wait for port-forwarded vcluster API to become available
       ansible.builtin.wait_for:
         host: localhost
-        port: 10232
+        port: "{{ vcluster_port }}"
         timeout: 120
 
 - name: Ensure kubeconfig file is available on local machine
