@@ -52,7 +52,7 @@ spec:
       valuesKey: secret
       targetPath: "grafana.grafana\\.ini.auth\\.generic_oauth.client_secret"
   values:
-    {{- if and k3s (.Values.node_endpoints | len | gt 0) }}
+    {{- if and .Values.k3s (.Values.node_endpoints | len | gt 0) }}
     defaultRules:
       rules:
         general: false
@@ -62,7 +62,7 @@ spec:
       endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
     kubeScheduler:
       endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
-    {{- else if k3s }}
+    {{- else if .Values.k3s }}
     defaultRules:
       rules:
         general: false
