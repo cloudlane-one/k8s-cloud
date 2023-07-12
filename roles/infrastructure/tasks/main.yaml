@@ -413,6 +413,7 @@
         smtp: "{{ smtp | combine({'password_secret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
         node_endpoints: "{{ groups['all'] }}"
         letsencrypt_staging: "{{ letsencrypt_staging }}"
+        k3s: "{{ not vcluster }}"
 
     - name: namespace-isolation
       namespace: flux-system
