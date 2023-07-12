@@ -181,6 +181,17 @@
       ansible.builtin.command: "flux reconcile source git base-repo -n flux-system"
       changed_when: true
 
+- name: Ensure vcluster namespace is isolated
+  when: "vcluster"
+  ansible.builtin.include_tasks:
+    file: deploy-chart.yaml
+    apply:
+      vars:
+        chart:
+          name: namespace-isolation
+          namespace: "{{ cluster_name }}"
+        kube_context: default
+
 - name: Bootstrap components with CRDs and other hard dependecies (via minimal-config release)
   block:
     - name: Bootstrap host-cluster infrastructure
@@ -279,8 +290,41 @@
       chart_values:
         s3: "{{ s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
 
+- name: Expose k8s API via Ingress
+  environment:
+    K8S_AUTH_CONTEXT: default
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: k8s-api
+        namespace: "{{ cluster_name }}"
+        annotations:
+          nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+          nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+          nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      spec:
+        rules:
+          - host: "{{ cluster_fqn }}"
+            http:
+              paths:
+                - backend:
+                    service:
+                      name: "{{ vcluster | ternary('vcluster', 'kubernetes') }}"
+                      port:
+                        number: 443
+                  path: /
+                  pathType: ImplementationSpecific
+  register: k8s_ingress_result
+  retries: 6 # NGINX webhook tends to be unavailable at times.
+  delay: 20
+  until: "k8s_ingress_result is not failed"
+
 - name: Ensure cluster FQN label is applied to Longhorn nodes
-  when: "not vcluster"
+  environment:
+    K8S_AUTH_CONTEXT: default
   block:
     - name: Get list of current Longhorn node tags
       loop: "{{ inventory_nodes }}"
@@ -442,46 +486,6 @@
 
     - name: Terminate extraneous port-forwarders to vcluster
       when: "vcluster_pids.pids | length > 1"
-      loop: "{{ vcluster_pids.pids[1:] }}"
+      loop: "{{ vcluster_pids.pids[:-1] }}"
       ansible.builtin.command: "kill -SIGTERM {{ item }}"
       changed_when: true
-
-- name: Ensure vcluster namespace is isolated
-  when: "vcluster"
-  ansible.builtin.include_tasks:
-    file: deploy-chart.yaml
-    apply:
-      vars:
-        chart:
-          name: namespace-isolation
-          namespace: "{{ cluster_name }}"
-
-- name: Expose k8s API via Ingress
-  kubernetes.core.k8s:
-    wait: true
-    definition:
-      apiVersion: networking.k8s.io/v1
-      kind: Ingress
-      metadata:
-        name: k8s-api
-        namespace: "{{ cluster_name }}"
-        annotations:
-          nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-          nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-          nginx.ingress.kubernetes.io/ssl-redirect: "true"
-      spec:
-        rules:
-          - host: "{{ cluster_fqn }}"
-            http:
-              paths:
-                - backend:
-                    service:
-                      name: "{{ vcluster | ternary('vcluster', 'kubernetes') }}"
-                      port:
-                        number: 443
-                  path: /
-                  pathType: ImplementationSpecific
-  register: k8s_ingress_result
-  retries: 6 # NGINX webhook tends to be unavailable at times.
-  delay: 20
-  until: "k8s_ingress_result is not failed"
