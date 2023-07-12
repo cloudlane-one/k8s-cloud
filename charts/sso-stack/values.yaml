@@ -1,3 +1,7 @@
+cluster_client:
+  id: cluster-oidc
+  redirect_uris: []
+
 clients:
   oidc: []
   #    - id: ""

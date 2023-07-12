@@ -126,10 +126,10 @@ spec:
             secretKeyRef:
               name: idp-cert
               key: tls.key
-        - name: AUTHPROXY_OIDC_SECRET
+        - name: CLUSTER_OIDC_SECRET
           valueFrom:
             secretKeyRef:
-              name: authproxy-oidc-client
+              name: cluster-oidc
               key: secret
         {{- range $client := .Values.clients.oidc }}
         - name: OIDC_SECRET.{{ $client.id }}
@@ -266,20 +266,28 @@ spec:
                     multivalued: 'false'
                     aggregate.attrs: ''
           clients: 
-            - clientId: authproxy-oidc
-              name: authproxy-oidc
-              description: "Authproxy OIDC client"
+            - clientId: {{ .Values.cluster_client.id }}
+              name: {{ .Values.cluster_client.id }}
+              description: "Cluster OIDC client"
               enabled: true
               clientAuthenticatorType: client-secret
-              secret: "$(env:AUTHPROXY_OIDC_SECRET)" # from env var
+              secret: "$(env:CLUSTER_OIDC_SECRET)" # from env var
               redirectUris:
                 - "https://{{ .Values.hosts.authproxy }}/oauth2/callback"
+                - "http://localhost:8000/"
+              {{ range $uri := .Values.cluster_client.redirect_uris -}}
+                - {{ $uri }}
+              {{ end -}}
               webOrigins: 
                 - "*"
               defaultClientScopes:
                 - email
                 - profile
                 - groups
+              optionalClientScopes:
+                - roles
+                - is_admin
+                - offline_access
             {{ range $client := .Values.clients.oidc -}}
             - clientId: {{ $client.id }}
               name: {{ $client.id }}

@@ -416,13 +416,11 @@
         hosts:
           keycloak: "{{ subdomains.idp }}.{{ domain }}"
           authproxy: "{{ subdomains.auth }}.{{ domain }}"
-        clients:
-          oidc:
-            - id: cluster-oidc
-              redirect_uris:
-                - "https://{{ subdomains.telemetry }}.{{ domain }}/login/generic_oauth"
-                - "https://{{ subdomains.gitops }}.{{ domain }}/oauth2/callback"
-                - "http://localhost:8000/"
+        cluster_client:
+          id: cluster-oidc
+          redirect_uris:
+            - "https://{{ subdomains.telemetry }}.{{ domain }}/login/generic_oauth"
+            - "https://{{ subdomains.gitops }}.{{ domain }}/oauth2/callback"
         smtp: "{{ smtp | combine({'password_secret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
         admin_group: "cluster-admins"
         admin_email: "{{ admin_email }}"
@@ -439,7 +437,7 @@
           id: "cluster-oidc"
           secret:
             namespace: sso-system
-            name: "oidc-client.cluster-oidc"
+            name: cluster-oidc
             key: secret
         admin_email: "{{ admin_email }}"
         admin_group: "cluster-admins"
@@ -462,7 +460,7 @@
           id: "cluster-oidc"
           secret:
             namespace: sso-system
-            name: "oidc-client.cluster-oidc"
+            name: cluster-oidc
             key: secret
         letsencrypt_staging: "{{ letsencrypt_staging }}"
 
