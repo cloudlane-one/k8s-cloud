@@ -87,6 +87,7 @@
 
     - name: Gather facts on listening ports
       community.general.listen_ports_facts:
+        include_non_listening: true
 
     - name: Switch kube-context to vcluster
       vars:
@@ -464,13 +465,14 @@
       ansible.builtin.command: "kubectl config use-context {{ default_ctx.stdout }}"
       changed_when: true
 
-    - name: Gather new facts on listening ports
-      community.general.listen_ports_facts:
+    - name: Get PIDs of running vcluster port-forwarders
+      community.general.pids:
+        name: vcluster
+      register: vcluster_pids
 
     - name: Terminate port-forwarding to vcluster
-      vars:
-        pid: "{{ ansible_facts.tcp_listen | selectattr('port', '==', vcluster_port) | map(attribute='pid') | list | first }}"
-      ansible.builtin.command: "kill -SIGTERM {{ pid }}"
+      loop: "{{ vcluster_pids.pids }}"
+      ansible.builtin.command: "kill -SIGTERM {{ item }}"
       changed_when: true
 
 - name: Ensure vcluster namespace is isolated

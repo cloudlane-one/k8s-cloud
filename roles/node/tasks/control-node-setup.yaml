@@ -10,15 +10,10 @@
     name: pip
     state: present
 
-- name: Copy requirements.txt to remote
-  ansible.builtin.copy:
-    src: requirements.txt
-    dest: /tmp
-    mode: '0644'
-
 - name: Ensure PIP dependencies are installed
   ansible.builtin.pip:
-    requirements: /tmp/requirements.txt
+    name:
+      - psutil
 
 - name: Check if Helm CLI is installed
   ansible.builtin.command: "which helm"
