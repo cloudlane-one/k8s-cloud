@@ -354,6 +354,10 @@
                         number: 443
                   path: /
                   pathType: ImplementationSpecific
+  register: k8s_ingress_result
+  retries: 6 # NGINX webhook tends to be unavailable at times.
+  delay: 20
+  until: "k8s_ingress_result is not failed"
 
 - name: Ensure HelmReleases for cluster infrastructure exist
   ansible.builtin.include_tasks:
