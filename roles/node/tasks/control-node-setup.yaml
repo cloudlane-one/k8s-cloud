@@ -5,15 +5,15 @@
     line: "export KUBECONFIG=/etc/rancher/k3s/k3s.yaml"
     mode: '0640'
 
-- name: Ensure PIP is installed
-  ansible.builtin.package:
-    name: pip
-    state: present
+- name: Copy requirements.txt to remote
+  ansible.builtin.copy:
+    src: requirements.txt
+    dest: /tmp
+    mode: '0644'
 
 - name: Ensure PIP dependencies are installed
   ansible.builtin.pip:
-    name:
-      - psutil
+    requirements: /tmp/requirements.txt
 
 - name: Check if Helm CLI is installed
   ansible.builtin.command: "which helm"
