@@ -453,17 +453,21 @@
         oauth2_proxy_host: "{{ subdomains.auth }}.{{ domain }}"
         admin_group: "cluster-admins"
 
-- name: Reset kubectl context to default
+- name: Reset cluster context
   when: "vcluster"
-  ansible.builtin.command: "kubectl config use-context {{ default_ctx.stdout }}"
-  changed_when: true
+  block:
+    - name: Reset kubectl context to default
+      ansible.builtin.command: "kubectl config use-context {{ default_ctx.stdout }}"
+      changed_when: true
 
-- name: Terminate port-forwarding to vcluster
-  when: "vcluster"
-  vars:
-    pid: "{{ ansible_facts.tcp_listen | selectattr('port', '==', vcluster_port) | map(attribute='pid') | list | first }}"
-  ansible.builtin.command: "kill -SIGTERM {{ pid }}"
-  changed_when: true
+    - name: Gather new facts on listening ports
+      community.general.listen_ports_facts:
+
+    - name: Terminate port-forwarding to vcluster
+      vars:
+        pid: "{{ ansible_facts.tcp_listen | selectattr('port', '==', vcluster_port) | map(attribute='pid') | list | first }}"
+      ansible.builtin.command: "kill -SIGTERM {{ pid }}"
+      changed_when: true
 
 - name: Ensure vcluster namespace is isolated
   when: "vcluster"
