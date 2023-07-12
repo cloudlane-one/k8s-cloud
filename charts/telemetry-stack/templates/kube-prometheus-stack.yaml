@@ -149,6 +149,8 @@ spec:
             secretName: grafana-cert
       persistence:
         enabled: true
+        accessModes:
+          - ReadWriteMany
       alerting:
         rules.yaml:
           apiVersion: 1
