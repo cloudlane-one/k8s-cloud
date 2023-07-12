@@ -76,6 +76,8 @@
                 enabled: true
               pods:
                 enabled: true
+          hostpathMapper:
+            enabled: true
           syncer:
             extraArgs:
               - "--tls-san={{ cluster_fqn }}"
@@ -181,16 +183,17 @@
       ansible.builtin.command: "flux reconcile source git base-repo -n flux-system"
       changed_when: true
 
-- name: Ensure vcluster namespace is isolated
-  when: "vcluster"
-  ansible.builtin.include_tasks:
-    file: deploy-chart.yaml
-    apply:
-      vars:
-        chart:
-          name: namespace-isolation
-          namespace: "{{ cluster_name }}"
-        kube_context: default
+# # This has to be disabled until sso-stack can handle Network Policies. See issue #37
+# - name: Ensure vcluster namespace is isolated
+#   when: "vcluster"
+#   ansible.builtin.include_tasks:
+#     file: deploy-chart.yaml
+#     apply:
+#       vars:
+#         chart:
+#           name: namespace-isolation
+#           namespace: "{{ cluster_name }}"
+#         kube_context: default
 
 - name: Bootstrap components with CRDs and other hard dependecies (via minimal-config release)
   block:
@@ -448,6 +451,7 @@
         node_endpoints: "{{ groups['all'] }}"
         letsencrypt_staging: "{{ letsencrypt_staging }}"
         k3s: "{{ not vcluster }}"
+        vcluster: "{{ vcluster }}"
 
     - name: namespace-isolation
       namespace: flux-system

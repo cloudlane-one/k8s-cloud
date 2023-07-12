@@ -76,6 +76,12 @@ spec:
       enabled: false
     kubeScheduler:
       enabled: false
+    {{- else if .Values.vcluster }}
+    defaultRules:
+      rules:
+        general: false
+    nodeExporter:
+      enabled: false
     {{- else }}
     defaultRules:
       rules:
