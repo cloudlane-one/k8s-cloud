@@ -330,36 +330,6 @@
       spec:
         backupName: "{{ restore_from_backup }}"
 
-- name: Expose k8s API via Ingress
-  kubernetes.core.k8s:
-    wait: true
-    definition:
-      apiVersion: networking.k8s.io/v1
-      kind: Ingress
-      metadata:
-        name: k8s-api
-        namespace: default
-        annotations:
-          nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-          nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-          nginx.ingress.kubernetes.io/ssl-redirect: "true"
-      spec:
-        rules:
-          - host: "{{ cluster_fqn }}"
-            http:
-              paths:
-                - backend:
-                    service:
-                      name: kubernetes
-                      port:
-                        number: 443
-                  path: /
-                  pathType: ImplementationSpecific
-  register: k8s_ingress_result
-  retries: 6 # NGINX webhook tends to be unavailable at times.
-  delay: 20
-  until: "k8s_ingress_result is not failed"
-
 - name: Ensure HelmReleases for cluster infrastructure exist
   ansible.builtin.include_tasks:
     file: deploy-chart.yaml
@@ -484,3 +454,33 @@
         chart:
           name: namespace-isolation
           namespace: "{{ cluster_name }}"
+
+- name: Expose k8s API via Ingress
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: k8s-api
+        namespace: "{{ cluster_name }}"
+        annotations:
+          nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+          nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+          nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      spec:
+        rules:
+          - host: "{{ cluster_fqn }}"
+            http:
+              paths:
+                - backend:
+                    service:
+                      name: "{{ vcluster | ternary('vcluster', 'kubernetes') }}"
+                      port:
+                        number: 443
+                  path: /
+                  pathType: ImplementationSpecific
+  register: k8s_ingress_result
+  retries: 6 # NGINX webhook tends to be unavailable at times.
+  delay: 20
+  until: "k8s_ingress_result is not failed"
