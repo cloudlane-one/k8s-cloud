@@ -275,9 +275,9 @@ spec:
               redirectUris:
                 - "https://{{ .Values.hosts.authproxy }}/oauth2/callback"
                 - "http://localhost:8000/"
-              {{ range $uri := .Values.cluster_client.redirect_uris -}}
+              {{- range $uri := .Values.cluster_client.redirect_uris }}
                 - {{ $uri }}
-              {{ end -}}
+              {{- end }}
               webOrigins: 
                 - "*"
               defaultClientScopes:
@@ -288,7 +288,7 @@ spec:
                 - roles
                 - is_admin
                 - offline_access
-            {{ range $client := .Values.clients.oidc -}}
+            {{- range $client := .Values.clients.oidc }}
             - clientId: {{ $client.id }}
               name: {{ $client.id }}
               description: "Internal OIDC client"
@@ -296,9 +296,9 @@ spec:
               clientAuthenticatorType: client-secret
               secret: "$(env:OIDC_SECRET.{{ $client.id }})" # from env var
               redirectUris: 
-              {{ range $uri := $client.redirect_uris -}}
+              {{- range $uri := $client.redirect_uris }}
                 - {{ $uri }}
-              {{ end -}}
+              {{- end }}
               webOrigins: 
                 - "*"
               defaultClientScopes:
@@ -309,8 +309,8 @@ spec:
                 - roles
                 - is_admin
                 - offline_access
-            {{ end -}}
-            {{ range $client := .Values.clients.saml -}}
+            {{- end }}
+            {{- range $client := .Values.clients.saml }}
             - clientId: {{ $client.id }}
               protocol: saml
               name: {{ $client.id }}
