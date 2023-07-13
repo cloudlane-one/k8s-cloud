@@ -8,7 +8,7 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: mongodb-urls
+  name: rc-mongodb-urls
 type: Opaque
 data:
   mongo-uri: {{ printf "mongodb://%s:%s@%s:%s/%s?replicaSet=%s" $user $password $service $port $database $rs | b64enc }}
