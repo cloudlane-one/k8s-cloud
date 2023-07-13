@@ -30,7 +30,7 @@ metadata:
   name: rocketchat-mongodb
 type: Opaque
 data:
-  mongodb-passwords: {{ printf "['%s']" (include "common.secrets.passwords.manage" (dict "secret" "rocketchat-mongodb" "key" "mongodb-passwords" "providedValues" (list "") "context" $) | b64dec) | b64enc }}
+  mongodb-passwords: {{ include "common.secrets.passwords.manage" (dict "secret" "rocketchat-mongodb" "key" "mongodb-passwords" "providedValues" (list "") "context" $) }}
   mongodb-root-password: {{ include "common.secrets.passwords.manage" (dict "secret" "rocketchat-mongodb" "key" "mongodb-root-password" "providedValues" (list "") "context" $) }}
   mongodb-metrics-password: {{ include "common.secrets.passwords.manage" (dict "secret" "rocketchat-mongodb" "key" "mongodb-metrics-password" "providedValues" (list "") "context" $) }}
   mongodb-replica-set-key: {{ include "common.secrets.passwords.manage" (dict "secret" "rocketchat-mongodb" "key" "mongodb-replica-set-key" "providedValues" (list "") "context" $) }}
