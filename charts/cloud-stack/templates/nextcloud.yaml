@@ -73,6 +73,7 @@ spec:
         name: nextcloud
   timeout: 15m0s # Increase timeout to be sure.
   values:
+    replicaCount: 2
     ingress:
       enabled: true
       tls:
@@ -107,6 +108,11 @@ spec:
             deny all;
           }
     nextcloud:
+      strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxSurge: 1
+          maxUnavailable: 1
       host: {{ .Values.hosts.nextcloud }}
       existingSecret:
         enabled: true

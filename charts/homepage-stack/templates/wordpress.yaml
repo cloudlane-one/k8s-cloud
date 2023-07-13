@@ -90,6 +90,7 @@ spec:
         name: bitnami
   timeout: 15m0s # Increase timeout to be sure.
   values:
+    replicaCount: 2
     wordpressUsername: admin
     wordpressEmail: {{ .Values.admin_email }}
     existingSecret: wordpress-admin
@@ -136,6 +137,7 @@ spec:
         username: wordpress
         existingPasswordSecret: wordpress-memcached
     updateStrategy:
+      type: RollingUpdate
       rollingUpdate:
         maxSurge: 1
         maxUnavailable: 1

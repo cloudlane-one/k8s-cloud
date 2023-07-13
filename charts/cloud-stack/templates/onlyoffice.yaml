@@ -103,6 +103,13 @@ spec:
         name: onlyoffice
   timeout: 10m0s # Increase timeout to be sure.
   values:
+    docservice:
+      replicas: 2
+      updateStrategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxSurge: 1
+          maxUnavailable: 1
     jwt:
       existingSecret: onlyofficejwt
     connections:
