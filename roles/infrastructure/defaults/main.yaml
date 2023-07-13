@@ -1,1 +1,2 @@
 local_kubeconfig: "./kubeconfig.yaml"
+host_cluster_name: "default" # Set to `null` to use current context on host

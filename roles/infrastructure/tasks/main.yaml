@@ -5,7 +5,7 @@
   ansible.builtin.set_fact:
     cluster_fqn: "{{ subdomains.cluster }}.{{ domain }}"
     charts_dir: "{{ playbook_dir }}/charts"
-    cluster_namespace: "{{ domain | replace('.', '-') }}"
+    cluster_name: "{{ domain | replace('.', '-') }}"
     registered_domain: "{{ main_name }}{{ suffix }}"
     host_kubeconfig: "{{ ansible_env.KUBECONFIG }}"
     kubeconfig: "{{ ansible_env.KUBECONFIG }}"
@@ -13,6 +13,20 @@
 - name: Print domain info
   ansible.builtin.debug:
     msg: "Setting up cluster '{{ cluster_fqn }}' for domain '{{ domain }}' on registered domain '{{ registered_domain }}'"
+
+- name: Switch to host cluster context via kubectl
+  when: "host_cluster_name"
+  environment:
+    KUBECONFIG: "{{ host_kubeconfig }}"
+  block:
+    - name: Get current kubectl context via command
+      ansible.builtin.command: "kubectl config current-context"
+      changed_when: false
+      register: default_ctx
+
+    - name: Set kubectl context to supplied value
+      ansible.builtin.command: "kubectl config use-context {{ host_cluster_name }}"
+      changed_when: "host_cluster_name != default_ctx.stdout"
 
 - name: Ensure cluster FQN label is applied to nodes
   environment:
@@ -52,7 +66,7 @@
         wait: true
         timeout: "10m0s"
         name: vcluster
-        release_namespace: "{{ cluster_namespace }}"
+        release_namespace: "{{ cluster_name }}"
         create_namespace: true
         chart_repo_url: https://charts.loft.sh
         chart_ref: vcluster
@@ -103,11 +117,11 @@
     - name: Generate kubeconfig for vcluster
       vars:
         connect_flags:
-          - "--namespace={{ cluster_namespace }}"
+          - "--namespace={{ cluster_name }}"
           - "--local-port={{ vcluster_port }}"
           - "--update-current=false"
           - "--kube-config=/tmp/virtual-kubeconfig.yaml"
-          - "--kube-config-context-name={{ cluster_namespace }}"
+          - "--kube-config-context-name={{ cluster_name }}"
       ansible.builtin.shell: "nohup vcluster connect vcluster {{ connect_flags | join(' ') }} </dev/null >/dev/null 2>&1 &"
       changed_when: true
 
@@ -127,6 +141,52 @@
 
 - name: Ensure kubeconfig file is available on local machine
   block:
+    - name: Determine kubeconfig context name
+      vars:
+        host_ctx: "{{ host_cluster_name | ternary(host_cluster_name, default_ctx) }}"
+      ansible.builtin.set_fact:
+        ctx_name: "{{ vcluster | ternary(cluster_name, host_ctx) }}"
+
+    - name: Use remote kubeconfig file as basis
+      block:
+        - name: Copy remote kubeconfig file
+          ansible.builtin.copy:
+            remote_src: true
+            src: "{{ kubeconfig }}"
+            dest: /tmp/public-kubeconfig.yaml
+            mode: '0644'
+
+        - name: List remote kubeconfig contexts
+          environment:
+            KUBECONFIG: /tmp/public-kubeconfig.yaml
+          ansible.builtin.command: "kubectl config get-contexts -o name"
+          register: all_ctx
+          changed_when: false
+
+        - name: Delete all other remote contexts
+          loop: "{{ all_ctx.stdout_lines }}"
+          when: "item != ctx_name"
+          environment:
+            KUBECONFIG: /tmp/public-kubeconfig.yaml
+          ansible.builtin.command: "kubectl config delete-context {{ item }}"
+          changed_when: true
+
+        - name: Delete all other remote clusters
+          loop: "{{ all_ctx.stdout_lines }}"
+          when: "item != ctx_name"
+          environment:
+            KUBECONFIG: /tmp/public-kubeconfig.yaml
+          ansible.builtin.command: "kubectl config delete-cluster {{ item }}"
+          changed_when: true
+
+        - name: Delete all other remote users
+          loop: "{{ all_ctx.stdout_lines }}"
+          when: "item != ctx_name"
+          environment:
+            KUBECONFIG: /tmp/public-kubeconfig.yaml
+          ansible.builtin.command: "kubectl config delete-user {{ item }}"
+          changed_when: true
+
     - name: Check for local kubeconfig
       delegate_to: localhost
       become: false
@@ -145,7 +205,7 @@
 
         - name: Merge local kubeconfig with remote
           environment:
-            KUBECONFIG: "{{ kubeconfig }}:/tmp/local-kubeconfig.yaml"
+            KUBECONFIG: "/tmp/public-kubeconfig.yaml:/tmp/local-kubeconfig.yaml"
           ansible.builtin.command:
             argv:
               - kubectl
@@ -161,14 +221,6 @@
             dest: /tmp/public-kubeconfig.yaml
             mode: '0644'
 
-    - name: Copy remote kubeconfig file
-      when: "not local_kubeconfig_file.stat.exists"
-      ansible.builtin.copy:
-        remote_src: true
-        src: "{{ kubeconfig }}"
-        dest: /tmp/public-kubeconfig.yaml
-        mode: '0644'
-
     - name: Change server address of copied kubeconfig to public cluster FQN
       environment:
         KUBECONFIG: /tmp/public-kubeconfig.yaml
@@ -177,7 +229,7 @@
           - kubectl
           - config
           - set-cluster
-          - "{{ cluster_namespace }}"
+          - "{{ ctx_name }}"
           - "--server=https://{{ cluster_fqn }}"
       changed_when: true
 
@@ -347,7 +399,7 @@
       kind: Ingress
       metadata:
         name: k8s-api
-        namespace: "{{ vcluster | ternary(cluster_namespace, 'default') }}"
+        namespace: "{{ vcluster | ternary(cluster_name, 'default') }}"
         annotations:
           nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
           nginx.ingress.kubernetes.io/ssl-passthrough: "true"
@@ -518,6 +570,13 @@
         host: "{{ subdomains.control }}.{{ domain }}"
         oauth2_proxy_host: "{{ subdomains.auth }}.{{ domain }}"
         admin_group: "cluster-admins"
+
+- name: Reset kubectl context
+  when: "host_cluster_name and default_ctx is defined"
+  environment:
+    KUBECONFIG: "{{ host_kubeconfig }}"
+  ansible.builtin.command: "kubectl config use-context {{ default_ctx.stdout }}"
+  changed_when: "host_cluster_name != default_ctx.stdout"
 
 - name: Cleanup port forwarding
   when: "vcluster"
