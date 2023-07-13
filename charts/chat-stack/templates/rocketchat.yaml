@@ -1,10 +1,11 @@
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
-  name: bitnami
+  name: bitnami-1
 spec:
   interval: 1h
-  url: https://charts.bitnami.com/bitnami
+  type: oci
+  url: oci://registry-1.docker.io/bitnamicharts
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
@@ -81,7 +82,7 @@ spec:
       version: '^6'
       sourceRef:
         kind: HelmRepository
-        name: bitnami
+        name: bitnami-1
   values:
     initdbScriptsConfigMap: rocketchat-mongodb-fix-clustermonitor-role-configmap
     auth:
