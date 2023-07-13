@@ -50,7 +50,7 @@ spec:
         namespace: flux-system
   values:
     template: |
-      {{ .Files.Get "files/mongodb-urls.yaml" }}
+      {{ .Files.Get "files/mongodb-urls.yaml" | nindent 6 }}
 ---
 apiVersion: v1
 kind: Secret
