@@ -48,6 +48,7 @@ spec:
         kind: GitRepository
         name: base-repo
         namespace: flux-system
+      reconcileStrategy: Revision
   values:
     template: |
       {{ .Files.Get "files/mongodb-urls.yaml" | nindent 6 }}
