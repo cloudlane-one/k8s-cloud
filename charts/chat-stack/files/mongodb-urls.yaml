@@ -11,5 +11,5 @@ metadata:
   name: mongodb-urls
 type: Opaque
 data:
-  mongo-uri: {{ printf "mongodb://%s:%s@%s:%0.f/%s?replicaSet=%s" $user $password $service $port $database $rs | b64enc }}
-  mongo-oplog-uri: {{ printf "mongodb://%s:%s@%s:%0.f/local?replicaSet=%s&authSource=admin" $user $adminPassword $service $port $rs | b64enc }}
+  mongo-uri: {{ printf "mongodb://%s:%s@%s:%s/%s?replicaSet=%s" $user $password $service $port $database $rs | b64enc }}
+  mongo-oplog-uri: {{ printf "mongodb://%s:%s@%s:%s/local?replicaSet=%s&authSource=admin" $user $adminPassword $service $port $rs | b64enc }}
