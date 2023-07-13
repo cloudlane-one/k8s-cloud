@@ -11,9 +11,9 @@ data:
     .login-pf body {
       background: rgb(226, 231, 240);
     }
-    {{- if .Values.org.logoURL }}
+    {{- if .Values.org.logo_url }}
     div.kc-logo-text {
-      background-image: url({{ .Values.org.logoURL }});
+      background-image: url({{ .Values.org.logo_url }});
       background-size: contain;
       height: 100px;
       background-position: center;

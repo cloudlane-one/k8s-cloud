@@ -14,10 +14,10 @@ hosts:
   mailman: ""
   mailu: ""
 
-requirePTR: true
+require_ptr: true
 
-useMailuProxyAuth: true
+use_mailu_proxy_auth: true
 
 org:
   name: ""
-  logoURL: ""
+  logo_url: ""

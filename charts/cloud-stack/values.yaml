@@ -6,7 +6,7 @@ org:
   name: ""
   default_locale: "en_US"
   tagline: ""
-  logoURL: ""
+  logo_url: ""
 
 oidc_client:
   idp_url: ""

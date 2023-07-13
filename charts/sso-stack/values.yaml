@@ -38,7 +38,7 @@ org:
   name: ""
   default_locale: "en_US"
   tagline: ""
-  logoURL: ""
+  logo_url: ""
 
 admin_group: ""
 admin_email: ""

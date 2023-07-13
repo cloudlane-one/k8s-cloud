@@ -15,7 +15,7 @@ spec:
   chart:
     spec:
       chart: mailu
-      version: "^1"
+      version: "^1.2"
       sourceRef:
         kind: HelmRepository
         name: mailu
@@ -32,7 +32,7 @@ spec:
       existingSecretPasswordKey: password
     customization:
       siteName: {{ printf "%s Mail" .Values.org.name }}
-      logoUrl: {{ .Values.org.logoURL | quote }}
+      logoUrl: {{ .Values.org.logo_url | quote }}
     subnet: "10.0.0.0/8" # Cluster network. Make sure to set your NetworkPolicies straight!
     logLevel: INFO
     persistence:
@@ -57,7 +57,7 @@ spec:
         enabled: true
         type: LoadBalancer
         externalTrafficPolicy: Local
-      {{- if .Values.useMailuProxyAuth }}
+      {{- if .Values.use_mailu_proxy_auth }}
       extraEnvVars:
         - name: PROXY_AUTH_WHITELIST
           value: "10.0.0.0/8"
@@ -67,7 +67,7 @@ spec:
           value: "True"
       {{- end }}
     postfix:
-      {{ if .Values.requirePTR -}}
+      {{ if .Values.require_ptr -}}
       nodeSelector:
         PTR: {{ .Values.hosts.mailu }}
       {{ end -}}
@@ -93,7 +93,7 @@ spec:
     admin:
       persistence:
         size: 5Gi
-      {{- if .Values.useMailuProxyAuth }}
+      {{- if .Values.use_mailu_proxy_auth }}
       extraEnvVars:
         - name: PROXY_AUTH_WHITELIST
           value: "10.0.0.0/8"
@@ -108,7 +108,7 @@ spec:
     webmail:
       persistence:
         size: 5Gi
-      {{- if .Values.useMailuProxyAuth }}
+      {{- if .Values.use_mailu_proxy_auth }}
       extraEnvVars:
         - name: PROXY_AUTH_WHITELIST
           value: "10.0.0.0/8"
