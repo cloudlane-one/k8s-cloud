@@ -1,0 +1,16 @@
+
+{{- $service := "rocketchat-mongodb" }}
+{{- $user := "rocketchat" }}
+{{- $password := get ((lookup "v1" "Secret" .Release.Namespace "rocketchat-mongodb").data) "mongodb-passwords" | b64dec | fromYaml | first }}
+{{- $adminPassword := get ((lookup "v1" "Secret" .Release.Namespace "rocketchat-mongodb").data) "mongodb-root-password" | b64dec }}
+{{- $database := "rocketchat" }}
+{{- $port := 27017 }}
+{{- $rs := "rs0" }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mongodb-urls
+type: Opaque
+data:
+  mongo-uri: {{ printf "mongodb://%s:%s@%s:%0.f/%s?replicaSet=%s" $user $password $service $port $database $rs | b64enc }}
+  mongo-oplog-uri: {{ printf "mongodb://%s:%s@%s:%0.f/local?replicaSet=%s&authSource=admin" $user $adminPassword $service $port $rs | b64enc }}

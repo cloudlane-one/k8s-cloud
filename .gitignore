@@ -14,6 +14,7 @@ Chart.lock
 /*.config.yaml
 /*.secrets.yaml
 /*.values.yaml
+/*.hr.yaml
 
 # Do not commit lockfil
 /poetry.lock

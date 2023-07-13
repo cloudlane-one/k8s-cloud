@@ -35,6 +35,23 @@ data:
   mongodb-metrics-password: {{ include "common.secrets.passwords.manage" (dict "secret" "rocketchat-mongodb" "key" "mongodb-metrics-password" "providedValues" (list "") "context" $) }}
   mongodb-replica-set-key: {{ include "common.secrets.passwords.manage" (dict "secret" "rocketchat-mongodb" "key" "mongodb-replica-set-key" "providedValues" (list "") "context" $) }}
 ---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: mongodb-urls
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: ./charts/custom-template
+      sourceRef:
+        kind: GitRepository
+        name: base-repo
+        namespace: flux-system
+  values:
+    template: |
+      {{ .Files.Get "files/mongodb-urls.yaml" }}
+---
 apiVersion: v1
 kind: Secret
 metadata:
@@ -56,6 +73,8 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: rocketchat
+  dependsOn:
+    - name: mongodb-urls
   values:
     minAvailable: 1
     host: {{ .Values.host }}
@@ -68,8 +87,12 @@ spec:
         - hosts:
             - {{ .Values.host }}
           secretName: rocketchat-tls
+    existingMongodbSecret: mongodb-urls
     mongodb:
+      fullname: rocketchat-mongodb
       auth:
+        user: rocketchat
+        database: rocketchat
         existingSecret: rocketchat-mongodb
       persistence:
         enabled: true
