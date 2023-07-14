@@ -203,6 +203,27 @@
             dest: /tmp/local-kubeconfig.yaml
             mode: '0644'
 
+        - name: Delete existing context in local config
+          environment:
+            KUBECONFIG: /tmp/local-kubeconfig.yaml
+          ansible.builtin.command: "kubectl config delete-context {{ ctx_name }}"
+          changed_when: true
+          failed_when: false
+
+        - name: Delete existing cluster in local config
+          environment:
+            KUBECONFIG: /tmp/local-kubeconfig.yaml
+          ansible.builtin.command: "kubectl config delete-cluster {{ ctx_name }}"
+          changed_when: true
+          failed_when: false
+
+        - name: Delete existing user in local config
+          environment:
+            KUBECONFIG: /tmp/local-kubeconfig.yaml
+          ansible.builtin.command: "kubectl config delete-user {{ ctx_name }}"
+          changed_when: true
+          failed_when: false
+
         - name: Merge local kubeconfig with remote
           environment:
             KUBECONFIG: "/tmp/public-kubeconfig.yaml:/tmp/local-kubeconfig.yaml"
