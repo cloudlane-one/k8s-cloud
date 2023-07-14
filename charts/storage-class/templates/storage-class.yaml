@@ -5,13 +5,13 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: {{ .Values.name }}
-stringData:
-  CRYPTO_KEY_VALUE: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.name "key" "CRYPTO_KEY_VALUE" "providedValues" (list "") "length" 16 "context" $) | b64dec }}
-  CRYPTO_KEY_PROVIDER: "secret"
-  CRYPTO_KEY_CIPHER: "aes-xts-plain64"
-  CRYPTO_KEY_HASH: "sha256"
-  CRYPTO_KEY_SIZE: "256"
-  CRYPTO_PBKDF: "argon2i"
+data:
+  CRYPTO_KEY_VALUE: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.name "key" "CRYPTO_KEY_VALUE" "providedValues" (list "") "length" 16 "context" $) }}
+  CRYPTO_KEY_PROVIDER: {{ "secret" | b64enc }}
+  CRYPTO_KEY_CIPHER: {{ "aes-xts-plain64" | b64enc }}
+  CRYPTO_KEY_HASH: {{ "sha256" | b64enc }}
+  CRYPTO_KEY_SIZE: {{ "256" | b64enc }}
+  CRYPTO_PBKDF: {{ "argon2i" | b64enc }}
 ---
 {{- end }}
 kind: StorageClass
