@@ -69,6 +69,21 @@
         name: '{{ system_packages }}'
         update_cache: true
 
+- name: Disable multipath for all sdx devices
+  ansible.builtin.blockinfile:
+    path: /etc/multipath.conf
+    create: true
+    mode: '0644'
+    block: |
+      blacklist {
+          devnode "^sd[a-z0-9]+"
+      }
+
+- name: Restart multipath
+  ansible.builtin.systemd:
+    state: restarted
+    name: multipathd.service
+
 - name: Install k3s via official setup script # TODO: remove third-party ansible role and use k3s setup script
   block:
     - name: Ensure k3s config dir exists
@@ -117,10 +132,16 @@
     - name: Upload config and join additional node
       when: "inventory_hostname != main_control_node"
       block:
+        - name: Ensure permanent config dir exists
+          ansible.builtin.file:
+            path: /etc/k8s-cloud
+            state: directory
+            mode: '0755'
+
         - name: Upload join token file
           ansible.builtin.copy:
             src: "{{ playbook_dir }}/join-token"
-            dest: /tmp/k3s-join-token
+            dest: /etc/k8s-cloud/k3s-join-token
             mode: '0644'
 
         - name: Run k3s install script for additional node
@@ -129,7 +150,7 @@
               - /tmp/k3s-install.sh
               - "{{ control_node | ternary('server', 'agent') }}"
           environment:
-            K3S_TOKEN_FILE: /tmp/k3s-join-token
+            K3S_TOKEN_FILE: /etc/k8s-cloud/k3s-join-token
             K3S_URL: "https://{{ main_control_node }}:6443"
           changed_when: true
 
