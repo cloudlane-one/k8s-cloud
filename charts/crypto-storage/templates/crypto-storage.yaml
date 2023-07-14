@@ -1,3 +1,15 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.name }}
+stringData:
+  CRYPTO_KEY_VALUE: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.name "key" "CRYPTO_KEY_VALUE" "providedValues" (list "") "length" 16 "context" $) }}
+  CRYPTO_KEY_PROVIDER: "secret"
+  CRYPTO_KEY_CIPHER: "aes-xts-plain64"
+  CRYPTO_KEY_HASH: "sha256"
+  CRYPTO_KEY_SIZE: "256"
+  CRYPTO_PBKDF: "argon2i"
+---
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
@@ -15,10 +27,10 @@ parameters:
   staleReplicaTimeout: "2880" # 48 hours in minutes
   fromBackup: ""
   encrypted: "true"
-  # per volume secret which utilizes the `pvc.name` and `pvc.namespace` template parameters
-  csi.storage.k8s.io/provisioner-secret-name: ${pvc.name}
-  csi.storage.k8s.io/provisioner-secret-namespace: ${pvc.namespace}
-  csi.storage.k8s.io/node-publish-secret-name: ${pvc.name}
-  csi.storage.k8s.io/node-publish-secret-namespace: ${pvc.namespace}
-  csi.storage.k8s.io/node-stage-secret-name: ${pvc.name}
-  csi.storage.k8s.io/node-stage-secret-namespace: ${pvc.namespace}
+  # global secret that contains the encryption key that will be used for all volumes
+  csi.storage.k8s.io/provisioner-secret-name: {{ .Values.name }}
+  csi.storage.k8s.io/provisioner-secret-namespace: {{ .Release.Namespace }}
+  csi.storage.k8s.io/node-publish-secret-name: {{ .Values.name }}
+  csi.storage.k8s.io/node-publish-secret-namespace: {{ .Release.Namespace }}
+  csi.storage.k8s.io/node-stage-secret-name: {{ .Values.name }}
+  csi.storage.k8s.io/node-stage-secret-namespace: {{ .Release.Namespace }}
