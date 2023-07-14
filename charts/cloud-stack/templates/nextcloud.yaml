@@ -79,7 +79,7 @@ spec:
       tls:
         - secretName: nextcloud-tls
           hosts:
-            - {{ .Values.hostnames.nextcloud }}
+            - {{ .Values.hosts.nextcloud }}
       annotations:
         kubernetes.io/tls-acme: "true"
         nginx.ingress.kubernetes.io/proxy-body-size: 4G
