@@ -64,12 +64,12 @@ spec:
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: postgresql
+  name: onlyoffice-postgres
 spec:
   interval: 1h
   chart:
     spec:
-      chart: onlyoffice-postgres
+      chart: postgresql
       version: "^12"
       sourceRef:
         kind: HelmRepository
