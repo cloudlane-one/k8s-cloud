@@ -494,6 +494,7 @@
       namespace: longhorn-system
       chart_values:
         cluster_fqn: "{{ cluster_fqn }}"
+        vcluster: "{{ vcluster }}"
 
     # - name: namespace-isolation
     #   namespace: dns-system

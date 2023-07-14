@@ -1,3 +1,6 @@
+{{- if not .Values.vcluster }}
+# VCluster storage class is synced to host, where it references the
+# already existing storage secrets of the equally-named class.
 apiVersion: v1
 kind: Secret
 metadata:
@@ -10,6 +13,7 @@ stringData:
   CRYPTO_KEY_SIZE: "256"
   CRYPTO_PBKDF: "argon2i"
 ---
+{{- end }}
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
