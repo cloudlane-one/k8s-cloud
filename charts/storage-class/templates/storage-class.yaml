@@ -1,4 +1,4 @@
-{{- if not .Values.vcluster }}
+{{- if and .Values.encryption (not .Values.vcluster) }}
 # VCluster storage class is synced to host, where it references the
 # already existing storage secrets of the equally-named class.
 apiVersion: v1
@@ -6,7 +6,7 @@ kind: Secret
 metadata:
   name: {{ .Values.name }}
 stringData:
-  CRYPTO_KEY_VALUE: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.name "key" "CRYPTO_KEY_VALUE" "providedValues" (list "") "length" 16 "context" $) }}
+  CRYPTO_KEY_VALUE: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.name "key" "CRYPTO_KEY_VALUE" "providedValues" (list "") "length" 16 "context" $) | b64dec }}
   CRYPTO_KEY_PROVIDER: "secret"
   CRYPTO_KEY_CIPHER: "aes-xts-plain64"
   CRYPTO_KEY_HASH: "sha256"
@@ -30,6 +30,7 @@ parameters:
   dataLocality: best-effort
   staleReplicaTimeout: "2880" # 48 hours in minutes
   fromBackup: ""
+  {{- if .Values.encryption }}
   encrypted: "true"
   # global secret that contains the encryption key that will be used for all volumes
   csi.storage.k8s.io/provisioner-secret-name: {{ .Values.name }}
@@ -38,3 +39,4 @@ parameters:
   csi.storage.k8s.io/node-publish-secret-namespace: {{ .Release.Namespace }}
   csi.storage.k8s.io/node-stage-secret-name: {{ .Values.name }}
   csi.storage.k8s.io/node-stage-secret-namespace: {{ .Release.Namespace }}
+  {{- end }}

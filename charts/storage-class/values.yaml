@@ -1,4 +1,5 @@
 name: "longhorn-crypto"
 default: true
 cluster_fqn: ""
+encryption: false
 vcluster: false

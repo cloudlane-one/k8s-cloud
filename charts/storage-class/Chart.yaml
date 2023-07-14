@@ -1,6 +1,6 @@
 apiVersion: v2
-name: upgrade-controller
-description: Setup encrypted longhorn storage class
+name: storage-class
+description: Setup longhorn storage class
 type: application
 version: "0.0.1"
 appVersion: "0.0.1"
