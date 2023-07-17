@@ -517,6 +517,13 @@
         cluster_fqn: "{{ cluster_fqn }}"
         vcluster: "{{ vcluster }}"
 
+    - name: control-stack
+      namespace: kube-system
+      chart_values:
+        host: "{{ subdomains.control }}.{{ domain }}"
+        oauth2_proxy_host: "{{ subdomains.auth }}.{{ domain }}"
+        admin_group: "cluster-admins"
+
     # - name: namespace-isolation
     #   namespace: dns-system
 
@@ -585,13 +592,6 @@
             name: cluster-oidc
             key: secret
         letsencrypt_staging: "{{ letsencrypt_staging }}"
-
-    - name: control-stack
-      namespace: kube-system
-      chart_values:
-        host: "{{ subdomains.control }}.{{ domain }}"
-        oauth2_proxy_host: "{{ subdomains.auth }}.{{ domain }}"
-        admin_group: "cluster-admins"
 
 - name: Reset kubectl context
   when: "host_cluster_name and default_ctx is defined"
