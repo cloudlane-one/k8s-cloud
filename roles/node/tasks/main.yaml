@@ -10,63 +10,72 @@
   ansible.builtin.set_fact:
     control_node: "{{ inventory_hostname in control_nodes or inventory_hostname == main_control_node }}"
 
-- name: Pick the correct names for system packages to be installed
-  block:
-    - name: Set sys package names for apt
-      when: 'ansible_pkg_mgr == "apt"'
-      ansible.builtin.set_fact:
-        system_packages:
-          - nfs-common
-          - wireguard
-    - name: Set sys package names for other package managers
-      when: 'ansible_pkg_mgr in ["yum", "apk", "dnf", "zypper", "pacman"]'
-      ansible.builtin.set_fact:
-        system_packages:
-          - nfs-utils
-          - wireguard-tools
-
 - name: Ensure all required system packages are installed
   block:
     - name: Install packages via apt
       when: 'ansible_pkg_mgr == "apt"'
       ansible.builtin.apt:
         state: present
-        name: '{{ system_packages }}'
+        name:
+          - nfs-common
+          - wireguard
+          - python3
+          - python3-pip
         update_cache: true
 
     - name: Install packages via yum
       when: 'ansible_pkg_mgr == "yum"'
       ansible.builtin.yum:
         state: present
-        name: '{{ system_packages }}'
+        name:
+          - nfs-utils
+          - wireguard-tools
+          - python3
+          - python3-pip
         update_cache: true
 
     - name: Install packages via apk
       when: 'ansible_pkg_mgr == "apk"'
       community.general.apk:
         state: present
-        name: '{{ system_packages }}'
+        name:
+          - nfs-utils
+          - wireguard-tools
+          - python3
+          - py3-pip
         update_cache: true
 
     - name: Install packages via dnf
       when: 'ansible_pkg_mgr == "dnf"'
       ansible.builtin.dnf:
         state: present
-        name: '{{ system_packages }}'
+        name:
+          - nfs-utils
+          - wireguard-tools
+          - python3
+          - python3-pip
         update_cache: true
 
     - name: Install packages via zypper
       when: 'ansible_pkg_mgr == "zypper"'
       community.general.zypper:
         state: present
-        name: '{{ system_packages }}'
+        name:
+          - nfs-utils
+          - wireguard-tools
+          - python3
+          - python3-pip
         update_cache: true
 
     - name: Install packages via pacman
       when: 'ansible_pkg_mgr == "pacman"'
       community.general.pacman:
         state: present
-        name: '{{ system_packages }}'
+        name:
+          - nfs-utils
+          - wireguard-tools
+          - python
+          - python-pip
         update_cache: true
 
 - name: Disable multipath for all sdx devices
