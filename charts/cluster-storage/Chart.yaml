@@ -1,6 +1,6 @@
 apiVersion: v2
-name: storage-class
-description: Setup longhorn storage class
+name: cluster-storage
+description: Setup storage class for a specific (v)cluster
 type: application
 version: "0.0.1"
 appVersion: "0.0.1"

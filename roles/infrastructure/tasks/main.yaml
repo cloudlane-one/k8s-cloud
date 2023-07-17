@@ -511,8 +511,8 @@
       chart_values:
         admin_group: "cluster-admins"
 
-    - name: crypto-storage
-      namespace: longhorn-system
+    - name: cluster-storage
+      namespace: kube-system
       chart_values:
         cluster_fqn: "{{ cluster_fqn }}"
         vcluster: "{{ vcluster }}"

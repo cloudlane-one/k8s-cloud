@@ -1,12 +1,13 @@
+{{- $name := printf "%s-%s" .Values.cluster_fqn .Values.class_name }}
 {{- if and .Values.encryption (not .Values.vcluster) }}
 # VCluster storage class is synced to host, where it references the
 # already existing storage secrets of the equally-named class.
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ .Values.name }}
+  name: {{ $name }}
 data:
-  CRYPTO_KEY_VALUE: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.name "key" "CRYPTO_KEY_VALUE" "providedValues" (list "") "length" 16 "context" $) }}
+  CRYPTO_KEY_VALUE: {{ include "common.secrets.passwords.manage" (dict "secret" $name "key" "CRYPTO_KEY_VALUE" "providedValues" (list "") "length" 16 "context" $) }}
   CRYPTO_KEY_PROVIDER: {{ "secret" | b64enc }}
   CRYPTO_KEY_CIPHER: {{ "aes-xts-plain64" | b64enc }}
   CRYPTO_KEY_HASH: {{ "sha256" | b64enc }}
@@ -17,7 +18,7 @@ data:
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
-  name: {{ .Values.name }}
+  name: {{ $name }}
   {{- if .Values.default }}
   annotations:
     "storageclass.kubernetes.io/is-default-class": "true"
@@ -33,10 +34,10 @@ parameters:
   {{- if .Values.encryption }}
   encrypted: "true"
   # global secret that contains the encryption key that will be used for all volumes
-  csi.storage.k8s.io/provisioner-secret-name: {{ .Values.name }}
+  csi.storage.k8s.io/provisioner-secret-name: {{ $name }}
   csi.storage.k8s.io/provisioner-secret-namespace: {{ .Release.Namespace }}
-  csi.storage.k8s.io/node-publish-secret-name: {{ .Values.name }}
+  csi.storage.k8s.io/node-publish-secret-name: {{ $name }}
   csi.storage.k8s.io/node-publish-secret-namespace: {{ .Release.Namespace }}
-  csi.storage.k8s.io/node-stage-secret-name: {{ .Values.name }}
+  csi.storage.k8s.io/node-stage-secret-name: {{ $name }}
   csi.storage.k8s.io/node-stage-secret-namespace: {{ .Release.Namespace }}
   {{- end }}
