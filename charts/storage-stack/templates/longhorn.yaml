@@ -19,7 +19,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: longhorn
-  timeout: '10m0s' # Account for slow performance of cluster on first setup.
+  timeout: '15m0s' # Account for slow performance of cluster on first setup.
   values:
     persistence:
       defaultClass: false

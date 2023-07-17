@@ -27,6 +27,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: oauth2-proxy
+  timeout: '30m0s' # Setting up public domains for OIDC takes time.
   dependsOn:
     - name: keycloak
   valuesFrom:

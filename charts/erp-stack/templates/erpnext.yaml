@@ -27,7 +27,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: frappe
-  timeout: '10m0s' # Account for slow performance of cluster on first setup.
+  timeout: '15m0s' # Account for slow performance of cluster on first setup.
   valuesFrom:
     - kind: Secret
       name: admin

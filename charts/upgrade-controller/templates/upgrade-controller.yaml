@@ -19,4 +19,4 @@ spec:
     name: system-upgrade-controller
   path: "./manifests"
   prune: true
-  timeout: '10m0s' # Account for slow performance of cluster on first setup.
+  timeout: '15m0s' # Account for slow performance of cluster on first setup.

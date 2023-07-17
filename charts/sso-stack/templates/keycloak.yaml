@@ -52,7 +52,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: bitnami
-  timeout: 10m0s # Increase timeout to be sure.
+  timeout: 15m0s # Increase timeout to be sure.
   valuesFrom:
     - kind: Secret
       name: smtp-creds

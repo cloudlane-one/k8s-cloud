@@ -28,7 +28,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: bitnami
-  timeout: '10m0s' # Account for slow performance of cluster on first setup.
+  timeout: '15m0s' # Account for slow performance of cluster on first setup.
   values:
     policy: {{ .Values.policy }}
     domainFilters:

@@ -19,7 +19,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: k8s-dashboard
-  timeout: '10m0s' # Account for slow performance of cluster on first setup.
+  timeout: '15m0s' # Account for slow performance of cluster on first setup.
   values:
     metricsScraper:
       enabled: true
