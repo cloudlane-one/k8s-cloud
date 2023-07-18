@@ -147,6 +147,8 @@ spec:
       size: 4Gi
       accessModes:
         - ReadWriteMany
+    volumePermissions:
+      enabled: true
     ingress:
       enabled: true
       {{ with .Values.host -}}
