@@ -152,6 +152,14 @@ spec:
               name: s3-access-key
               key: secret
       configs:
+        logging.config.php: |
+          <?php
+          $CONFIG = array (
+            "log_type" => "file",
+            "logfile" => "/dev/stdout",
+            "loglevel" => {{ .Values.debug | ternary 0 1 }},
+          );
+          ?>
         oidc.config.php: | 
           <?php
           $CONFIG = array (

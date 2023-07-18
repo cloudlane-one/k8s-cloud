@@ -36,3 +36,5 @@ smtp: # For admin notifications
     name: ""
     key: "secret"
   from_address: ""
+
+debug: false
