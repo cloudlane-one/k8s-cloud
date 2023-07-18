@@ -73,5 +73,5 @@
 
 - name: Install VCluster CLI
   when: "which_vcluster.rc != 0"
-  ansible.builtin.command: "install -c -m 0755 /tmp/vcluster-cli /usr/local/bin"
+  ansible.builtin.command: "install -c -m 0755 /tmp/vcluster-cli /usr/local/bin/vcluster"
   changed_when: true
