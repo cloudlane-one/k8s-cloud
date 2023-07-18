@@ -6,6 +6,35 @@ spec:
   interval: 60m
   url: https://mailu.github.io/helm-charts/
 ---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: letsencrypt-issuer
+spec:
+  acme:
+    email: {{ .Values.admin_email | quote }}
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      # Secret resource that will be used to store the account's private key.
+      name: letsencrypt-issuer-account-key
+    solvers:
+      - http01:
+          ingress:
+            class: {{ .Values.ingress_class }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mailu-tls
+spec:
+  secretName: mailu-tls
+  dnsNames:
+  - {{ .Values.hosts.mailu }}
+  issuerRef:
+    name: letsencrypt-issuer
+    kind: Issuer
+    group: cert-manager.io
+---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
@@ -39,8 +68,8 @@ spec:
       single_pvc: false
     ingress:
       enabled: true
+      existingSecret: mailu-tls
       annotations:
-        kubernetes.io/tls-acme: "true"
         nginx.ingress.kubernetes.io/auth-response-headers: "Authorization, X-Auth-Request-User, X-Auth-Request-Groups, X-Auth-Request-Email, X-Auth-Request-Preferred-Username, X-Auth-Request-Access-Token"
         nginx.ingress.kubernetes.io/auth-signin: {{ printf "https://%s/oauth2/start?rd=$scheme%%3A%%2F%%2F$host$escaped_request_uri" .Values.oauth2_proxy_host }}
         nginx.ingress.kubernetes.io/auth-url: {{ printf "https://%s/oauth2/auth" .Values.oauth2_proxy_host }}

@@ -1,3 +1,13 @@
+domain: ""
+
+org:
+  name: ""
+  logo_url: ""
+
+hosts:
+  mailman: ""
+  mailu: ""
+
 oidc_client:
   idp_url: ""
   id: ""
@@ -6,18 +16,11 @@ oidc_client:
     name: ""
     key: "secret"
 
+admin_email: "" # external admin email for Letsencrypt
+ingress_class: nginx # needed for ACME challenge
+
 oauth2_proxy_host: ""
-
-domain: ""
-
-hosts:
-  mailman: ""
-  mailu: ""
 
 require_ptr: true
 
 use_mailu_proxy_auth: true
-
-org:
-  name: ""
-  logo_url: ""
