@@ -14,6 +14,15 @@ data:
   setup.sh: |
     #!/bin/bash
 
+    if [ -f ~/autoconf-running ]
+    then
+      echo "Autoconfig script is already running. Exiting."
+      exit 0
+    fi
+
+    touch ~/autoconf-running
+    trap 'rm ~/autoconf-running' EXIT
+
     until $(curl --output /dev/null --silent --head --fail -H "Host: {{ .Values.hosts.nextcloud }}" http://localhost:80/status.php); do
       echo 'waiting for nextcloud to start...'
       sleep 5
