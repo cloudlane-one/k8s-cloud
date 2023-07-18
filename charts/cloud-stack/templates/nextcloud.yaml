@@ -6,7 +6,7 @@ spec:
   interval: 1h
   url: https://nextcloud.github.io/helm/
 ---
-# # TODO: Re-enable nextcloud autoconfig after rigorous testing
+# # TODO: #53 Re-enable nextcloud autoconfig after rigorous testing
 # kind: ConfigMap
 # apiVersion: v1
 # metadata:

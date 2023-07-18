@@ -6,7 +6,7 @@ spec:
   interval: 1h
   url: https://charts.bitnami.com/bitnami
 ---
-# # TODO: Re-enable wordpress autoconfig after rigorous testing + include oidc
+# # TODO: #52 Re-enable wordpress autoconfig after rigorous testing + include oidc
 # kind: ConfigMap
 # apiVersion: v1
 # metadata:
