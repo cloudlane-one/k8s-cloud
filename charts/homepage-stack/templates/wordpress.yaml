@@ -121,11 +121,11 @@ spec:
     service:
       type: ClusterIP
     livenessProbe:
-      initialDelaySeconds: 600
+      initialDelaySeconds: 900
       periodSeconds: 20
       failureThreshold: 15
     readinessProbe:
-      initialDelaySeconds: 600
+      initialDelaySeconds: 900
       periodSeconds: 10
       failureThreshold: 3
     metrics:
