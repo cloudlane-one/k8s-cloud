@@ -89,7 +89,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: bitnami
-  timeout: 15m0s # Increase timeout to be sure.
+  timeout: 20m0s # Increase timeout to be sure.
   values:
     replicaCount: 2
     wordpressUsername: admin
@@ -120,6 +120,14 @@ spec:
     smtpExistingSecret: smtp
     service:
       type: ClusterIP
+    livenessProbe:
+      initialDelaySeconds: 600
+      periodSeconds: 20
+      failureThreshold: 15
+    readinessProbe:
+      initialDelaySeconds: 600
+      periodSeconds: 10
+      failureThreshold: 3
     metrics:
       enabled: true
       serviceMonitor:
