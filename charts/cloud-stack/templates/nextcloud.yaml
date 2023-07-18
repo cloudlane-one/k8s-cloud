@@ -238,11 +238,11 @@ spec:
       #     mountPath: /autoconfig
       #     readOnly: true
     livenessProbe:
-      initialDelaySeconds: 60
+      initialDelaySeconds: 300
       periodSeconds: 10
       failureThreshold: 30
     readinessProbe:
-      initialDelaySeconds: 60
+      initialDelaySeconds: 300
       periodSeconds: 10
       failureThreshold: 3
     internalDatabase:
