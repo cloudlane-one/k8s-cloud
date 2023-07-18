@@ -73,16 +73,15 @@
         chart_version: "'^0.15.3 || 0.15.3-beta.0'" # Need this fix: https://github.com/loft-sh/vcluster/pull/1089
         values:
           sync:
+            nodes:
+              enabled: true
+              nodeSelector: "{{ cluster_fqn }}=1"
             persistentvolumes:
               enabled: true
             storageclasses:
               enabled: true
             volumesnapshots:
               enabled: true
-            nodes:
-              enabled: true
-              enableScheduler: true
-              nodeSelector: "{{ cluster_fqn }}=1"
             ingresses:
               enabled: true
             networkpolicies:
