@@ -29,9 +29,11 @@ spec:
         name: bitnami
   timeout: 10m0s # Increase timeout to be sure.
   values:
+    fullnameOverride: onlyoffice-rabbitmq
     auth:
       username: onlyoffice
       existingPasswordSecret: onlyoffice-rabbitmq
+      existingErlangSecret: onlyoffice-rabbitmq
     metrics:
       enabled: true
       serviceMonitor:
@@ -52,6 +54,7 @@ spec:
         name: bitnami
   timeout: 10m0s # Increase timeout to be sure.
   values:
+    fullnameOverride: onlyoffice-redis
     architecture: standalone
     auth:
       existingSecret: onlyoffice-redis
@@ -76,6 +79,7 @@ spec:
         name: bitnami
   timeout: 10m0s # Increase timeout to be sure.
   values:
+    fullnameOverride: onlyoffice-postgres
     auth:
       database: onlyoffice
       username: onlyoffice
