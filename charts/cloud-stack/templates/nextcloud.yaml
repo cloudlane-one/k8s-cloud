@@ -239,14 +239,6 @@ spec:
       #   - name: autoconfig
       #     mountPath: /autoconfig
       #     readOnly: true
-    livenessProbe:
-      initialDelaySeconds: 300
-      periodSeconds: 10
-      failureThreshold: 30
-    readinessProbe:
-      initialDelaySeconds: 300
-      periodSeconds: 10
-      failureThreshold: 3
     internalDatabase:
       enabled: false
     externalDatabase:
