@@ -105,7 +105,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: onlyoffice
-  timeout: 10m0s # Increase timeout to be sure.
+  timeout: 20m0s # Onlyoffice needs a while with all the install jobs.
   dependsOn:
     - name: onlyoffice-rabbitmq
     - name: onlyoffice-redis
@@ -127,7 +127,7 @@ spec:
       dbUser: onlyoffice
       dbSecretKeyName: password
       dbExistingSecret: onlyoffice-postgres
-      redisHost: onlyoffice-redis
+      redisHost: onlyoffice-redis-headless
       redisSecretKeyName: password
       redisExistingSecret: onlyoffice-redis
       amqpType: rabbitmq
