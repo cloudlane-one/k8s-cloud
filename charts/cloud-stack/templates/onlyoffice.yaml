@@ -106,6 +106,10 @@ spec:
         kind: HelmRepository
         name: onlyoffice
   timeout: 10m0s # Increase timeout to be sure.
+  dependsOn:
+    - name: onlyoffice-rabbitmq
+    - name: onlyoffice-redis
+    - name: onlyoffice-postgres
   values:
     docservice:
       replicas: 2
