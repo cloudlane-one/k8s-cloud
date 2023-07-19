@@ -34,7 +34,12 @@ spec:
       valuesKey: password
       targetPath: "jobs.createSite.adminPassword"
   values:
-    image: {{ .Values.image | toYaml | nindent 6 }}
+    {{- if .Values.custom_image.enabled }}
+    image:
+      repository: {{ .Values.custom_image.repository | quote }}
+      tag: {{ .Values.custom_image.tag | quote }}
+      pullPolicy: {{ .Values.custom_image.pullPolicy }}
+    {{- end }}
     ingress:
       enabled: true
       annotations:
@@ -54,10 +59,11 @@ spec:
         siteName: {{ .Values.host }}
         # adminPassword injected via FluxCD
         installApps:
-        - erpnext
-        - payments
-        - non_profit
+          - erpnext
+          {{- if .Values.custom_image.enabled }}
+          {{ .Values.custom_image.enable_apps | toYaml | indent 10 }}
+          {{- end }}
     persistence:
       worker:
         enabled: true
-        storageClass: {{ .Values.storage_class }} # TODO: PR to make this accept null for the default class
+        storageClass: {{ .Values.storage_class }} # TODO: #56 PR to make this accept null for the default class
