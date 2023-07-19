@@ -104,7 +104,7 @@ spec:
               accessModes: ["ReadWriteOnce"]
               resources:
                 requests:
-                  storage: 12Gi
+                  storage: 8Gi
         retention: 2d
     grafana:
       admin:
