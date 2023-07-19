@@ -53,11 +53,6 @@ spec:
         kind: HelmRepository
         name: bitnami
   timeout: 15m0s # Increase timeout to be sure.
-  valuesFrom:
-    - kind: Secret
-      name: smtp-creds
-      valuesKey: password
-      targetPath: "keycloakConfigCli.configuration.master\\.yaml.smtpServer.password"
   values:
     production: true
     proxy: edge
@@ -116,6 +111,11 @@ spec:
           value: "true"
         - name: LOGGING_LEVEL_HTTP
           value: "debug"
+        - name: SMTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: smtp-creds
+              key: password
         - name: IDP_CERT
           valueFrom:
             secretKeyRef:
@@ -181,7 +181,7 @@ spec:
             auth: 'true'
             from: {{ .Values.smtp.from_address }}
             user: {{ .Values.smtp.user | quote }}
-            password: "" # injected
+            password: "$(env:SMTP_PASSWORD)"
           loginTheme: k8s-cloud
           components:
             org.keycloak.keys.KeyProvider:
@@ -190,9 +190,9 @@ spec:
                 subComponents: {}
                 config: 
                   privateKey:
-                    - "$(env:IDP_CERT_SECRET)" # from env var
+                    - "$(env:IDP_CERT_SECRET)"
                   certificate:
-                    - "$(env:IDP_CERT)" # from env var
+                    - "$(env:IDP_CERT)"
                   priority: ["200"] 
                   algorithm: ["RS256"]
               - name: "aes-generated"
@@ -271,7 +271,7 @@ spec:
               description: "Cluster OIDC client"
               enabled: true
               clientAuthenticatorType: client-secret
-              secret: "$(env:CLUSTER_OIDC_SECRET)" # from env var
+              secret: "$(env:CLUSTER_OIDC_SECRET)"
               redirectUris:
                 - "https://{{ .Values.hosts.authproxy }}/oauth2/callback"
                 - "http://localhost:8000/"
@@ -294,7 +294,7 @@ spec:
               description: "Internal OIDC client"
               enabled: true
               clientAuthenticatorType: client-secret
-              secret: "$(env:OIDC_SECRET.{{ $client.id }})" # from env var
+              secret: "$(env:OIDC_SECRET.{{ $client.id }})"
               redirectUris: 
               {{- range $uri := $client.redirect_uris }}
                 - {{ $uri }}
@@ -323,7 +323,7 @@ spec:
                 - "*"
               frontchannelLogout: true
               attributes:
-                saml.signing.certificate: "$(env:SAML_CERT.{{ $client.id }})" # from env var
+                saml.signing.certificate: "$(env:SAML_CERT.{{ $client.id }})"
                 saml.client.signature: "true"
                 saml.force.post.binding: "false"
                 saml.signature.algorithm: RSA_SHA256
