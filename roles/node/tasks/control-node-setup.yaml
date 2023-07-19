@@ -1,0 +1,77 @@
+- name: Ensure k3s kubeconfig is set as default
+  ansible.builtin.lineinfile:
+    path: ~/.bashrc
+    create: true
+    line: "export KUBECONFIG=/etc/rancher/k3s/k3s.yaml"
+    mode: '0640'
+
+- name: Copy requirements.txt to remote
+  ansible.builtin.copy:
+    src: requirements.txt
+    dest: /tmp
+    mode: '0644'
+
+- name: Ensure PIP dependencies are installed
+  ansible.builtin.pip:
+    requirements: /tmp/requirements.txt
+
+- name: Check if Helm CLI is installed
+  ansible.builtin.command: "which helm"
+  register: which_helm
+  changed_when: false
+  failed_when: false
+  ignore_errors: true
+
+- name: Download Helm install script
+  when: "which_helm.rc != 0"
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+    dest: /tmp/helm-install.sh
+    mode: "0700"
+
+- name: Run Helm install script
+  when: "which_helm.rc != 0"
+  ansible.builtin.command: /tmp/helm-install.sh
+  changed_when: true
+
+- name: Ensure helm diff plugin is installed
+  kubernetes.core.helm_plugin:
+    plugin_path: https://github.com/databus23/helm-diff
+
+- name: Check if Flux CLI is installed
+  ansible.builtin.command: "which flux"
+  register: which_flux
+  changed_when: false
+  failed_when: false
+  ignore_errors: true
+
+- name: Download Flux install script
+  when: "which_flux.rc != 0"
+  ansible.builtin.get_url:
+    url: https://fluxcd.io/install.sh
+    dest: /tmp/flux-install.sh
+    mode: "0700"
+
+- name: Run Flux install script
+  when: "which_flux.rc != 0"
+  ansible.builtin.command: /tmp/flux-install.sh
+  changed_when: true
+
+- name: Check if VCluster CLI is installed
+  ansible.builtin.command: "which vcluster"
+  register: which_vcluster
+  changed_when: false
+  failed_when: false
+  ignore_errors: true
+
+- name: Download VCluster CLI
+  when: "which_vcluster.rc != 0"
+  ansible.builtin.get_url:
+    url: https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64
+    dest: /tmp/vcluster-cli
+    mode: "0700"
+
+- name: Install VCluster CLI
+  when: "which_vcluster.rc != 0"
+  ansible.builtin.command: "install -c -m 0755 /tmp/vcluster-cli /usr/local/bin/vcluster"
+  changed_when: true

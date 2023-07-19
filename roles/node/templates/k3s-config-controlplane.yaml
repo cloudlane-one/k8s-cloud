@@ -1,0 +1,20 @@
+flannel-backend: "wireguard-native"
+flannel-external-ip: True
+disable:
+  - traefik
+  - local-storage
+etcd-expose-metrics: true
+secrets-encryption: true
+cluster-cidr: "10.42.0.0/16,2001:cafe:42:0::/56"
+service-cidr: "10.43.0.0/16,2001:cafe:42:1::/112"
+kube-apiserver-arg:
+  - "oidc-issuer-url=https://{{ subdomains.keycloak }}.{{ domain }}/realms/master"
+  - "oidc-client-id=cluster-oidc"
+  - "oidc-groups-claim=groups"
+kube-controller-manager-arg:
+  - "bind-address=0.0.0.0"
+kube-proxy-arg:
+  - "metrics-bind-address=0.0.0.0"
+kube-scheduler-arg:
+  - "bind-address=0.0.0.0"
+tls-san: "{{ subdomains.cluster }}.{{ domain }}"

@@ -1,0 +1,9 @@
+domain: ""
+
+policy: sync # External DNS policy ("upsert-only" or "sync")
+
+# Currently only Digitalocean provider supported.
+token_secret:
+  namespace: null
+  name: ""
+  key: "token"

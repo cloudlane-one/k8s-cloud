@@ -1,0 +1,106 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: longhorn
+spec:
+  interval: 1h
+  url: https://charts.longhorn.io
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: longhorn
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: longhorn
+      version: "~1.4.2 || ^1.5.1" # Chart for 1.5.0 was released with some upgrade-related bugs. Skip that.
+      sourceRef:
+        kind: HelmRepository
+        name: longhorn
+  timeout: '15m0s' # Account for slow performance of cluster on first setup.
+  values:
+    persistence:
+      defaultClass: false
+{{- if not .Values.bootstrap }}
+    defaultSettings:
+      # See https://longhorn.io/docs/1.2.4/snapshots-and-backups/backup-and-restore/set-backup-target/#set-up-aws-s3-backupstore
+      backupTarget: {{ printf "s3://%s@%s/" .Values.s3.bucket .Values.s3.region }}
+      backupTargetCredentialSecret: s3-secret
+    ingress:
+      enabled: true
+      annotations:
+        kubernetes.io/tls-acme: "true"
+        # As described in this docs section: https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/#configuring-for-use-with-the-nginx-auth_request-directive
+        nginx.ingress.kubernetes.io/auth-response-headers: "Authorization, X-Auth-Request-User, X-Auth-Request-Groups, X-Auth-Request-Email, X-Auth-Request-Preferred-Username, X-Auth-Request-Access-Token"
+        nginx.ingress.kubernetes.io/auth-signin: {{ printf "https://%s/oauth2/start?rd=$scheme%%3A%%2F%%2F$host$escaped_request_uri" .Values.oauth2_proxy_host }}
+        nginx.ingress.kubernetes.io/auth-url: {{ printf "https://%s/oauth2/auth?allowed_groups=%s" .Values.oauth2_proxy_host (urlquery .Values.admin_group) }}
+      host: {{ .Values.host }}
+      tls:
+        - hosts:
+            - {{ .Values.host }}
+          secretName: longhorn-cert
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: s3-secret
+type: Opaque
+data:
+  {{- $secretRef := .Values.s3.access_key_secret }}
+  {{- $s3_secret := get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
+  # See https://longhorn.io/docs/1.2.4/snapshots-and-backups/backup-and-restore/set-backup-target/#set-up-aws-s3-backupstore
+  AWS_ACCESS_KEY_ID: {{ .Values.s3.access_key_id | b64enc }}
+  AWS_SECRET_ACCESS_KEY: {{ $s3_secret }}
+  AWS_ENDPOINTS: {{ printf "https://%s" .Values.s3.endpoint | b64enc }}
+  VIRTUAL_HOSTED_STYLE: dHJ1ZQ== # true
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: longhorn
+  labels:
+    name: longhorn
+spec:
+  selector:
+    matchLabels:
+      app: longhorn-manager
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  endpoints:
+    - port: manager
+---
+# Snapshot cleanup job to avoid too-many-snapshots errors
+# See docs here: https://longhorn.io/docs/1.4.1/snapshots-and-backups/scheduling-backups-and-snapshots/#set-up-recurring-jobs-using-a-longhorn-recurringjob
+apiVersion: longhorn.io/v1beta1
+kind: RecurringJob
+metadata:
+  name: snap-delete-older-7d
+spec:
+  concurrency: 1
+  cron: '0 0 * * *'
+  groups:
+    - default
+  retain: 7
+  task: snapshot-delete
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  labels:
+    grafana_dashboard: "1"
+data:
+{{ (.Files.Glob "config/grafana-dashboards/longhorn*").AsConfig | indent 2 }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    prometheus: longhorn
+    role: alert-rules
+  name: longhorn
+spec: {{ .Files.Get "config/alert-rules.yaml" | nindent 2 }}
+{{- end }}

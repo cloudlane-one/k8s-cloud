@@ -1,0 +1,5 @@
+cluster_fqn: ""
+default: true
+class_name: default
+encryption: false
+vcluster: false

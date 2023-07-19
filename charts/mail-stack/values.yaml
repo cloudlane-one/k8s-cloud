@@ -1,26 +1,28 @@
-oidcClient:
-  idpURL: ""
-  id: ""
-  secret: ""
-
-proxyAuthURLs:
-  signin: "https://oauth2-proxy/oauth2/start"
-  auth: "https://oauth2-proxy/oauth2/auth"
-
 domain: ""
+
+org:
+  name: ""
+  logo_url: ""
 
 hosts:
   mailman: ""
   mailu: ""
 
-requirePTR: true
+oidc_client:
+  idp_url: ""
+  id: ""
+  secret:
+    namespace: null
+    name: ""
+    key: "secret"
 
-useMailuProxyAuth: true
+admin_email: "" # external admin email for Letsencrypt
+ingress_class: nginx # needed for ACME challenge
 
-org:
-  name: ""
-  logoURL: ""
+oauth2_proxy_host: ""
 
-clusterIssuer: "acme"
+require_ptr: true
 
-externalDNSManager: "cluster"
+use_mailu_proxy_auth: true
+
+ingress: true

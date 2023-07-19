@@ -1,0 +1,169 @@
+- name: Check whether whether control nodes were given explicitly
+  ansible.builtin.set_fact:
+    control_nodes_given: "{{ control_nodes | length > 0 }}"
+
+- name: Determine the main control host (first to join the cluster)
+  ansible.builtin.set_fact:
+    main_control_node: "{{ control_nodes_given | ternary(control_nodes[0], groups['all'][0]) }}"
+
+- name: Check whether this host is supposed to be a control node
+  ansible.builtin.set_fact:
+    control_node: "{{ inventory_hostname in control_nodes or inventory_hostname == main_control_node }}"
+
+- name: Ensure all required system packages are installed
+  block:
+    - name: Install packages via apt
+      when: 'ansible_pkg_mgr == "apt"'
+      ansible.builtin.apt:
+        state: present
+        name:
+          - nfs-common
+          - wireguard
+          - python3
+          - python3-pip
+        update_cache: true
+
+    - name: Install packages via yum
+      when: 'ansible_pkg_mgr == "yum"'
+      ansible.builtin.yum:
+        state: present
+        name:
+          - nfs-utils
+          - wireguard-tools
+          - python3
+          - python3-pip
+        update_cache: true
+
+    - name: Install packages via apk
+      when: 'ansible_pkg_mgr == "apk"'
+      community.general.apk:
+        state: present
+        name:
+          - nfs-utils
+          - wireguard-tools
+          - python3
+          - py3-pip
+        update_cache: true
+
+    - name: Install packages via dnf
+      when: 'ansible_pkg_mgr == "dnf"'
+      ansible.builtin.dnf:
+        state: present
+        name:
+          - nfs-utils
+          - wireguard-tools
+          - python3
+          - python3-pip
+        update_cache: true
+
+    - name: Install packages via zypper
+      when: 'ansible_pkg_mgr == "zypper"'
+      community.general.zypper:
+        state: present
+        name:
+          - nfs-utils
+          - wireguard-tools
+          - python3
+          - python3-pip
+        update_cache: true
+
+    - name: Install packages via pacman
+      when: 'ansible_pkg_mgr == "pacman"'
+      community.general.pacman:
+        state: present
+        name:
+          - nfs-utils
+          - wireguard-tools
+          - python
+          - python-pip
+        update_cache: true
+
+- name: Disable multipath for all sdx devices
+  ansible.builtin.blockinfile:
+    path: /etc/multipath.conf
+    create: true
+    mode: '0644'
+    block: |
+      blacklist {
+          devnode "^sd[a-z0-9]+"
+      }
+
+- name: Restart multipath
+  ansible.builtin.systemd:
+    state: restarted
+    name: multipathd.service
+
+- name: Install k3s via official setup script # TODO: remove third-party ansible role and use k3s setup script
+  block:
+    - name: Ensure k3s config dir exists
+      ansible.builtin.file:
+        path: /etc/rancher/k3s/config.yaml.d/
+        state: directory
+        mode: '0755'
+
+    - name: Template out k3s config file
+      ansible.builtin.template:
+        src: k3s-config.yaml
+        dest: /etc/rancher/k3s/config.yaml.d/main.yaml
+        mode: '0644'
+
+    - name: Template out k3s controlplane config file
+      when: "control_node"
+      ansible.builtin.template:
+        src: k3s-config-controlplane.yaml
+        dest: /etc/rancher/k3s/config.yaml.d/controlplane.yaml
+        mode: '0644'
+
+    - name: Download k3s install script
+      ansible.builtin.get_url:
+        url: https://get.k3s.io
+        dest: /tmp/k3s-install.sh
+        mode: "0700"
+
+    - name: Install k3s on first node and download config
+      when: "inventory_hostname == main_control_node"
+      block:
+        - name: Run k3s install script for first control node
+          ansible.builtin.command:
+            argv:
+              - /tmp/k3s-install.sh
+              - server
+          environment:
+            K3S_CLUSTER_INIT: "true"
+          changed_when: true
+
+        - name: Download join token file
+          ansible.builtin.fetch:
+            src: /var/lib/rancher/k3s/server/token
+            dest: "{{ playbook_dir }}/join-token"
+            flat: true
+
+    - name: Upload config and join additional node
+      when: "inventory_hostname != main_control_node"
+      block:
+        - name: Ensure permanent config dir exists
+          ansible.builtin.file:
+            path: /etc/k8s-cloud
+            state: directory
+            mode: '0755'
+
+        - name: Upload join token file
+          ansible.builtin.copy:
+            src: "{{ playbook_dir }}/join-token"
+            dest: /etc/k8s-cloud/k3s-join-token
+            mode: '0644'
+
+        - name: Run k3s install script for additional node
+          ansible.builtin.command:
+            argv:
+              - /tmp/k3s-install.sh
+              - "{{ control_node | ternary('server', 'agent') }}"
+          environment:
+            K3S_TOKEN_FILE: /etc/k8s-cloud/k3s-join-token
+            K3S_URL: "https://{{ main_control_node }}:6443"
+          changed_when: true
+
+- name: Run control-node-specific setup steps
+  when: "control_node"
+  ansible.builtin.include_tasks:
+    file: control-node-setup.yaml

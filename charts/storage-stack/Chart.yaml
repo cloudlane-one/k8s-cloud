@@ -1,0 +1,10 @@
+apiVersion: v2
+name: storage-stack
+description: Longhorn-based storage system
+type: application
+version: "0.0.1"
+appVersion: "0.0.1"
+dependencies:
+- name: common
+  version: "^1"
+  repository: https://charts.bitnami.com/bitnami

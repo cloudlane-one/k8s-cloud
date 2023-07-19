@@ -1,0 +1,46 @@
+cluster_client:
+  id: cluster-oidc
+  redirect_uris: []
+
+clients:
+  oidc: []
+  #    - id: ""
+  #      redirect_uris:
+  #        - https://example.com/path
+  saml: []
+  #    - id: ""
+  #      root_url: ""
+  #      assertion_consumer:
+  #        method: "post" # "redirect" or "post"
+  #        url: "" # may be relative
+  #      logout_service:
+  #        method: "post" # "redirect" or "post"
+  #        url: "" # may be relative
+
+domain: ""
+
+hosts:
+  keycloak: ""
+  authproxy: ""
+
+smtp:
+  host: ""
+  port: ""
+  user: ""
+  from_address: ""
+  starttls: false
+  password_secret:
+    namespace: null
+    name: ""
+    key: "password"
+
+org:
+  name: ""
+  default_locale: "en_US"
+  tagline: ""
+  logo_url: ""
+
+admin_group: ""
+admin_email: ""
+
+letsencrypt_staging: false

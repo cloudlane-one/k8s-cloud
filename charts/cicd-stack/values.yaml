@@ -1,0 +1,13 @@
+host: ""
+
+oidc_client:
+  idp_url: ""
+  id: ""
+  secret:
+    namespace: null
+    name: ""
+    key: "secret"
+
+letsencrypt_staging: false
+
+bootstrap: false # Set to true to install in bootstrap mode (minimum deployment to support core functions and CRs)

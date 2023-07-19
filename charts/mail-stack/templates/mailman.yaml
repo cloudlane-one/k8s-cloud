@@ -1,6 +1,6 @@
-{{- $pg_admin_pw := include "common.secrets.passwords.manage" (dict "secret" "postgresql-passwords" "key" "postgres-password" "providedValues" (list "") "context" $) | trimAll "\"" -}}
-{{- $pg_user_pw := include "common.secrets.passwords.manage" (dict "secret" "postgresql-passwords" "key" "password" "providedValues" (list "") "context" $) | trimAll "\"" -}}
-{{- $pg_repl_pw := include "common.secrets.passwords.manage" (dict "secret" "postgresql-passwords" "key" "replication-password" "providedValues" (list "") "context" $) | trimAll "\"" -}}
+{{- $pg_admin_pw := include "common.secrets.passwords.manage" (dict "secret" "postgresql-passwords" "key" "postgres-password" "providedValues" (list "") "length" 16 "context" $) | trimAll "\"" -}}
+{{- $pg_user_pw := include "common.secrets.passwords.manage" (dict "secret" "postgresql-passwords" "key" "password" "providedValues" (list "") "length" 16 "context" $) | trimAll "\"" -}}
+{{- $pg_repl_pw := include "common.secrets.passwords.manage" (dict "secret" "postgresql-passwords" "key" "replication-password" "providedValues" (list "") "length" 16 "context" $) | trimAll "\"" -}}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -17,7 +17,7 @@ metadata:
   name: hyperkitty-key
 type: Opaque
 data:
-  api-key: {{ include "common.secrets.passwords.manage" (dict "secret" "hyperkitty-key" "key" "api-key" "providedValues" (list "") "context" $) }}
+  api-key: {{ include "common.secrets.passwords.manage" (dict "secret" "hyperkitty-key" "key" "api-key" "providedValues" (list "") "length" 16 "context" $) }}
 ---
 apiVersion: v1
 kind: Secret
@@ -25,7 +25,7 @@ metadata:
   name: mailman-admin
 type: Opaque
 data:
-  password: {{ include "common.secrets.passwords.manage" (dict "secret" "mailman-admin" "key" "password" "providedValues" (list "") "context" $) }}
+  password: {{ include "common.secrets.passwords.manage" (dict "secret" "mailman-admin" "key" "password" "providedValues" (list "") "length" 16 "context" $) }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -228,7 +228,16 @@ metadata:
   name: django-secret
 type: Opaque
 data:
-  secret: {{ include "common.secrets.passwords.manage" (dict "secret" "django-secret" "key" "secret" "providedValues" (list "") "context" $) }}
+  secret: {{ include "common.secrets.passwords.manage" (dict "secret" "django-secret" "key" "secret" "providedValues" (list "") "length" 16 "context" $) }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: oidc-client
+type: Opaque
+data:
+  {{- $secretRef := .Values.oidc_client.secret }}
+  secret: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -236,6 +245,7 @@ metadata:
   name: mailman-web-config
 data:
   settings_local.py: |
+    import os
     # Configure OpenID SSO provider.
     MAILMAN_WEB_SOCIAL_AUTH = [
         'allauth.socialaccount.providers.openid_connect',
@@ -246,10 +256,10 @@ data:
                 {
                     "id": "local-sso",  # 30 characters or less
                     "name": {{ printf "%s SSO" .Values.org.name | quote }},
-                    "server_url": {{ .Values.oidcClient.idpURL | quote }},
+                    "server_url": {{ .Values.oidc_client.idp_url | quote }},
                     "APP": {
-                        "client_id": {{ .Values.oidcClient.id | quote }},
-                        "secret": {{ .Values.oidcClient.secret | quote }},
+                        "client_id": {{ .Values.oidc_client.id | quote }},
+                        "secret": os.environ["OIDC_CLIENT_SECRET"],
                     },
                 },
             ]
@@ -441,6 +451,11 @@ spec:
               value: "/static=/opt/mailman-web-data/static"
             - name: POSTORIUS_TEMPLATE_BASE_URL
               value: "http://mailman-web"
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oidc-client
+                  key: secret
           ports:
             - name: ui
               containerPort: 8000
@@ -478,14 +493,14 @@ spec:
         - name: uwsgi-config
           configMap:
             name: mailman-web-uwsgi
+{{- if .Values.ingress }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: mailman
   annotations:
-    cert-manager.io/cluster-issuer: {{ .Values.clusterIssuer }}
-    external-dns.alpha.kubernetes.io/managed-by: {{ .Values.externalDNSManager }}
+    kubernetes.io/tls-acme: "true"
 spec:
   tls:
     - hosts:
@@ -502,3 +517,4 @@ spec:
                 name: mailman-web
                 port:
                   name: ui
+{{- end }}

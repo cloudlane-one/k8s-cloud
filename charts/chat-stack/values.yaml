@@ -1,0 +1,30 @@
+host: ""
+
+org:
+  name: ""
+  default_locale: "en_US"
+  tagline: ""
+  logo_url: ""
+
+oidc_client:
+  # Only works with keycloak currently.
+  idp_url: ""
+  id: ""
+  secret:
+    namespace: null
+    name: ""
+    key: "secret"
+
+smtp: # For admin notifications
+  host: ""
+  port: ""
+  user: ""
+  password_secret:
+    namespace: null
+    name: ""
+    key: "secret"
+  from_address: ""
+
+admin_email: ""
+
+ingress: true

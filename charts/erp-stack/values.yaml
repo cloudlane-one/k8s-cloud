@@ -1,0 +1,17 @@
+host: ""
+
+storage_class: "" # Must support RWX.
+
+# Supply custom image with additional apps bundled.
+custom_image:
+  enabled: false
+
+  repository: ""
+  tag: ""
+  pullPolicy: IfNotPresent
+
+  # Names of additional frappe apps to enable (aside from ERPNext). 
+  # These need to be available in the supplied image.
+  enable_apps: []
+  # - payments
+  # - non_profit

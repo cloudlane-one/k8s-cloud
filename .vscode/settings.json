@@ -1,3 +1,14 @@
 {
-  "git.inputValidationSubjectLength": 100
+  "git.inputValidationSubjectLength": 100,
+  "ansible.python.interpreterPath": "/home/enzo/.cache/pypoetry/virtualenvs/k8s-cloud-Af-Re36H-py3.10/bin/python",
+  "files.associations": {
+    "main.yaml": "ansible",
+    "setup.yaml": "ansible"
+  },
+  "terminal.integrated.env.windows": {
+    "KUBECONFIG": "${workspaceFolder}/kubeconfig.yaml"
+  },
+  "terminal.integrated.env.linux": {
+    "KUBECONFIG": "${workspaceFolder}/kubeconfig.yaml"
+  },
 }

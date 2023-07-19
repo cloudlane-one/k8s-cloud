@@ -6,6 +6,35 @@ spec:
   interval: 60m
   url: https://mailu.github.io/helm-charts/
 ---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: letsencrypt-issuer
+spec:
+  acme:
+    email: {{ .Values.admin_email | quote }}
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      # Secret resource that will be used to store the account's private key.
+      name: letsencrypt-issuer-account-key
+    solvers:
+      - http01:
+          ingress:
+            class: {{ .Values.ingress_class }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mailu-tls
+spec:
+  secretName: mailu-tls
+  dnsNames:
+  - {{ .Values.hosts.mailu }}
+  issuerRef:
+    name: letsencrypt-issuer
+    kind: Issuer
+    group: cert-manager.io
+---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
@@ -15,7 +44,7 @@ spec:
   chart:
     spec:
       chart: mailu
-      version: "^1"
+      version: "^1.2"
       sourceRef:
         kind: HelmRepository
         name: mailu
@@ -32,17 +61,18 @@ spec:
       existingSecretPasswordKey: password
     customization:
       siteName: {{ printf "%s Mail" .Values.org.name }}
-      logoUrl: {{ .Values.org.logoURL | quote }}
+      logoUrl: {{ .Values.org.logo_url | quote }}
     subnet: "10.0.0.0/8" # Cluster network. Make sure to set your NetworkPolicies straight!
     logLevel: INFO
     persistence:
       single_pvc: false
     ingress:
-      enabled: true
+      enabled: {{ .Values.ingress }}
+      existingSecret: mailu-tls
       annotations:
-        cert-manager.io/cluster-issuer: {{ .Values.clusterIssuer }}
-        external-dns.alpha.kubernetes.io/managed-by: {{ .Values.externalDNSManager }}
-        {{ include "proxy_auth_annotations" . | nindent 8 }}
+        nginx.ingress.kubernetes.io/auth-response-headers: "Authorization, X-Auth-Request-User, X-Auth-Request-Groups, X-Auth-Request-Email, X-Auth-Request-Preferred-Username, X-Auth-Request-Access-Token"
+        nginx.ingress.kubernetes.io/auth-signin: {{ printf "https://%s/oauth2/start?rd=$scheme%%3A%%2F%%2F$host$escaped_request_uri" .Values.oauth2_proxy_host }}
+        nginx.ingress.kubernetes.io/auth-url: {{ printf "https://%s/oauth2/auth" .Values.oauth2_proxy_host }}
     mariadb:
       enabled: true
       primary:
@@ -56,7 +86,7 @@ spec:
         enabled: true
         type: LoadBalancer
         externalTrafficPolicy: Local
-      {{- if .Values.useMailuProxyAuth }}
+      {{- if .Values.use_mailu_proxy_auth }}
       extraEnvVars:
         - name: PROXY_AUTH_WHITELIST
           value: "10.0.0.0/8"
@@ -66,7 +96,7 @@ spec:
           value: "True"
       {{- end }}
     postfix:
-      {{ if .Values.requirePTR -}}
+      {{ if .Values.require_ptr -}}
       nodeSelector:
         PTR: {{ .Values.hosts.mailu }}
       {{ end -}}
@@ -92,7 +122,7 @@ spec:
     admin:
       persistence:
         size: 5Gi
-      {{- if .Values.useMailuProxyAuth }}
+      {{- if .Values.use_mailu_proxy_auth }}
       extraEnvVars:
         - name: PROXY_AUTH_WHITELIST
           value: "10.0.0.0/8"
@@ -107,7 +137,7 @@ spec:
     webmail:
       persistence:
         size: 5Gi
-      {{- if .Values.useMailuProxyAuth }}
+      {{- if .Values.use_mailu_proxy_auth }}
       extraEnvVars:
         - name: PROXY_AUTH_WHITELIST
           value: "10.0.0.0/8"

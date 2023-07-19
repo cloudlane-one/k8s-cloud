@@ -5,3 +5,16 @@ Chart.lock
 # Files marked as local-only
 *.local
 *.local.*
+
+# Files containing secrets & custom config
+/*kubeconfig*.yaml
+/*kubeconfig*.yml
+/join-token
+/*.hosts.ini
+/*.config.yaml
+/*.secrets.yaml
+/*.values.yaml
+/*.hr.yaml
+
+# Do not commit lockfil
+/poetry.lock

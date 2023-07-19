@@ -1,0 +1,39 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: flux-community
+spec:
+  interval: 1h
+  url: https://fluxcd-community.github.io/helm-charts
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: fluxcd
+spec:
+  chart:
+    spec:
+      chart: flux2
+      version: "^2"
+      sourceRef:
+        kind: HelmRepository
+        name: flux-community
+  interval: 1h
+  timeout: 15m0s # Increase timeout to be sure.
+  values:
+    policies:
+      create: false
+{{- if not .Values.bootstrap }}
+    prometheus:
+      podMonitor:
+        create: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  labels:
+    grafana_dashboard: "1"
+data:
+{{ (.Files.Glob "config/grafana-dashboards/flux*").AsConfig | indent 2 }}
+{{- end }}

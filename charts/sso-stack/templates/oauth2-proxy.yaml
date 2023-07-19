@@ -1,0 +1,80 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: oauth2-proxy
+spec:
+  interval: 10m
+  url: https://oauth2-proxy.github.io/manifests
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cookies
+type: Opaque
+data:
+  secret: {{ include "common.secrets.passwords.manage" (dict "secret" "cookies" "key" "secret" "providedValues" (list "") "length" 16 "context" $) }}
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: oauth2-proxy
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: oauth2-proxy
+      version: '^6'
+      sourceRef:
+        kind: HelmRepository
+        name: oauth2-proxy
+  timeout: '30m0s' # Setting up public domains for OIDC takes time.
+  dependsOn:
+    - name: keycloak
+  valuesFrom:
+    - kind: Secret
+      name: cluster-oidc
+      valuesKey: secret
+      targetPath: config.clientSecret
+    - kind: Secret
+      name: cookies
+      valuesKey: secret
+      targetPath: config.cookieSecret
+  values:
+    metrics:
+      enabled: true
+      servicemonitor:
+        enabled: true
+    config:
+      clientID: cluster-oidc
+      # clientSecret: "" # injected via valuesFrom
+      # cookieSecret: "" # injected via valuesFrom
+      # Reference for below config: https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/
+      configFile: |-
+        upstreams = "file:///dev/null"
+        whitelist_domains = [ {{ printf ".%s" .Values.domain | quote }} ]
+        provider = "oidc"
+        provider_display_name = {{ printf "SSO for %s" .Values.org.name | quote }}
+        oidc_issuer_url = {{ printf "https://%s/realms/master" .Values.hosts.keycloak | quote }}
+        redirect_url = {{ printf "https://%s/oauth2/callback" .Values.hosts.authproxy | quote }}
+        set_xauthrequest = true
+        set_authorization_header = true
+        pass_authorization_header = true
+        pass_access_token = true
+        cookie_samesite = "none"
+        cookie_domains = [ {{ printf ".%s" .Values.domain | quote }} ]
+        cookie_refresh = "300s"
+        email_domains = "*"
+        scope = "email groups profile openid"
+        {{- if .Values.letsencrypt_staging }}
+        ssl_insecure_skip_verify = true
+        {{- end }}
+    ingress:
+      enabled: true
+      annotations:
+        kubernetes.io/tls-acme: "true"
+      hosts:
+        - {{ .Values.hosts.authproxy }}
+      tls:
+        - hosts:
+            - {{ .Values.hosts.authproxy }}
+          secretName: oauth2-proxy-cert
