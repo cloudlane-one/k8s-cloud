@@ -392,7 +392,7 @@
     - name: storage-stack
       namespace: longhorn-system
       chart_values:
-        host: "{{ subdomains.storage }}.{{ domain }}"
+        host: "{{ subdomains.longhorn }}.{{ domain }}"
         oauth2_proxy_host: "{{ subdomains.auth }}.{{ domain }}"
         admin_group: "cluster-admins"
         s3: "{{ s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
@@ -534,7 +534,7 @@
     - name: control-stack
       namespace: kube-system
       chart_values:
-        host: "{{ subdomains.control }}.{{ domain }}"
+        host: "{{ subdomains.dashboard }}.{{ domain }}"
         oauth2_proxy_host: "{{ subdomains.auth }}.{{ domain }}"
         admin_group: "cluster-admins"
 
@@ -561,8 +561,8 @@
         cluster_client:
           id: cluster-oidc
           redirect_uris:
-            - "https://{{ subdomains.telemetry }}.{{ domain }}/login/generic_oauth"
-            - "https://{{ subdomains.gitops }}.{{ domain }}/oauth2/callback"
+            - "https://{{ subdomains.grafana }}.{{ domain }}/login/generic_oauth"
+            - "https://{{ subdomains.weave_gitops }}.{{ domain }}/oauth2/callback"
         smtp: "{{ smtp | combine({'password_secret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
         admin_group: "cluster-admins"
         admin_email: "{{ admin_email }}"
@@ -573,7 +573,7 @@
       chart_values:
         domain: "{{ domain }}"
         org: "{{ org }}"
-        host: "{{ subdomains.telemetry }}.{{ domain }}"
+        host: "{{ subdomains.grafana }}.{{ domain }}"
         oidc_client:
           idp_url: "https://{{ subdomains.idp }}.{{ domain }}/realms/master"
           id: "cluster-oidc"
@@ -597,7 +597,7 @@
     - name: cicd-stack
       namespace: flux-system
       chart_values:
-        host: "{{ subdomains.gitops }}.{{ domain }}"
+        host: "{{ subdomains.weave_gitops }}.{{ domain }}"
         oidc_client:
           idp_url: "https://{{ subdomains.idp }}.{{ domain }}/realms/master"
           id: "cluster-oidc"

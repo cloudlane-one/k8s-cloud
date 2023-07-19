@@ -1,5 +1,4 @@
 domain: ""
-cluster_name: "cluster"
 
 policy: sync # External DNS policy ("upsert-only" or "sync")
 
