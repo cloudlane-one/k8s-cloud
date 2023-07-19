@@ -256,6 +256,14 @@ spec:
       enabled: true
       size: 4Gi
       # accessMode: ReadWriteMany
+    livenessProbe:
+      initialDelaySeconds: 300
+      periodSeconds: 10
+      failureThreshold: 12
+    readinessProbe:
+      initialDelaySeconds: 300
+      periodSeconds: 10
+      failureThreshold: 3
     metrics:
       enabled: true
       serviceMonitor:
