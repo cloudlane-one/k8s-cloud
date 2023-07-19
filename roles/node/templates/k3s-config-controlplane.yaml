@@ -17,4 +17,4 @@ kube-proxy-arg:
   - "metrics-bind-address=0.0.0.0"
 kube-scheduler-arg:
   - "bind-address=0.0.0.0"
-tls-san: "{{ subdomains.cluster }}.{{ domain }}"
+tls-san: "{{ subdomains.k8s_api }}.{{ domain }}"

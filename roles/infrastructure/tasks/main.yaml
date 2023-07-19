@@ -3,7 +3,7 @@
     suffix: "{{ domain | community.dns.get_public_suffix }}"
     main_name: "{{ domain | replace(suffix, '') | split('.') | last }}"
   ansible.builtin.set_fact:
-    cluster_fqn: "{{ subdomains.cluster }}.{{ domain }}"
+    cluster_fqn: "{{ subdomains.k8s_api }}.{{ domain }}"
     charts_dir: "{{ playbook_dir }}/charts"
     cluster_name: "{{ domain | replace('.', '-') }}"
     registered_domain: "{{ main_name }}{{ suffix }}"
@@ -534,7 +534,7 @@
     - name: control-stack
       namespace: kube-system
       chart_values:
-        host: "{{ subdomains.dashboard }}.{{ domain }}"
+        host: "{{ subdomains.k8s_dashboard }}.{{ domain }}"
         oauth2_proxy_host: "{{ subdomains.oauth2_proxy }}.{{ domain }}"
         admin_group: "cluster-admins"
 

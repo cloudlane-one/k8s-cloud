@@ -45,11 +45,11 @@ restore_from_backup: null
 subdomains:
   keycloak: "id"
   oauth2_proxy: "oauth"
-  cluster: "k8s"
-  dashboard: "dashboard.k8s"
-  weave_gitops: "gitops.k8s"
-  grafana: "grafana.k8s"
-  longhorn: "longhorn.k8s"
+  k8s_api: "k8s"
+  k8s_dashboard: "kubectl"
+  weave_gitops: "gitops"
+  grafana: "grafana"
+  longhorn: "longhorn"
 
 # Auto-trust unknown ssh-hosts.
 auto_trust_remotes: false
