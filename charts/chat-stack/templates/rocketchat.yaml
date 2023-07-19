@@ -123,7 +123,7 @@ spec:
     minAvailable: 1
     host: {{ .Values.host }}
     ingress:
-      enabled: true
+      enabled: {{ .Values.ingress }}
       annotations:
         kubernetes.io/tls-acme: "true"
         nginx.ingress.kubernetes.io/proxy-body-size: 4G

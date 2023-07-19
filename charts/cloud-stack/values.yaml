@@ -37,4 +37,6 @@ smtp: # For admin notifications
     key: "secret"
   from_address: ""
 
+ingress: true
+
 debug: false

@@ -158,7 +158,7 @@ spec:
     volumePermissions:
       enabled: true
     ingress:
-      enabled: true
+      enabled: {{ .Values.ingress }}
       {{ with .Values.host -}}
       {{- if eq (. | splitList "." | first) "www" -}}
       {{- $root_domain := . | splitList "." | rest | join "." -}}

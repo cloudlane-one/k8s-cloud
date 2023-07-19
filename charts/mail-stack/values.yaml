@@ -24,3 +24,5 @@ oauth2_proxy_host: ""
 require_ptr: true
 
 use_mailu_proxy_auth: true
+
+ingress: true

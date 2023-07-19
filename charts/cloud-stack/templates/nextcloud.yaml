@@ -87,7 +87,7 @@ spec:
     # Upstream issue: <https://github.com/nextcloud/helm/issues/399>
     # replicaCount: 2
     ingress:
-      enabled: true
+      enabled: {{ .Values.ingress }}
       tls:
         - secretName: nextcloud-tls
           hosts:

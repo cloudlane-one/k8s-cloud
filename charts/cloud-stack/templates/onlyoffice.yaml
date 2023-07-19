@@ -139,7 +139,7 @@ spec:
       storageClass: null
       size: 4Gi
     ingress:
-      enabled: true
+      enabled: {{ .Values.ingress }}
       annotations:
         kubernetes.io/tls-acme: "'true'"
       host: {{ .Values.hosts.onlyoffice }}

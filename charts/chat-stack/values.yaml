@@ -26,3 +26,5 @@ smtp: # For admin notifications
   from_address: ""
 
 admin_email: ""
+
+ingress: true
