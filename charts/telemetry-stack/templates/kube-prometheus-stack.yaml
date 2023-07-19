@@ -98,17 +98,15 @@ spec:
                   storage: 8Gi
         retention: 2d
     grafana:
-      env:
-        - name: SMTP_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: smtp-creds
-              key: password
-        - name: OIDC_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: oidc-client
-              key: secret
+      envValueFrom:
+        SMTP_PASSWORD:
+          secretKeyRef:
+            name: smtp-creds
+            key: password
+        OIDC_SECRET:
+          secretKeyRef:
+            name: oidc-client
+            key: secret
       admin:
         existingSecret: grafana-admin
         userKey: username
