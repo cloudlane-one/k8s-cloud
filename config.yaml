@@ -31,8 +31,8 @@ vcluster: false # Set to true to create a vcluster on top of a k3s host cluster
 restore_from_backup: null
 
 subdomains:
-  idp: "idp"
-  auth: "auth"
+  keycloak: "id"
+  oauth2_proxy: "oauth"
   cluster: "k8s"
   dashboard: "dashboard.k8s"
   weave_gitops: "gitops.k8s"
