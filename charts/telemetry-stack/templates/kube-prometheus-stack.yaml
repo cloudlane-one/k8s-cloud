@@ -140,7 +140,7 @@ spec:
           tls_skip_verify_insecure: true
           {{- end }}
       ingress:
-        enabled: true
+        enabled: {{ .Values.ingress }}
         annotations:
           kubernetes.io/tls-acme: "true"
         hosts:
