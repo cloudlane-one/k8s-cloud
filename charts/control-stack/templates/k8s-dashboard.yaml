@@ -21,6 +21,9 @@ spec:
         name: k8s-dashboard
   timeout: '15m0s' # Account for slow performance of cluster on first setup.
   values:
+    app:
+      scaling:
+        replicas: 2
     metricsScraper:
       enabled: true
     ingress:

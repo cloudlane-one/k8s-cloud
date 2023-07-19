@@ -40,6 +40,7 @@ spec:
       valuesKey: secret
       targetPath: config.cookieSecret
   values:
+    replicaCount: 2
     metrics:
       enabled: true
       servicemonitor:

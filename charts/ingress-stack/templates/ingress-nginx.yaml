@@ -22,6 +22,7 @@ spec:
   timeout: '15m0s' # Account for slow performance of cluster on first setup.
   values:
     controller:
+      replicaCount: 2
       ingressClassResource:
         default: true
       watchIngressWithoutClass: true
