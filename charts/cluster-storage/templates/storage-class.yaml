@@ -1,11 +1,10 @@
-{{- $name := printf "%s-%s" .Values.cluster_fqn .Values.class_name }}
 {{- if and .Values.encryption (not .Values.vcluster) }}
 # VCluster storage class is synced to host, where it references the
 # already existing storage secrets of the equally-named class.
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ $name }}
+  name: {{ .Release.Name }}
 data:
   CRYPTO_KEY_VALUE: {{ include "common.secrets.passwords.manage" (dict "secret" $name "key" "CRYPTO_KEY_VALUE" "providedValues" (list "") "length" 16 "context" $) }}
   CRYPTO_KEY_PROVIDER: {{ "secret" | b64enc }}
@@ -15,6 +14,7 @@ data:
   CRYPTO_PBKDF: {{ "argon2i" | b64enc }}
 ---
 {{- end }}
+{{- $name := default (printf "%s-%s" .Release.Name .Release.Namespace) .Values.class_name }}
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
@@ -26,7 +26,9 @@ metadata:
 provisioner: driver.longhorn.io
 allowVolumeExpansion: true
 parameters:
-  nodeSelector: {{ .Values.cluster_fqn }}
+  {{- if .Values.selector }}
+  nodeSelector: {{ .Values.selector }}
+  {{- end }}
   numberOfReplicas: "2"
   dataLocality: best-effort
   staleReplicaTimeout: "2880" # 48 hours in minutes

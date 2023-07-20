@@ -3,16 +3,16 @@
     suffix: "{{ domain | community.dns.get_public_suffix }}"
     main_name: "{{ domain | replace(suffix, '') | split('.') | last }}"
   ansible.builtin.set_fact:
-    cluster_fqn: "{{ subdomains.k8s_api }}.{{ domain }}"
+    cluster_host: "{{ subdomains.k8s_api }}.{{ domain }}"
     charts_dir: "{{ playbook_dir }}/charts"
-    cluster_name: "{{ domain | replace('.', '-') }}"
+    cluster_name: "{{ domain | replace('.', '-') }}-cluster"
     registered_domain: "{{ main_name }}{{ suffix }}"
     host_kubeconfig: "{{ ansible_env.KUBECONFIG }}"
     kubeconfig: "{{ ansible_env.KUBECONFIG }}"
 
 - name: Print domain info
   ansible.builtin.debug:
-    msg: "Setting up cluster '{{ cluster_fqn }}' for domain '{{ domain }}' on registered domain '{{ registered_domain }}'"
+    msg: "Setting up cluster '{{ cluster_name }}' for domain '{{ domain }}' on registered domain '{{ registered_domain }}'"
 
 - name: Switch to host cluster context via kubectl
   when: "host_cluster_name"
@@ -53,7 +53,7 @@
         name: "{{ item }}"
         definition:
           metadata:
-            labels: "{{ {cluster_fqn: '1'} }}"
+            labels: "{{ {cluster_name: '1'} }}"
 
 - name: Ensure vcluster for domain exists
   when: "vcluster"
@@ -75,7 +75,7 @@
           sync:
             nodes:
               enabled: true
-              nodeSelector: "{{ cluster_fqn }}=1"
+              nodeSelector: "{{ cluster_name }}=1"
             persistentvolumes:
               enabled: true
             storageclasses:
@@ -96,7 +96,7 @@
             enabled: true
           syncer:
             extraArgs:
-              - "--tls-san={{ cluster_fqn }}"
+              - "--tls-san={{ cluster_host }}"
           vcluster:
             extraArgs:
               - "--kube-apiserver-arg=oidc-issuer-url=https://{{ subdomains.keycloak }}.{{ domain }}/realms/master"
@@ -265,7 +265,7 @@
           - config
           - set-cluster
           - "{{ ctx_name }}"
-          - "--server=https://{{ cluster_fqn }}"
+          - "--server=https://{{ cluster_host }}"
       changed_when: true
 
     - name: Download kubeconfig file
@@ -441,7 +441,7 @@
           nginx.ingress.kubernetes.io/ssl-redirect: "true"
       spec:
         rules:
-          - host: "{{ cluster_fqn }}"
+          - host: "{{ cluster_host }}"
             http:
               paths:
                 - backend:
@@ -489,7 +489,7 @@
         name: "{{ lhn_name }}"
         definition:
           spec:
-            tags: "{{ (existing_tags + [cluster_fqn]) | unique | list }}"
+            tags: "{{ (existing_tags + [cluster_name]) | unique | list }}"
       register: lhn_patch_result
       retries: 6 # Longhorn CRD webhook tends to be unavailable at times.
       delay: 20
@@ -528,7 +528,7 @@
     - name: cluster-storage
       namespace: kube-system
       chart_values:
-        cluster_fqn: "{{ cluster_fqn }}"
+        selector: "{{ cluster_name }}"
         vcluster: "{{ vcluster }}"
 
     - name: control-stack

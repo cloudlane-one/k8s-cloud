@@ -1,5 +1,5 @@
-cluster_fqn: ""
+selector: ""
 default: true
-class_name: default
+class_name: "" # Custom class name
 encryption: false
 vcluster: false
