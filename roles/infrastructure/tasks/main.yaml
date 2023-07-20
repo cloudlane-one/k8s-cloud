@@ -3,7 +3,7 @@
     suffix: "{{ domain | community.dns.get_public_suffix }}"
     main_name: "{{ domain | replace(suffix, '') | split('.') | last }}"
   ansible.builtin.set_fact:
-    cluster_host: "{{ subdomains.k8s_api }}.{{ domain }}"
+    k8s_api_host: "{{ subdomains.k8s_api }}.{{ domain }}"
     charts_dir: "{{ playbook_dir }}/charts"
     cluster_name: "{{ domain | replace('.', '-') }}-cluster"
     registered_domain: "{{ main_name }}{{ suffix }}"
@@ -96,7 +96,7 @@
             enabled: true
           syncer:
             extraArgs:
-              - "--tls-san={{ cluster_host }}"
+              - "--tls-san={{ k8s_api_host }}"
           vcluster:
             extraArgs:
               - "--kube-apiserver-arg=oidc-issuer-url=https://{{ subdomains.keycloak }}.{{ domain }}/realms/master"
@@ -265,7 +265,7 @@
           - config
           - set-cluster
           - "{{ ctx_name }}"
-          - "--server=https://{{ cluster_host }}"
+          - "--server=https://{{ k8s_api_host }}"
       changed_when: true
 
     - name: Download kubeconfig file
@@ -441,7 +441,7 @@
           nginx.ingress.kubernetes.io/ssl-redirect: "true"
       spec:
         rules:
-          - host: "{{ cluster_host }}"
+          - host: "{{ k8s_api_host }}"
             http:
               paths:
                 - backend:
