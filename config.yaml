@@ -43,9 +43,9 @@ restore_from_backup: null
 
 # Subdomains created and managed by this cluster.
 subdomains:
+  k8s_api: "k8s"
   keycloak: "id"
   oauth2_proxy: "oauth"
-  k8s_api: "k8s"
   k8s_dashboard: "kubectl"
   weave_gitops: "gitops"
   grafana: "grafana"
