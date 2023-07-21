@@ -36,7 +36,7 @@ kind: HelmRepository
 metadata:
   name: bitnami
 spec:
-  interval: 10m
+  interval: 1h
   url: https://charts.bitnami.com/bitnami
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
@@ -44,7 +44,7 @@ kind: HelmRelease
 metadata:
   name: keycloak
 spec:
-  interval: 5m
+  interval: 1h
   chart:
     spec:
       chart: keycloak

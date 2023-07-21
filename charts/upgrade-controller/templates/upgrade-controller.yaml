@@ -3,7 +3,7 @@ kind: GitRepository
 metadata:
   name: system-upgrade-controller
 spec:
-  interval: 5m
+  interval: 1h
   url: https://github.com/rancher/system-upgrade-controller/
   ref:
     branch: master
@@ -13,7 +13,7 @@ kind: Kustomization
 metadata:
   name: system-upgrade-controller
 spec:
-  interval: 10m
+  interval: 1h
   sourceRef:
     kind: GitRepository
     name: system-upgrade-controller
