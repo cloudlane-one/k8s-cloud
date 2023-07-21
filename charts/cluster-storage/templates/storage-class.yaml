@@ -1,4 +1,4 @@
-{{- $name := default "longhorn" .Values.class_name }}
+{{- $name := default "longhorn-default" .Values.class_name }}
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
