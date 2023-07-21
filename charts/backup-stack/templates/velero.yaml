@@ -69,7 +69,7 @@ spec:
           prefix: velero
           config:
             region: {{ .Values.s3.region }}
-            s3Url: {{ printf "https://%s" .Values.s3.endpoint }}
+            s3Url: {{ .Values.s3.endpoint }}
             serverSideEncryption: AES256
       volumeSnapshotLocation:
         - name: default
