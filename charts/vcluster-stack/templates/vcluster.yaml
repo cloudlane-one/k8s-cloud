@@ -41,6 +41,7 @@ spec:
   dependsOn:
     - name: vcluster-mariadb
   values:
+    replicas: 2
     storage:
       persistence: false # use external db.
     sync:
