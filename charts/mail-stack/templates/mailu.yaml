@@ -44,7 +44,7 @@ spec:
   chart:
     spec:
       chart: mailu
-      version: "^1.2"
+      version: "1.2.0"
       sourceRef:
         kind: HelmRepository
         name: mailu
