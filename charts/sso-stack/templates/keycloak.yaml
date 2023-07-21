@@ -384,3 +384,13 @@ spec:
                     friendly.name: surname
                     user.attribute: lastName
             {{- end }}
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "keycloak-postgresql-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: data-keycloak-postgresql-0

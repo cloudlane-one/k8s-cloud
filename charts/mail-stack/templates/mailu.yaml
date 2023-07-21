@@ -102,6 +102,7 @@ spec:
       {{ end -}}
       persistence:
         size: 5Gi
+        claimNameOverride: mailu-postfix
       extraVolumes:
         - name: mailman
           persistentVolumeClaim:
@@ -122,6 +123,7 @@ spec:
     admin:
       persistence:
         size: 5Gi
+        claimNameOverride: mailu-admin
       {{- if .Values.use_mailu_proxy_auth }}
       extraEnvVars:
         - name: PROXY_AUTH_WHITELIST
@@ -134,9 +136,11 @@ spec:
     dovecot:
       persistence:
         size: 5Gi
+        claimNameOverride: mailu-dovecot
     webmail:
       persistence:
         size: 5Gi
+        claimNameOverride: mailu-webmail
       {{- if .Values.use_mailu_proxy_auth }}
       extraEnvVars:
         - name: PROXY_AUTH_WHITELIST
@@ -150,7 +154,79 @@ spec:
       enabled: true
       persistence:
         size: 5Gi
+        claimNameOverride: mailu-fetchmail
     webdav:
       enabled: true
       persistence:
         size: 5Gi
+        claimNameOverride: mailu-webdav
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "mailu-postfix-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: mailu-postfix
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "mailu-admin-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: mailu-admin
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "mailu-dovecot-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: mailu-dovecot
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "mailu-webmail-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: mailu-webmail
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "mailu-fetchmail-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: mailu-fetchmail
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "mailu-webdav-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: mailu-webdav
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "mailu-mariadb-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: data-mailu-mariadb-0
