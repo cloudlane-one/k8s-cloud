@@ -7,7 +7,7 @@ metadata:
   labels:
       velero.io/csi-volumesnapshot-class: "true"
   name: velero-backup
-driver: {{ .Values.storageDriver }}
+driver: driver.longhorn.io
 deletionPolicy: Delete
 parameters:
   type: bak
