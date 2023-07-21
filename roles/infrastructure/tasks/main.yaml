@@ -55,68 +55,27 @@
           metadata:
             labels: "{{ {cluster_name: '1'} }}"
 
-- name: Ensure vcluster for domain exists
+- name: Ensure vcluster for domain exists and is used
   when: "vcluster"
   environment:
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
     KUBECONFIG: "{{ host_kubeconfig }}"
   block:
-    - name: Ensure vcluster helm release exists
-      kubernetes.core.helm:
-        wait: true
-        timeout: "10m0s"
-        name: vcluster
-        release_namespace: "{{ cluster_name }}"
-        create_namespace: true
-        chart_repo_url: https://charts.loft.sh
-        chart_ref: vcluster
-        chart_version: "'^0.15.3 || 0.15.3-beta.0'" # Need this fix: https://github.com/loft-sh/vcluster/pull/1089
-        values:
-          sync:
-            nodes:
-              enabled: true
-              nodeSelector: "{{ cluster_name }}=1"
-            persistentvolumes:
-              enabled: true
-            storageclasses:
-              enabled: true
-            volumesnapshots:
-              enabled: true
-            ingresses:
-              enabled: true
-            networkpolicies:
-              enabled: true
-          proxy:
-            metricsServer:
-              nodes:
-                enabled: true
-              pods:
-                enabled: true
-          hostpathMapper:
-            enabled: true
-          syncer:
-            extraArgs:
-              - "--tls-san={{ k8s_api_host }}"
-          vcluster:
-            extraArgs:
-              - "--kube-apiserver-arg=oidc-issuer-url=https://{{ subdomains.keycloak }}.{{ domain }}/realms/master"
-              - "--kube-apiserver-arg=oidc-client-id=cluster-oidc"
-              - "--kube-apiserver-arg=oidc-groups-claim=groups"
-          plugin:
-            cert-manager-plugin:
-              image: ghcr.io/loft-sh/vcluster-plugins/cert-manager-plugin:0.3.0
-              imagePullPolicy: IfNotPresent
-              rbac:
-                role:
-                  extraRules:
-                    - apiGroups: ["cert-manager.io"]
-                      resources: ["issuers", "certificates"]
-                      verbs: ["create", "delete", "patch", "update", "get", "list", "watch"]
-                clusterRole:
-                  extraRules:
-                    - apiGroups: ["apiextensions.k8s.io"]
-                      resources: ["customresourcedefinitions"]
-                      verbs: ["get", "list", "watch"]
+    - name: Ensure vcluster HelmRelease exists
+      ansible.builtin.include_tasks:
+        file: deploy-chart.yaml
+        apply:
+          vars:
+            chart:
+              name: vcluster-stack
+              namespace: "{{ cluster_name }}"
+              chart_values:
+                cluster_name: "{{ cluster_name }}"
+                host: "{{ k8s_api_host }}"
+                oidc_client:
+                  idp_url: "https://{{ subdomains.keycloak }}.{{ domain }}/realms/master"
+                  id: cluster-oidc
+            kubeconfig: "{{ host_kubeconfig }}"
 
     - name: Gather facts on listening ports
       community.general.listen_ports_facts:

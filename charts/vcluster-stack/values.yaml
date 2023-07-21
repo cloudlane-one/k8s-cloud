@@ -1,0 +1,8 @@
+cluster_name: ""
+
+host: "" # for k8s api
+
+oidc_client:
+  # Only works with keycloak currently.
+  idp_url: ""
+  id: ""
