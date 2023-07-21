@@ -41,6 +41,7 @@ spec:
   dependsOn:
     - name: vcluster-mariadb
   values:
+    enableHA: true
     replicas: 2
     storage:
       persistence: false # use external db.
@@ -58,14 +59,6 @@ spec:
         enabled: true
       networkpolicies:
         enabled: true
-    proxy:
-      metricsServer:
-        nodes:
-          enabled: true
-        pods:
-          enabled: true
-    hostpathMapper:
-      enabled: true
     syncer:
       extraArgs:
         - "--tls-san={{ .Values.host }}"
@@ -80,6 +73,16 @@ spec:
             secretKeyRef:
               name: vcluster-mariadb-endpoint
               key: url
+    coredns:
+      replicas: 2
+    proxy:
+      metricsServer:
+        nodes:
+          enabled: true
+        pods:
+          enabled: true
+    hostpathMapper:
+      enabled: true
     plugin:
       cert-manager-plugin:
         image: ghcr.io/loft-sh/vcluster-plugins/cert-manager-plugin:0.3.0
