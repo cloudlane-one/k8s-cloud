@@ -38,6 +38,8 @@ spec:
         kind: HelmRepository
         name: loft-sh
   timeout: 15m0s # Increase timeout to be sure.
+  dependsOn:
+    - name: vcluster-mariadb
   values:
     storage:
       persistence: false # use external db.
