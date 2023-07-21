@@ -61,6 +61,10 @@
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
     KUBECONFIG: "{{ host_kubeconfig }}"
   block:
+    - name: Reconcile base git repo
+      ansible.builtin.command: "flux reconcile source git base-repo -n flux-system"
+      changed_when: true
+
     - name: Ensure vcluster HelmRelease exists
       ansible.builtin.include_tasks:
         file: deploy-chart.yaml
