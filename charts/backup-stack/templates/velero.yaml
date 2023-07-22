@@ -100,7 +100,7 @@ spec:
           includeClusterResources: true
           snapshotVolumes: true
           storageLocation: default
-          ttl: "7d"
+          ttl: "168h"
 ---
 apiVersion: v1
 kind: ConfigMap
