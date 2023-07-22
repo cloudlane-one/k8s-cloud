@@ -81,6 +81,14 @@
                   id: cluster-oidc
             kubeconfig: "{{ host_kubeconfig }}"
 
+    - name: Wait for vcluster deployment to become ready
+      kubernetes.core.k8s_info:
+        kind: Deployment
+        namespace: "{{ cluster_name }}"
+        name: vcluster
+        wait: true
+        wait_timeout: 600
+
     - name: Gather facts on listening ports
       community.general.listen_ports_facts:
         include_non_listening: true

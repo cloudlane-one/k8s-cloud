@@ -37,7 +37,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: loft-sh
-  timeout: 15m0s # Increase timeout to be sure.
+  timeout: 10m0s # Increase timeout to be sure.
   dependsOn:
     - name: vcluster-mariadb
   values:
