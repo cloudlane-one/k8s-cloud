@@ -3,6 +3,10 @@
     "redhat.ansible",
     "ms-kubernetes-tools.vscode-kubernetes-tools",
     "tim-koehler.helm-intellisense",
-    "tamasfe.even-better-toml"
+    "tamasfe.even-better-toml",
+    "donjayamanne.python-extension-pack",
+    "redhat.vscode-yaml",
+    "ms-toolsai.jupyter",
+    "eamodio.gitlens"
   ]
 }
