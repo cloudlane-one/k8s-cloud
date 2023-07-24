@@ -45,6 +45,8 @@ cluster_restoration:
   schedule_name: cluster-backup
   # The unique name of the Velero backup to restore from.
   backup_name: ""
+  included_resources:
+    - "*"
 
 # Set to true to create a vcluster on top of a k3s host cluster
 vcluster: false

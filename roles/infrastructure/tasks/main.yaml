@@ -448,6 +448,7 @@
       - initial-cluster-restore
       - "--wait"
       - "--namespace=backup-system"
+      - "--include-resources={{ included_resources | join(',') }}"
       - "--restore-volumes=true"
       - "--from-schedule={{ restore_cluster.schedule_name }}"
       - "--from-backup={{ restore_cluster.backup_name }}"
