@@ -13,6 +13,7 @@ deletionPolicy: Delete
 parameters:
   type: bak
 ---
+{{- end }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -91,7 +92,7 @@ spec:
           - mountPath: /target
             name: plugins
     schedules:
-      full-backup:
+      cluster-backup:
         disabled: false
         schedule: "0 0 * * *"
         useOwnerReferencesInBackup: false
@@ -111,4 +112,3 @@ metadata:
     grafana_dashboard: "1"
 data:
 {{ (.Files.Glob "config/grafana-dashboards/velero*").AsConfig | indent 2 }}
-{{- end }}

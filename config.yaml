@@ -35,11 +35,19 @@ org:
   tagline: ""
   logo_url: ""
 
+# Configure this cluster to be restored from an existing cluster backup.
+cluster_restoration:
+  # Set to true to enable restoring.
+  restore: false
+  # The unique name of the Velero schedule
+  # to restore from. If specified, and backup_name is empty, Velero will
+  # restore from the most recent successful backup created from this schedule.
+  schedule_name: cluster-backup
+  # The unique name of the Velero backup to restore from.
+  backup_name: ""
+
 # Set to true to create a vcluster on top of a k3s host cluster
 vcluster: false
-
-# Set to name of a backup existing in s3 bucket, if you want to restore cluster from backup.
-restore_from_backup: null
 
 # Subdomains created and managed by this cluster.
 subdomains:

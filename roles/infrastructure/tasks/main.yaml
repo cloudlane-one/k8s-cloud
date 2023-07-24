@@ -428,20 +428,30 @@
       chart_values:
         s3: "{{ s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
 
-- name: Apply backup restoration, if supplied
-  when: "not vcluster and restore_from_backup"
+- name: Check if backup restoration already exists
+  kubernetes.core.k8s_info:
+    api_version: velero.io/v1
+    kind: Restore
+    namespace: backup-system
+    name: initial-cluster-restore
+  register: existing_restore
+
+- name: Apply backup restoration
+  when: "cluster_restoration.restore and existing_restore.resources | length == 0"
   environment:
-    K8S_AUTH_KUBECONFIG: "{{ kubeconfig }}"
-  kubernetes.core.k8s:
-    wait: true
-    definition:
-      apiVersion: velero.io/v1
-      kind: Restore
-      metadata:
-        name: initial-cluster-restore
-        namespace: backup-system
-      spec:
-        backupName: "{{ restore_from_backup }}"
+    KUBECONFIG: "{{ kubeconfig }}"
+  ansible.builtin.command:
+    argv:
+      - velero
+      - restore
+      - create
+      - initial-cluster-restore
+      - "--wait"
+      - "--namespace=backup-system"
+      - "--restore-volumes=true"
+      - "--from-schedule={{ restore_cluster.schedule_name }}"
+      - "--from-backup={{ restore_cluster.backup_name }}"
+  changed_when: true
 
 - name: Ensure rest of infrastructure is fully set up
   ansible.builtin.include_tasks:

@@ -15,6 +15,33 @@
   ansible.builtin.pip:
     requirements: /tmp/requirements.txt
 
+- name: Check if Homebrew is installed
+  ansible.builtin.command: "which brew"
+  register: which_brew
+  changed_when: false
+  failed_when: false
+  ignore_errors: true
+
+- name: Download Homebrew install script
+  when: "which_brew.rc != 0"
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
+    dest: /tmp/brew-install.sh
+    mode: "0700"
+
+- name: Run Homebrew install script
+  when: "which_brew.rc != 0"
+  ansible.builtin.command: /tmp/brew-install.sh
+  environment:
+    NONINTERACTIVE: "1"
+  changed_when: true
+
+- name: Install deps via Homebrew
+  community.general.homebrew:
+    name:
+      - velero
+    state: present
+
 - name: Check if Helm CLI is installed
   ansible.builtin.command: "which helm"
   register: which_helm
