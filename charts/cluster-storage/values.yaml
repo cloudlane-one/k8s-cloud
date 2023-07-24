@@ -1,5 +1,0 @@
-selector: ""
-default: true
-class_name: longhorn-cluster
-encryption: false
-vcluster: false

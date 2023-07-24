@@ -1,7 +1,12 @@
 host: ""
 
-oauth2_proxy_host: ""
+cluster_name: ""
 
+encryption: false
+
+vcluster: false
+
+oauth2_proxy_host: ""
 admin_group: ""
 
 s3:

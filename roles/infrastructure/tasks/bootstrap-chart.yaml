@@ -46,3 +46,4 @@
             reconcileStrategy: Revision
         values:
           bootstrap: true
+          vcluster: "{{ vcluster }}"

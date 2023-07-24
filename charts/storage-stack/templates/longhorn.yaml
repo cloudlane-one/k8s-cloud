@@ -1,3 +1,4 @@
+{{- if not .Values.vcluster }}
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
@@ -103,4 +104,5 @@ metadata:
     role: alert-rules
   name: longhorn
 spec: {{ .Files.Get "config/alert-rules.yaml" | nindent 2 }}
+{{- end }}
 {{- end }}

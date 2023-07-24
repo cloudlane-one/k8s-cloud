@@ -291,109 +291,23 @@
       changed_when: true
 
 - name: Bootstrap components with CRDs and other hard dependecies (via minimal-config release)
-  block:
-    - name: Bootstrap host-cluster infrastructure
-      when: "not vcluster"
-      ansible.builtin.include_tasks:
-        file: bootstrap-chart.yaml
-        apply:
-          vars:
-            chart: "{{ item }}"
-            kubeconfig: "{{ host_kubeconfig }}"
-      loop:
-        - name: storage-stack
-          namespace: longhorn-system
-        - name: cert-stack
-          namespace: cert-system
-        - name: ingress-stack
-          namespace: ingress-system
-
-    - name: Bootstrap cluster infrastructure
-      ansible.builtin.include_tasks:
-        file: bootstrap-chart.yaml
-        apply:
-          vars:
-            chart: "{{ item }}"
-            kubeconfig: "{{ kubeconfig }}"
-      loop:
-        - name: telemetry-stack
-          namespace: telemetry-system
-        - name: cicd-stack
-          namespace: flux-system
-
-- name: Ensure all required secrets exist
-  environment:
-    K8S_AUTH_KUBECONFIG: "{{ kubeconfig }}"
-  kubernetes.core.k8s:
-    wait: true
-    definition:
-      apiVersion: v1
-      kind: Secret
-      metadata:
-        name: "{{ item.name }}"
-        namespace: kube-system
-      type: Opaque
-      data:
-        secret: "{{ vars[item.inventoryKey] | b64encode }}"
-  loop:
-    - inventoryKey: smtp_password
-      name: smtp
-    - inventoryKey: s3_access_key_secret
-      name: s3
-    - inventoryKey: external_dns_token
-      name: external-dns
-
-- name: Ensure HelmReleases for host-cluster infrastructure exist
-  when: "not vcluster"
   ansible.builtin.include_tasks:
-    file: deploy-chart.yaml
+    file: bootstrap-chart.yaml
     apply:
       vars:
         chart: "{{ item }}"
-        kubeconfig: "{{ host_kubeconfig }}"
-  loop_control:
-    label: "{{ item.name }} in {{ item.namespace }}"
+        kubeconfig: "{{ kubeconfig }}"
   loop:
-    - name: upgrade-controller
-      namespace: kube-system
-
-    # - name: namespace-isolation
-    #   namespace: longhorn-system
-
     - name: storage-stack
       namespace: longhorn-system
-      chart_values:
-        host: "{{ subdomains.longhorn }}.{{ domain }}"
-        oauth2_proxy_host: "{{ subdomains.oauth2_proxy }}.{{ domain }}"
-        admin_group: "cluster-admins"
-        s3: "{{ s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
-
-    # # Can't isolate cert-system with current policy approach.
-    # # This is due to k8s api server trying to call cert-manager webhook and timing out.
-    # - name: namespace-isolation
-    #   namespace: cert-system
-
     - name: cert-stack
       namespace: cert-system
-      chart_values:
-        admin_email: "{{ admin_email }}"
-        base_repo: "{{ base_repo }}"
-        base_branch: "{{ base_branch }}"
-        letsencrypt_staging: "{{ letsencrypt_staging }}"
-
-    # - name: namespace-isolation
-    #   namespace: ingress-system
-
     - name: ingress-stack
       namespace: ingress-system
-
-    # - name: namespace-isolation
-    #   namespace: backup-system
-
-    - name: backup-stack
-      namespace: backup-system
-      chart_values:
-        s3: "{{ s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
+    - name: telemetry-stack
+      namespace: telemetry-system
+    - name: cicd-stack
+      namespace: flux-system
 
 - name: Expose k8s API via Ingress
   environment:
@@ -466,10 +380,58 @@
       delay: 20
       until: "lhn_patch_result is not failed"
 
+- name: Ensure all required secrets exist
+  environment:
+    K8S_AUTH_KUBECONFIG: "{{ kubeconfig }}"
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "{{ item.name }}"
+        namespace: kube-system
+      type: Opaque
+      data:
+        secret: "{{ vars[item.inventoryKey] | b64encode }}"
+  loop:
+    - inventoryKey: smtp_password
+      name: smtp
+    - inventoryKey: s3_access_key_secret
+      name: s3
+    - inventoryKey: external_dns_token
+      name: external-dns
+
+- name: Ensure pre-restore infrastructure is fully set up
+  when: "not vcluster"
+  ansible.builtin.include_tasks:
+    file: deploy-chart.yaml
+    apply:
+      vars:
+        chart: "{{ item }}"
+        kubeconfig: "{{ kubeconfig }}"
+  loop_control:
+    label: "{{ item.name }} in {{ item.namespace }}"
+  loop:
+    - name: storage-stack
+      namespace: longhorn-system
+      chart_values:
+        host: "{{ subdomains.longhorn }}.{{ domain }}"
+        cluster_name: "{{ cluster_name }}"
+        vcluster: "{{ vcluster }}"
+        oauth2_proxy_host: "{{ subdomains.oauth2_proxy }}.{{ domain }}"
+        admin_group: "cluster-admins"
+        s3: "{{ s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
+
+    - name: backup-stack
+      namespace: backup-system
+      chart_values:
+        s3: "{{ s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
+
 - name: Apply backup restoration, if supplied
   when: "not vcluster and restore_from_backup"
   environment:
-    K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
+    K8S_AUTH_KUBECONFIG: "{{ kubeconfig }}"
   kubernetes.core.k8s:
     wait: true
     definition:
@@ -481,7 +443,7 @@
       spec:
         backupName: "{{ restore_from_backup }}"
 
-- name: Ensure HelmReleases for cluster infrastructure exist
+- name: Ensure rest of infrastructure is fully set up
   ansible.builtin.include_tasks:
     file: deploy-chart.yaml
     apply:
@@ -496,11 +458,19 @@
       chart_values:
         admin_group: "cluster-admins"
 
-    - name: cluster-storage
-      namespace: kube-system
+    - name: k3s-auto-upgrade
+      namespace: upgrade-system
+
+    - name: cert-stack
+      namespace: cert-system
       chart_values:
-        selector: "{{ cluster_name }}"
-        vcluster: "{{ vcluster }}"
+        admin_email: "{{ admin_email }}"
+        base_repo: "{{ base_repo }}"
+        base_branch: "{{ base_branch }}"
+        letsencrypt_staging: "{{ letsencrypt_staging }}"
+
+    - name: ingress-stack
+      namespace: ingress-system
 
     - name: control-stack
       namespace: kube-system
@@ -508,9 +478,6 @@
         host: "{{ subdomains.k8s_dashboard }}.{{ domain }}"
         oauth2_proxy_host: "{{ subdomains.oauth2_proxy }}.{{ domain }}"
         admin_group: "cluster-admins"
-
-    # - name: namespace-isolation
-    #   namespace: dns-system
 
     - name: dns-stack
       namespace: dns-system
@@ -560,10 +527,6 @@
         letsencrypt_staging: "{{ letsencrypt_staging }}"
         k3s: true
         vcluster: "{{ vcluster }}"
-
-    # # Produces 502 bad gateway when trying to access weave-gitops via ingress
-    # - name: namespace-isolation
-    #   namespace: flux-system
 
     - name: cicd-stack
       namespace: flux-system

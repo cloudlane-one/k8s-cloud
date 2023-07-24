@@ -1,3 +1,4 @@
+{{- if not .Values.vcluster }}
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
@@ -23,3 +24,4 @@ spec:
       reconcileStrategy: Revision
   values:
     admin_email: {{ .Values.admin_email }}
+{{- end }}

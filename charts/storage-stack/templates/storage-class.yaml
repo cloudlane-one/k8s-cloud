@@ -1,16 +1,14 @@
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
-  name: {{ .Values.class_name }}
-  {{- if .Values.default }}
+  name: longhorn-cluster
   annotations:
     "storageclass.kubernetes.io/is-default-class": "true"
-  {{- end }}
 provisioner: driver.longhorn.io
 allowVolumeExpansion: true
 parameters:
   {{- if .Values.selector }}
-  nodeSelector: {{ .Values.selector }}
+  nodeSelector: {{ .Values.cluster_name }}
   {{- end }}
   numberOfReplicas: "2"
   dataLocality: best-effort
@@ -18,15 +16,14 @@ parameters:
   fromBackup: ""
 
 {{- if .Values.encryption }}
-{{- $secret_name := printf "%s-encryption" .Values.class_name }}
 
   encrypted: "true"
   # global secret that contains the encryption key that will be used for all volumes
-  csi.storage.k8s.io/provisioner-secret-name: {{ $secret_name }}
+  csi.storage.k8s.io/provisioner-secret-name: longhorn-cluster-encryption
   csi.storage.k8s.io/provisioner-secret-namespace: longhorn-system
-  csi.storage.k8s.io/node-publish-secret-name: {{ $secret_name }}
+  csi.storage.k8s.io/node-publish-secret-name: longhorn-cluster-encryption
   csi.storage.k8s.io/node-publish-secret-namespace: longhorn-system
-  csi.storage.k8s.io/node-stage-secret-name: {{ $secret_name }}
+  csi.storage.k8s.io/node-stage-secret-name: longhorn-cluster-encryption
   csi.storage.k8s.io/node-stage-secret-namespace: longhorn-system
 
 {{- if not .Values.vcluster }}

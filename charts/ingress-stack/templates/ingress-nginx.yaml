@@ -1,3 +1,4 @@
+{{- if not .Values.vcluster }}
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
@@ -79,4 +80,5 @@ metadata:
     grafana_dashboard: "1"
 data:
 {{ (.Files.Glob "config/grafana-dashboards/nginx*").AsConfig | indent 2 }}
+{{- end }}
 {{- end }}
