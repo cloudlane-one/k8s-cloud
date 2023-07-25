@@ -57,8 +57,6 @@ spec:
         enabled: true
       volumesnapshots:
         enabled: true
-      ingresses:
-        enabled: true
       networkpolicies:
         enabled: true
     syncer:
