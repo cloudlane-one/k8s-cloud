@@ -456,6 +456,8 @@
           - "--from-backup={{ restore.backup_name }}"
           - "--include-resources={{ restore.included_resources | join(',') }}"
           - "--restore-volumes=true"
+          - "--selector"
+          - "owner notin (helm)"
           - "--wait"
       changed_when: true
 
