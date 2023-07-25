@@ -452,7 +452,7 @@
           - create
           - "{{ restore_name }}"
           - "--namespace=backup-system"
-          - "--from-schedule={{ restore.schedule_name }}"
+          - "--from-schedule={{ restore.backup_name | ternary('', restore.schedule_name) }}"
           - "--from-backup={{ restore.backup_name }}"
           - "--include-resources={{ restore.included_resources | join(',') }}"
           - "--restore-volumes=true"
