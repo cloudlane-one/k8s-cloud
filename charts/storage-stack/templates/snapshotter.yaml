@@ -34,4 +34,6 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: piraeus
+  dependsOn:
+    - name: snapshot-validation-webhook
 {{- end }}
