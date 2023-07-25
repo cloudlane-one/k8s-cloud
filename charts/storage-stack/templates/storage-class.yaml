@@ -33,10 +33,10 @@ parameters:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ $secret_name }}
+  name: longhorn-cluster-encryption
   namespace: longhorn-system
 data:
-  CRYPTO_KEY_VALUE: {{ include "common.secrets.passwords.manage" (dict "secret" $secret_name "key" "CRYPTO_KEY_VALUE" "providedValues" (list "") "length" 16 "context" $) }}
+  CRYPTO_KEY_VALUE: {{ include "common.secrets.passwords.manage" (dict "secret" "longhorn-cluster-encryption" "key" "CRYPTO_KEY_VALUE" "providedValues" (list "") "length" 16 "context" $) }}
   CRYPTO_KEY_PROVIDER: {{ "secret" | b64enc }}
   CRYPTO_KEY_CIPHER: {{ "aes-xts-plain64" | b64enc }}
   CRYPTO_KEY_HASH: {{ "sha256" | b64enc }}
