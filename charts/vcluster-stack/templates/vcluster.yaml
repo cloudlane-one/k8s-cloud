@@ -43,6 +43,8 @@ spec:
   values:
     enableHA: true
     replicas: 2
+    podDisruptionBudget:
+      enabled: true
     storage:
       persistence: false # use external db.
     sync:
