@@ -9,6 +9,8 @@
     registered_domain: "{{ main_name }}{{ suffix }}"
     host_kubeconfig: "{{ ansible_env.KUBECONFIG }}"
     kubeconfig: "{{ ansible_env.KUBECONFIG }}"
+    ingress_nodes: "{{ 'ingress_nodes' in groups | ternary(groups['ingress_nodes'], [inventory_hostname]) }}"
+    storage_nodes: "{{ 'storage_nodes' in groups | ternary(groups['storage_nodes'], groups['all']) }}"
 
 - name: Print domain info
   ansible.builtin.debug:
@@ -28,7 +30,7 @@
       ansible.builtin.command: "kubectl config use-context {{ host_cluster_name }}"
       changed_when: "host_cluster_name != default_ctx.stdout"
 
-- name: Ensure cluster FQN label is applied to nodes
+- name: Ensure cluster labels are applied to nodes
   environment:
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
   block:
@@ -38,15 +40,29 @@
         kind: Node
       register: all_k8s_nodes
 
-    - name: Filter out nodes as per inventory
+    - name: Filter out cluster nodes
       ansible.builtin.set_fact:
-        inventory_nodes: "{{ all_k8s_nodes.resources | json_query(node_filter) | json_query(node_extractor) }}"
+        cluster_node_names: "{{ all_k8s_nodes.resources | json_query(node_filter) | json_query(node_extractor) }}"
       vars:
         node_filter: '[?contains({{ groups["all"] }}, metadata.annotations."k3s.io/external-ip")]'
         node_extractor: '[].metadata.annotations."k3s.io/hostname"'
 
-    - name: Add cluster FQN as label to all inventory nodes
-      loop: "{{ inventory_nodes }}"
+    - name: Filter out ingress nodes
+      ansible.builtin.set_fact:
+        ingress_node_names: "{{ all_k8s_nodes.resources | json_query(node_filter) | json_query(node_extractor) }}"
+      vars:
+        node_filter: '[?contains({{ ingress_nodes }}, metadata.annotations."k3s.io/external-ip")]'
+        node_extractor: '[].metadata.annotations."k3s.io/hostname"'
+
+    - name: Filter out storage nodes
+      ansible.builtin.set_fact:
+        storage_node_names: "{{ all_k8s_nodes.resources | json_query(node_filter) | json_query(node_extractor) }}"
+      vars:
+        node_filter: '[?contains({{ storage_nodes }}, metadata.annotations."k3s.io/external-ip")]'
+        node_extractor: '[].metadata.annotations."k3s.io/hostname"'
+
+    - name: Add cluster label to inventory node
+      loop: "{{ cluster_node_names }}"
       kubernetes.core.k8s:
         state: patched
         kind: Node
@@ -54,6 +70,30 @@
         definition:
           metadata:
             labels: "{{ {cluster_name: '1'} }}"
+
+    - name: Add cluster ingress label to inventory node
+      loop: "{{ ingress_node_names }}"
+      kubernetes.core.k8s:
+        state: patched
+        kind: Node
+        name: "{{ item }}"
+        definition:
+          metadata:
+            labels:
+              svccontroller.k3s.cattle.io/enablelb: "true"
+              svccontroller.k3s.cattle.io/lbpool: "{{ cluster_name }}"
+
+    - name: Add cluster storage label to inventory node
+      loop: "{{ storage_node_names }}"
+      vars:
+        storage_key: "{{ cluster_name }}-storage"
+      kubernetes.core.k8s:
+        state: patched
+        kind: Node
+        name: "{{ item }}"
+        definition:
+          metadata:
+            labels: "{{ {storage_key: '1'} }}"
 
 - name: Ensure vcluster for domain exists and selected in kubeconfig
   when: "vcluster"
@@ -302,12 +342,8 @@
       namespace: longhorn-system
     - name: cert-stack
       namespace: cert-system
-    - name: ingress-stack
-      namespace: ingress-system
     - name: telemetry-stack
       namespace: telemetry-system
-    - name: cicd-stack
-      namespace: flux-system
 
 - name: Expose k8s API via Ingress
   environment:
@@ -346,7 +382,7 @@
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
   block:
     - name: Get list of current Longhorn node tags
-      loop: "{{ inventory_nodes }}"
+      loop: "{{ storage_node_names }}"
       kubernetes.core.k8s_info:
         api_version: longhorn.io/v1beta2
         kind: Node
@@ -489,6 +525,8 @@
 
     - name: ingress-stack
       namespace: ingress-system
+      chart_values:
+        cluster_name: "{{ cluster_name }}"
 
     - name: control-stack
       namespace: kube-system

@@ -38,7 +38,7 @@ org:
 # Configure this cluster to be restored from an existing cluster backup.
 restore:
   # Set to true to enable restoring.
-  enabled: true
+  enabled: false
   # The unique name of the Velero schedule
   # to restore from. If specified, and backup_name is empty, Velero will
   # restore from the most recent successful backup created from this schedule.
@@ -64,7 +64,7 @@ subdomains:
   k8s_dashboard: "kubectl"
   weave_gitops: "gitops"
   grafana: "grafana"
-  longhorn: "longhorn"
+  longhorn: "longhorn" # Only set up for host clusters
 
 # Auto-trust unknown ssh-hosts.
 auto_trust_remotes: false

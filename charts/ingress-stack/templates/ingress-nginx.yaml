@@ -1,4 +1,3 @@
-{{- if not .Values.vcluster }}
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
@@ -31,7 +30,9 @@ spec:
         enable-ssl-passthrough: "true"
       config:
         proxy-buffer-size: "16k" # See https://andrewlock.net/fixing-nginx-upstream-sent-too-big-header-error-when-running-an-ingress-controller-in-kubernetes/ for explanation
-{{- if not .Values.bootstrap }}
+      service:
+        labels:
+          svccontroller.k3s.cattle.io/lbpool: {{ .Values.cluster_name }}
       metrics:
         enabled: true
         serviceMonitor:
@@ -80,5 +81,3 @@ metadata:
     grafana_dashboard: "1"
 data:
 {{ (.Files.Glob "config/grafana-dashboards/nginx*").AsConfig | indent 2 }}
-{{- end }}
-{{- end }}
