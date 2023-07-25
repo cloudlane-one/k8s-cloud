@@ -55,7 +55,7 @@
           metadata:
             labels: "{{ {cluster_name: '1'} }}"
 
-- name: Ensure vcluster for domain exists and is used
+- name: Ensure vcluster for domain exists and selected in kubeconfig
   when: "vcluster"
   environment:
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
@@ -245,7 +245,7 @@
         dest: "{{ playbook_dir }}/kubeconfig.yaml"
         flat: true
 
-- name: Ensure GitOps is setup
+- name: Ensure GitOps via FluxCD is setup
   environment:
     K8S_AUTH_KUBECONFIG: "{{ kubeconfig }}"
     KUBECONFIG: "{{ kubeconfig }}"
@@ -290,7 +290,7 @@
       ansible.builtin.command: "flux reconcile source git base-repo -n flux-system"
       changed_when: true
 
-- name: Bootstrap components with CRDs and other hard dependecies (via minimal-config release)
+- name: Ensure components with CRDs and other hard dependecies are bootstrapped
   ansible.builtin.include_tasks:
     file: bootstrap-chart.yaml
     apply:
@@ -428,33 +428,38 @@
       chart_values:
         s3: "{{ s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
 
-- name: Check if backup restoration already exists
-  kubernetes.core.k8s_info:
-    api_version: velero.io/v1
-    kind: Restore
-    namespace: backup-system
-    name: initial-cluster-restore
-  register: existing_restore
+- name: Restore cluster from backup, if requested
+  when: "restore.enabled"
+  vars:
+    restore_name: "{{ restore.backup_name | ternary(restore.backup_name, restore.schedule_name) }}"
+  block:
+    - name: Check if restoration for given backup already exists
+      kubernetes.core.k8s_info:
+        api_version: velero.io/v1
+        kind: Restore
+        namespace: backup-system
+        name: "{{ restore_name }}"
+      register: existing_restore
 
-- name: Apply backup restoration
-  when: "cluster_restoration.restore and existing_restore.resources | length == 0"
-  environment:
-    KUBECONFIG: "{{ kubeconfig }}"
-  ansible.builtin.command:
-    argv:
-      - velero
-      - restore
-      - create
-      - initial-cluster-restore
-      - "--wait"
-      - "--namespace=backup-system"
-      - "--include-resources={{ included_resources | join(',') }}"
-      - "--restore-volumes=true"
-      - "--from-schedule={{ restore_cluster.schedule_name }}"
-      - "--from-backup={{ restore_cluster.backup_name }}"
-  changed_when: true
+    - name: Apply backup restoration
+      when: "existing_restore.resources | length == 0"
+      environment:
+        KUBECONFIG: "{{ kubeconfig }}"
+      ansible.builtin.command:
+        argv:
+          - velero
+          - restore
+          - create
+          - "{{ restore_name }}"
+          - "--namespace=backup-system"
+          - "--from-schedule={{ restore.schedule_name }}"
+          - "--from-backup={{ restore.backup_name }}"
+          - "--include-resources={{ restore.included_resources | join(',') }}"
+          - "--restore-volumes=true"
+          - "--wait"
+      changed_when: true
 
-- name: Ensure rest of infrastructure is fully set up
+- name: Ensure remaining infrastructure is fully set up
   ansible.builtin.include_tasks:
     file: deploy-chart.yaml
     apply:
