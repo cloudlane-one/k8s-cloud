@@ -15,33 +15,6 @@
   ansible.builtin.pip:
     requirements: /tmp/requirements.txt
 
-- name: Check if Homebrew is installed
-  ansible.builtin.command: "which brew"
-  register: which_brew
-  changed_when: false
-  failed_when: false
-  ignore_errors: true
-
-- name: Download Homebrew install script
-  when: "which_brew.rc != 0"
-  ansible.builtin.get_url:
-    url: https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
-    dest: /tmp/brew-install.sh
-    mode: "0700"
-
-- name: Run Homebrew install script
-  when: "which_brew.rc != 0"
-  ansible.builtin.command: /tmp/brew-install.sh
-  environment:
-    NONINTERACTIVE: "1"
-  changed_when: true
-
-- name: Install deps via Homebrew
-  community.general.homebrew:
-    name:
-      - velero
-    state: present
-
 - name: Check if Helm CLI is installed
   ansible.builtin.command: "which helm"
   register: which_helm
@@ -102,3 +75,51 @@
   when: "which_vcluster.rc != 0"
   ansible.builtin.command: "install -c -m 0755 /tmp/vcluster-cli /usr/local/bin/vcluster"
   changed_when: true
+
+- name: Check if Velero CLI is installed
+  ansible.builtin.command: "which velero"
+  register: which_velero
+  changed_when: false
+  failed_when: false
+  ignore_errors: true
+
+- name: Install Velero
+  when: "which_velero.rc != 0"
+  vars:
+    velero_repo: https://github.com/vmware-tanzu/velero
+    velero_version: "1.11.0"
+    arch: "{{ ansible_architecture | lower }}"
+  block:
+    - name: Pick amd64 architecture for Velero CLI
+      when: "arch | regex_search('(x86_64|amd64)')"
+      ansible.builtin.set_fact:
+        velero_arch: amd64
+
+    - name: Pick arm64 architecture for Velero CLI
+      when: "arch | regex_search('arm64')"
+      ansible.builtin.set_fact:
+        velero_arch: arm64
+
+    - name: Pick arm architecture for Velero CLI
+      when: "not velero_arch and (arch | regex_search('arm'))"
+      ansible.builtin.set_fact:
+        velero_arch: arm
+
+    - name: Ensure velero tmp dir exists
+      ansible.builtin.file:
+        path: /tmp/velero
+        state: directory
+        mode: '0755'
+
+    - name: Download and extract Velero CLI
+      ansible.builtin.unarchive:
+        src: "{{ velero_repo }}/releases/download/v{{ velero_version }}/velero-v{{ velero_version }}-linux-{{ velero_arch }}.tar.gz"
+        dest: /tmp/velero
+        remote_src: true
+
+    - name: Copy Velero CLI to bin dir
+      ansible.builtin.copy:
+        remote_src: true
+        src: "/tmp/velero/velero-v{{ velero_version }}-linux-{{ velero_arch }}/velero"
+        dest: /usr/local/bin/velero
+        mode: '0755'
