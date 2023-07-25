@@ -45,8 +45,13 @@ restore:
   schedule_name: cluster-backup
   # The unique name of the Velero backup to restore from.
   backup_name: ""
+  # See https://velero.io/docs/v1.11/resource-filtering/#--include-resources.
   included_resources:
-    - "*"
+    - secrets
+    - pvcs
+    - pvs
+    - helmrepositories
+    - helmreleases
 
 # Set to true to create a vcluster on top of a k3s host cluster
 vcluster: false
