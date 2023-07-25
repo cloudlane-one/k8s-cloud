@@ -13,6 +13,10 @@
         name: "{{ chart.namespace }}"
 
 - name: Ensure HelmRelease for chart exists
+  vars:
+    default_vars:
+      bootstrap: false
+      vcluster: "{{ vcluster }}"
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig }}"
     wait: true
@@ -36,7 +40,7 @@
               name: base-repo
               namespace: flux-system
             reconcileStrategy: Revision
-        values: "{{ chart.chart_values | default({}) | combine({'bootstrap': false}) }}"
+        values: "{{ chart.chart_values | default({}) | combine(default_vars) }}"
 
 - name: Reconcile HelmRelease
   environment:
