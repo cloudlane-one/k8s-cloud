@@ -1,14 +1,3 @@
-{{- if not .Values.vcluster }}
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: GitRepository
-metadata:
-  name: base-repo
-spec:
-  interval: 1h
-  url: {{ .Values.base_repo }}
-  ref:
-    branch: {{ .Values.base_branch }}
----
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
@@ -21,7 +10,7 @@ spec:
       sourceRef:
         kind: GitRepository
         name: base-repo
+        namespace: flux-system
       reconcileStrategy: Revision
   values:
     admin_email: {{ .Values.admin_email }}
-{{- end }}
