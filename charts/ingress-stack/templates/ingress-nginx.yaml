@@ -21,7 +21,11 @@ spec:
         name: ingress-nginx
   timeout: '15m0s' # Account for slow performance of cluster on first setup.
   values:
+    # Override names with shorter ones to avoid hitting 63 char limit 
+    # after syncing with vcluster and klipper-lb.
+    fullnameOverride: inginx
     controller:
+      name: ctl
       replicaCount: 2
       ingressClassResource:
         default: true
