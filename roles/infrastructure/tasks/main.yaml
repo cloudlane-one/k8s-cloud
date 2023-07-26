@@ -9,8 +9,8 @@
     registered_domain: "{{ main_name }}{{ suffix }}"
     host_kubeconfig: "{{ ansible_env.KUBECONFIG }}"
     kubeconfig: "{{ ansible_env.KUBECONFIG }}"
-    ingress_nodes: "{{ 'ingress_nodes' in groups | ternary(groups['ingress_nodes'], [inventory_hostname]) }}"
-    storage_nodes: "{{ 'storage_nodes' in groups | ternary(groups['storage_nodes'], groups['all']) }}"
+    ingress_nodes: "{{ groups['ingress_nodes'] if 'ingress_nodes' in groups else [inventory_hostname] }}"
+    storage_nodes: "{{ groups['storage_nodes'] if 'storage_nodes' in groups else groups['all'] }}"
 
 - name: Print domain info
   ansible.builtin.debug:
@@ -469,6 +469,18 @@
   vars:
     restore_name: "{{ restore.backup_name | ternary(restore.backup_name, restore.schedule_name) }}"
   block:
+    - name: Wait for backup resource to be synced from s3
+      when: "restore.backup_name"
+      kubernetes.core.k8s_info:
+        api_version: velero.io/v1
+        kind: Backup
+        namespace: backup-system
+        name: "{{ restore.backup_name }}"
+      register: backup_get_result
+      retries: 10 # Velero may need time to load the backup from s3.
+      delay: 10
+      until: "backup_get_result.resources | length > 0"
+
     - name: Check if restoration for given backup already exists
       kubernetes.core.k8s_info:
         api_version: velero.io/v1
