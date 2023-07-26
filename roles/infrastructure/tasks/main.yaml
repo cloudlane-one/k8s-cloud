@@ -355,38 +355,6 @@
     - name: telemetry-stack
       namespace: telemetry-system
 
-- name: Expose k8s API via Ingress
-  environment:
-    K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
-  kubernetes.core.k8s:
-    wait: true
-    definition:
-      apiVersion: networking.k8s.io/v1
-      kind: Ingress
-      metadata:
-        name: k8s-api
-        namespace: "{{ vcluster | ternary(cluster_name, 'default') }}"
-        annotations:
-          nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-          nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-          nginx.ingress.kubernetes.io/ssl-redirect: "true"
-      spec:
-        rules:
-          - host: "{{ k8s_api_host }}"
-            http:
-              paths:
-                - backend:
-                    service:
-                      name: "{{ vcluster | ternary('vcluster', 'kubernetes') }}"
-                      port:
-                        number: 443
-                  path: /
-                  pathType: ImplementationSpecific
-  register: k8s_ingress_result
-  retries: 6 # NGINX webhook tends to be unavailable at times.
-  delay: 20
-  until: "k8s_ingress_result is not failed"
-
 - name: Ensure cluster FQN label is applied to Longhorn nodes
   environment:
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
@@ -618,6 +586,38 @@
             name: cluster-oidc
             key: secret
         letsencrypt_staging: "{{ letsencrypt_staging }}"
+
+- name: Expose k8s API via Ingress
+  environment:
+    K8S_AUTH_KUBECONFIG: "{{ kubeconfig }}"
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: k8s-api
+        namespace: default
+        annotations:
+          nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+          nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+          nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      spec:
+        rules:
+          - host: "{{ k8s_api_host }}"
+            http:
+              paths:
+                - backend:
+                    service:
+                      name: kubernetes
+                      port:
+                        number: 443
+                  path: /
+                  pathType: ImplementationSpecific
+  register: k8s_ingress_result
+  retries: 6 # NGINX webhook tends to be unavailable at times.
+  delay: 20
+  until: "k8s_ingress_result is not failed"
 
 - name: Reset kubectl context
   when: "host_cluster_name and default_ctx is defined"
