@@ -133,7 +133,7 @@
       community.general.listen_ports_facts:
         include_non_listening: true
 
-    - name: Switch kube-context to vcluster
+    - name: Select port to forward vcluster api over
       vars:
         used_ports: "{{ ansible_facts.tcp_listen | map(attribute='port') | list }}"
       ansible.builtin.set_fact:
@@ -163,6 +163,16 @@
     - name: Activate vcluster kubeconfig
       ansible.builtin.set_fact:
         kubeconfig: /tmp/virtual-kubeconfig.yaml
+
+    - name: Wait for vcluster coredns deployment to become available
+      environment:
+        K8S_AUTH_KUBECONFIG: "{{ kubeconfig }}"
+      kubernetes.core.k8s_info:
+        kind: Deployment
+        namespace: kube-system
+        name: coredns
+        wait: true
+        wait_timeout: 120
 
 - name: Ensure kubeconfig file is available on local machine
   block:
