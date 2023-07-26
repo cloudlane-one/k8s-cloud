@@ -62,6 +62,7 @@ spec:
     syncer:
       extraArgs:
         - "--tls-san={{ .Values.host }}"
+        - "--sync-labels=svccontroller.k3s.cattle.io/lbpool"
     vcluster:
       extraArgs:
         - "--kube-apiserver-arg=oidc-issuer-url={{ .Values.oidc_client.idp_url }}"
