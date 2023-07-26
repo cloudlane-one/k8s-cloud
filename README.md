@@ -102,7 +102,7 @@ my-other.domain.com
 ```
 
 > It is recommended to have either one or at least 3 control plane nodes. Make sure you store the hosts file somewhere safe.
-> `control nodes` has no effect for vclusters.
+> Please also set `control nodes` for vclusters. This has no effect on where the control plane pods run, but it tells Ansible on which machines it can execute administrative tasks.
 
 Then copy the default config values file `./config.yaml` to `./$CLUSTER_NAME.config.yaml` and the secrets template file `./secrets.yaml` to `./$CLUSTER_NAME.secrets.yaml`. Fill in the required values and change the optional ones to your liking. Replace `$CLUSTER_NAME` with the chosen name for your cluster. Make sure you store these files somewhere safe.
 
