@@ -417,7 +417,6 @@
       name: external-dns
 
 - name: Ensure pre-restore infrastructure is fully set up
-  when: "not vcluster"
   ansible.builtin.include_tasks:
     file: deploy-chart.yaml
     apply:
@@ -432,7 +431,6 @@
       chart_values:
         host: "{{ subdomains.longhorn }}.{{ domain }}"
         cluster_name: "{{ cluster_name }}"
-        vcluster: "{{ vcluster }}"
         oauth2_proxy_host: "{{ subdomains.oauth2_proxy }}.{{ domain }}"
         admin_group: "cluster-admins"
         s3: "{{ s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
@@ -442,7 +440,7 @@
       chart_values:
         s3: "{{ s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
 
-- name: Restore cluster from backup, if requested
+- name: Restore cluster from backup
   when: "restore.enabled"
   vars:
     restore_name: "{{ restore.backup_name | ternary(restore.backup_name, restore.schedule_name) }}"
@@ -572,7 +570,6 @@
         node_endpoints: "{{ groups['all'] }}"
         letsencrypt_staging: "{{ letsencrypt_staging }}"
         k3s: true
-        vcluster: "{{ vcluster }}"
 
     - name: cicd-stack
       namespace: flux-system
