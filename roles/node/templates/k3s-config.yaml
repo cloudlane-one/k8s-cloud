@@ -2,7 +2,7 @@ node-external-ip: "{{ inventory_hostname }}"
 kubelet-arg:
   - "kube-reserved=cpu=800m,memory=1600Mi,ephemeral-storage=2Gi"
   - "system-reserved=cpu=200m,memory=400Mi,ephemeral-storage=2Gi"
-  - "eviction-hard=memory.available<200Mi,nodefs.available<5%"
+  - "eviction-hard=memory.available<100Mi,nodefs.available<5%"
   - "eviction-soft=memory.available<400Mi,nodefs.available<10%"
   - "eviction-soft-grace-period=memory.available=2m0s,nodefs.available=10m0s"
   - "eviction-max-pod-grace-period=180"
