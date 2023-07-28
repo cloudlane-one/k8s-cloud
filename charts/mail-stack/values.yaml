@@ -16,9 +16,6 @@ oidc_client:
     name: ""
     key: "secret"
 
-admin_email: "" # external admin email for Letsencrypt
-ingress_class: nginx # needed for ACME challenge
-
 oauth2_proxy_host: ""
 
 require_ptr: true
