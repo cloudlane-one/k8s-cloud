@@ -103,6 +103,10 @@ spec:
         enabled: true
       prometheusRule:
         enabled: true
+    postgresql:
+      primary:
+        persistence:
+          size: 4Gi
     keycloakConfigCli:
       enabled: true
       extraEnvVars:

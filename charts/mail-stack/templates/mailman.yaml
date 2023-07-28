@@ -106,6 +106,9 @@ spec:
       username: mailman
       database: mailman
       existingSecret: postgresql-passwords
+    primary:
+      persistence:
+        size: 4Gi
 ---
 apiVersion: v1
 kind: Service
