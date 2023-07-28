@@ -65,13 +65,6 @@ data:
     authserv_id: {{ .Values.hosts.mailu }}
 ---
 apiVersion: cert-manager.io/v1
-kind: Issuer
-metadata:
-  name: selfsigned-issuer
-spec:
-  selfSigned: {}
----
-apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: mailman-arc-ca

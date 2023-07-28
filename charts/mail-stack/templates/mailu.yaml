@@ -6,6 +6,21 @@ spec:
   interval: 1h
   url: https://mailu.github.io/helm-charts/
 ---
+{{- if not .Values.ingress }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mailu-selfsigned-tls
+spec:
+  secretName: mailu-selfsigned-tls
+  dnsNames:
+    - {{ .Values.hosts.mailu }}
+  issuerRef:
+    name: selfsigned-issuer
+    kind: Issuer
+    group: cert-manager.io
+---
+{{- end }}
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
@@ -39,6 +54,9 @@ spec:
       single_pvc: false
     ingress:
       enabled: {{ .Values.ingress }}
+      {{- if not .Values.ingress }}
+      existingSecret: mailu-selfsigned-tls
+      {{- end }}
       annotations:
         nginx.ingress.kubernetes.io/auth-response-headers: "Authorization, X-Auth-Request-User, X-Auth-Request-Groups, X-Auth-Request-Email, X-Auth-Request-Preferred-Username, X-Auth-Request-Access-Token"
         nginx.ingress.kubernetes.io/auth-signin: {{ printf "https://%s/oauth2/start?rd=$scheme%%3A%%2F%%2F$host$escaped_request_uri" .Values.oauth2_proxy_host }}
