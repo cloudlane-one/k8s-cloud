@@ -3,14 +3,14 @@ kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
   name: {{ $name }}
-  {{- if and (not .Values.encrypt_default) (eq $replicas .Values.default_replicas) }}
+  {{- if and (not $.Values.encrypt_default) (eq $replicas $.Values.default_replicas) }}
   annotations:
     "storageclass.kubernetes.io/is-default-class": "true"
   {{- end }}
 provisioner: driver.longhorn.io
 allowVolumeExpansion: true
 parameters:
-  nodeSelector: {{ .Values.cluster_name }}
+  nodeSelector: {{ $.Values.cluster_name }}
   numberOfReplicas: {{ $replicas | quote }}
   dataLocality: best-effort
   staleReplicaTimeout: "2880" # 48 hours in minutes
@@ -20,14 +20,14 @@ kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
   name: {{ $name_enc }}
-  {{- if and .Values.encrypt_default (eq $replicas .Values.default_replicas) }}
+  {{- if and $.Values.encrypt_default (eq $replicas $.Values.default_replicas) }}
   annotations:
     "storageclass.kubernetes.io/is-default-class": "true"
   {{- end }}
 provisioner: driver.longhorn.io
 allowVolumeExpansion: true
 parameters:
-  nodeSelector: {{ .Values.cluster_name }}
+  nodeSelector: {{ $.Values.cluster_name }}
   numberOfReplicas: {{ $replicas | quote }}
   dataLocality: best-effort
   staleReplicaTimeout: "2880" # 48 hours in minutes
@@ -39,6 +39,7 @@ parameters:
   csi.storage.k8s.io/node-publish-secret-namespace: longhorn-system
   csi.storage.k8s.io/node-stage-secret-name: longhorn-encryption
   csi.storage.k8s.io/node-stage-secret-namespace: longhorn-system
+{{- end }}
 ---
 {{- if not .Values.vcluster }}
 # VCluster storage classes are synced to host, where they reference the
@@ -55,5 +56,4 @@ data:
   CRYPTO_KEY_HASH: {{ "sha256" | b64enc }}
   CRYPTO_KEY_SIZE: {{ "256" | b64enc }}
   CRYPTO_PBKDF: {{ "argon2i" | b64enc }}
-{{- end }}
 {{- end }}
