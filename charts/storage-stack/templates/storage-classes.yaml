@@ -13,6 +13,7 @@ data:
   CRYPTO_KEY_HASH: {{ "sha256" | b64enc }}
   CRYPTO_KEY_SIZE: {{ "256" | b64enc }}
   CRYPTO_PBKDF: {{ "argon2i" | b64enc }}
+---
 {{- end }}
 {{- if not .Values.bootstrap }}
 {{- range $name, $replicas := (dict "single" 1 "double" 2 "triple" 3) }}
