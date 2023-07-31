@@ -96,15 +96,14 @@ spec:
     prometheusOperator:
       admissionWebhooks:
         timeoutSeconds: 30 # Prevent timeouts during helm upgrade
-      resources:
-        requests:
-          cpu: 100m
-          memory: 128Mi
-      admissionWebhooks:
         patch:
           resources:
             cpu: 50m
             memory: 64Mi
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
     prometheus:
       prometheusSpec:
         serviceMonitorSelectorNilUsesHelmValues: false
