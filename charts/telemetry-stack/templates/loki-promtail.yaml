@@ -52,18 +52,12 @@ spec:
     - kind: Secret
       name: minio-loki
       valuesKey: secret
-      targetPath: storage.s3.secretAccessKey
+      targetPath: loki.storage.s3.secretAccessKey
     - kind: Secret
       name: loki-basicauth
       valuesKey: password
       targetPath: gateway.basicAuth.password
   values:
-    storage:
-      type: s3
-      s3:
-        endpoint: http://loki-minio:9000
-        accessKeyId: loki
-        # secretAccessKey: "" # injected, see above
     read:
       replicas: 1
       resources:
@@ -121,6 +115,12 @@ spec:
         targetCPUUtilizationPercentage: 65
         targetMemoryUtilizationPercentage: 65
     loki:
+      storage:
+        type: s3
+        s3:
+          endpoint: http://loki-minio:9000
+          accessKeyId: loki
+          # secretAccessKey: "" # injected, see above
       compactor:
         retention_enabled: true
       limits_config:
