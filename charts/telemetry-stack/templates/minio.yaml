@@ -1,0 +1,66 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: minio
+spec:
+  interval: 1h
+  url: https://charts.min.io/
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: minio-root
+type: Opaque
+data:
+  rootUser: {{ "root" | b64enc }}
+  rootPassword: {{ include "common.secrets.passwords.manage" (dict "secret" "minio-root" "key" "rootPassword" "providedValues" (list "") "length" 16 "context" $) }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: minio-loki
+type: Opaque
+data:
+  id: {{ "loki" | b64enc }}
+  secret: {{ include "common.secrets.passwords.manage" (dict "secret" "minio-loki" "key" "secret" "providedValues" (list "") "length" 16 "context" $) }}
+---
+{{- if not .Values.bootstrap }}
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: minio
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: minio
+      version: "^5.0.13"
+      sourceRef:
+        kind: HelmRepository
+        name: minio
+  timeout: '15m0s' # Account for slow performance of cluster on first setup.
+  values:
+    replicas: 1
+    drivesPerNode: 2
+    existingSecret: minio-root
+    users:
+      - accessKey: loki
+        existingSecret: minio-loki
+        existingSecretKey: secret
+    buckets:
+      - name: chunks
+        policy: none
+        purge: false
+      - name: ruler
+        policy: none
+        purge: false
+      - name: admin
+        policy: none
+        purge: false
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+    persistence:
+      size: 5Gi
+{{- end }}

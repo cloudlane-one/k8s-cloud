@@ -337,7 +337,6 @@ spec:
             maxLines: 1000
           secureJsonData:
             basicAuthPassword: "${LOKI_PASS}"
-          
 ---
 apiVersion: v1
 kind: Secret
