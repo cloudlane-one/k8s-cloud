@@ -103,6 +103,10 @@ spec:
         enabled: true
       prometheusRule:
         enabled: true
+    resources:
+      requests:
+        cpu: 100m
+        memory: 800Mi
     postgresql:
       primary:
         persistence:

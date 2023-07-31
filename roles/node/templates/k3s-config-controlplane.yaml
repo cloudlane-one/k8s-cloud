@@ -11,11 +11,11 @@ kube-apiserver-arg:
   - "oidc-groups-claim=groups"
 kube-controller-manager-arg:
   - "bind-address=0.0.0.0"
+  - "horizontal-pod-autoscaler-tolerance=0.3"
 kube-proxy-arg:
   - "metrics-bind-address=0.0.0.0"
 kube-scheduler-arg:
   - "bind-address=0.0.0.0"
 tls-san: "{{ subdomains.k8s_api }}.{{ domain }}"
 kubelet-arg:
-  - "kube-reserved=cpu=800m,memory=1600Mi,ephemeral-storage=2Gi"
-  - "system-reserved=cpu=200m,memory=400Mi,ephemeral-storage=2Gi"
+  - "kube-reserved=cpu=600m,memory=1600Mi,ephemeral-storage=2Gi"

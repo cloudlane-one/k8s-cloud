@@ -33,8 +33,10 @@ spec:
   upgrade:
     crds: CreateReplace
   timeout: '15m0s' # Account for slow performance of cluster on first setup.
-{{- if .Values.bootstrap }}
   values:
+
+{{- if .Values.bootstrap }}
+
     kubeControllerManager:
       enabled: false
     kubeProxy:
@@ -43,8 +45,9 @@ spec:
       enabled: false
     nodeExporter:
       enabled: false
+
 {{- else }}
-  values:
+
     {{- if and .Values.k3s (.Values.node_endpoints | len | gt 0) }}
     defaultRules:
       rules:
@@ -74,15 +77,34 @@ spec:
       rules:
         general: false
     {{- end }}
-    {{- if .Values.vcluster }}
     nodeExporter:
-      enabled: false
-    {{- end }}
+      resources:
+        requests:
+          cpu: 30m
+          memory: 32Mi
+    kubeStateMetrics:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
     alertmanager:
       enabled: true
+      alertmanagerSpec:
+        resources:
+          cpu: 50m
+          memory: 64Mi
     prometheusOperator:
       admissionWebhooks:
         timeoutSeconds: 30 # Prevent timeouts during helm upgrade
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      admissionWebhooks:
+        patch:
+          resources:
+            cpu: 50m
+            memory: 64Mi
     prometheus:
       prometheusSpec:
         serviceMonitorSelectorNilUsesHelmValues: false
@@ -97,6 +119,10 @@ spec:
                 requests:
                   storage: 16Gi
         retention: 2d
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
     grafana:
       envValueFrom:
         SMTP_PASSWORD:
@@ -107,6 +133,10 @@ spec:
           secretKeyRef:
             name: oidc-client
             key: secret
+        LOKI_PASS:
+          secretKeyRef:
+            name: loki-basicauth
+            key: password
       admin:
         existingSecret: grafana-admin
         userKey: username
@@ -297,6 +327,18 @@ spec:
                   mute_time_intervals:
                     - always
                   continue: false
+      additionalDataSources:
+        - name: Loki
+          type: loki
+          access: proxy
+          url: http://loki-gateway
+          basicAuth: true
+          basicAuthUser: cluster
+          jsonData:
+            maxLines: 1000
+          secureJsonData:
+            basicAuthPassword: "${LOKI_PASS}"
+          
 ---
 apiVersion: v1
 kind: Secret

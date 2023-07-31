@@ -31,6 +31,20 @@ spec:
       enabled: true
       servicemonitor:
         enabled: true
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+    webhook:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+    cainjector:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 64Mi
     ingressShim:
       defaultIssuerKind: ClusterIssuer
       defaultIssuerGroup: cert-manager.io

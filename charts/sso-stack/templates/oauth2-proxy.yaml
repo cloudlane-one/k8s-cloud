@@ -45,6 +45,10 @@ spec:
       enabled: true
       servicemonitor:
         enabled: true
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
     config:
       clientID: cluster-oidc
       # clientSecret: "" # injected via valuesFrom

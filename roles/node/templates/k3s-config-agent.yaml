@@ -1,3 +1,2 @@
 kubelet-arg:
-  - "kube-reserved=cpu=300m,memory=600Mi,ephemeral-storage=2Gi"
-  - "system-reserved=cpu=200m,memory=400Mi,ephemeral-storage=2Gi"
+  - "kube-reserved=cpu=200m,memory=800Mi,ephemeral-storage=2Gi"

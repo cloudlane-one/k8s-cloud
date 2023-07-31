@@ -56,4 +56,8 @@ spec:
       enabled: false
     networkPolicy:
       create: false
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
 {{- end }}

@@ -37,6 +37,10 @@ spec:
       service:
         labels:
           svccontroller.k3s.cattle.io/lbpool: {{ .Values.cluster_name }}
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
       metrics:
         enabled: true
         serviceMonitor:
