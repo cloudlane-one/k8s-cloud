@@ -58,7 +58,7 @@ backups:
 tailscale:
   enabled: false
   # Optional. URL of self-hosted Headscale control server.
-  control_server_url: null
+  headscale_url: null
   # Put the auth key in ./<CLUSTER_NAME>.secrets.yaml
 
 # Set to true to create a vcluster on top of a k3s host cluster

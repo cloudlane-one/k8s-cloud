@@ -1,6 +1,6 @@
 {% if tailscale.enabled %}
-{% if tailscale.control_server_url %}
-vpn-auth: "name=tailscale,joinKey={{ tailscale_auth_key }},controlServerURL={{ tailscale.control_server_url }}"
+{% if tailscale.headscale_url %}
+vpn-auth: "name=tailscale,joinKey={{ tailscale_auth_key }},controlServerURL={{ tailscale.headscale_url }}"
 {% else %}
 vpn-auth: "name=tailscale,joinKey={{ tailscale_auth_key }}"
 {% endif %}
@@ -13,3 +13,4 @@ kubelet-arg:
   - "eviction-soft=memory.available<300Mi,nodefs.available<10%"
   - "eviction-soft-grace-period=memory.available=2m0s,nodefs.available=10m0s"
   - "eviction-max-pod-grace-period=180"
+  - "node-ip=0.0.0.0"
