@@ -1,3 +1,19 @@
+{{- if not .Values.vcluster }}
+# VCluster storage classes are synced to host, where they reference the
+# already existing storage secret.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: longhorn-encryption
+  namespace: longhorn-system
+data:
+  CRYPTO_KEY_VALUE: {{ include "common.secrets.passwords.manage" (dict "secret" "longhorn-encryption" "key" "CRYPTO_KEY_VALUE" "providedValues" (list "") "length" 16 "context" $) }}
+  CRYPTO_KEY_PROVIDER: {{ "secret" | b64enc }}
+  CRYPTO_KEY_CIPHER: {{ "aes-xts-plain64" | b64enc }}
+  CRYPTO_KEY_HASH: {{ "sha256" | b64enc }}
+  CRYPTO_KEY_SIZE: {{ "256" | b64enc }}
+  CRYPTO_PBKDF: {{ "argon2i" | b64enc }}
+{{- end }}
 {{- if not .Values.bootstrap }}
 {{- range $name, $replicas := (dict "single" 1 "double" 2 "triple" 3) }}
 kind: StorageClass
@@ -41,21 +57,5 @@ parameters:
   csi.storage.k8s.io/node-stage-secret-name: longhorn-encryption
   csi.storage.k8s.io/node-stage-secret-namespace: longhorn-system
 ---
-{{- end }}
-{{- if not .Values.vcluster }}
-# VCluster storage classes are synced to host, where they reference the
-# already existing storage secret.
-apiVersion: v1
-kind: Secret
-metadata:
-  name: longhorn-encryption
-  namespace: longhorn-system
-data:
-  CRYPTO_KEY_VALUE: {{ include "common.secrets.passwords.manage" (dict "secret" "longhorn-encryption" "key" "CRYPTO_KEY_VALUE" "providedValues" (list "") "length" 16 "context" $) }}
-  CRYPTO_KEY_PROVIDER: {{ "secret" | b64enc }}
-  CRYPTO_KEY_CIPHER: {{ "aes-xts-plain64" | b64enc }}
-  CRYPTO_KEY_HASH: {{ "sha256" | b64enc }}
-  CRYPTO_KEY_SIZE: {{ "256" | b64enc }}
-  CRYPTO_PBKDF: {{ "argon2i" | b64enc }}
 {{- end }}
 {{- end }}
