@@ -1,3 +1,4 @@
+{{- if not .Values.bootstrap }}
 {{- range $name, $replicas := (dict "single" 1 "double" 2 "triple" 3) }}
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
@@ -56,4 +57,5 @@ data:
   CRYPTO_KEY_HASH: {{ "sha256" | b64enc }}
   CRYPTO_KEY_SIZE: {{ "256" | b64enc }}
   CRYPTO_PBKDF: {{ "argon2i" | b64enc }}
+{{- end }}
 {{- end }}
