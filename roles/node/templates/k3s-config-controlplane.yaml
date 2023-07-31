@@ -17,5 +17,5 @@ kube-proxy-arg:
 kube-scheduler-arg:
   - "bind-address=0.0.0.0"
 tls-san: "{{ subdomains.k8s_api }}.{{ domain }}"
-kubelet-arg:
+kubelet-arg+:
   - "kube-reserved=cpu=600m,memory=1600Mi,ephemeral-storage=2Gi"

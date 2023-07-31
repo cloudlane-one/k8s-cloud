@@ -104,14 +104,7 @@
     - name: Template out k3s config file
       ansible.builtin.template:
         src: k3s-config.yaml
-        dest: /etc/rancher/k3s/config.yaml.d/main.yaml
-        mode: '0644'
-
-    - name: Template out k3s controlplane config file
-      when: "control_node"
-      ansible.builtin.template:
-        src: k3s-config-controlplane.yaml
-        dest: /etc/rancher/k3s/config.yaml.d/controlplane.yaml
+        dest: /etc/rancher/k3s/config.yaml
         mode: '0644'
 
     - name: Template out k3s agent config file
@@ -119,6 +112,13 @@
       ansible.builtin.template:
         src: k3s-config-agent.yaml
         dest: /etc/rancher/k3s/config.yaml.d/agent.yaml
+        mode: '0644'
+
+    - name: Template out k3s controlplane config file
+      when: "control_node"
+      ansible.builtin.template:
+        src: k3s-config-controlplane.yaml
+        dest: /etc/rancher/k3s/config.yaml.d/controlplane.yaml
         mode: '0644'
 
     - name: Download k3s install script

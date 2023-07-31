@@ -1,2 +1,2 @@
-kubelet-arg:
+kubelet-arg+:
   - "kube-reserved=cpu=200m,memory=800Mi,ephemeral-storage=2Gi"
