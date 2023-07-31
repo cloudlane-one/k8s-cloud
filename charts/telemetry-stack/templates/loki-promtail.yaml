@@ -1,4 +1,3 @@
-{{- if not .Values.bootstrap }}
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
@@ -34,6 +33,7 @@ data:
   name: cluster
   password: {{ include "common.secrets.passwords.manage" (dict "secret" "loki-basicauth" "key" "password" "providedValues" (list "") "length" 16 "context" $) }}
 ---
+{{- if not .Values.bootstrap }}
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
