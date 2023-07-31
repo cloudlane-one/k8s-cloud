@@ -441,17 +441,17 @@
         s3: "{{ backups.s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
 
 - name: Restore cluster from backup
-  when: "restore.enabled"
+  when: "backups.restore.enabled"
   vars:
-    restore_name: "{{ restore.backup_name | ternary(restore.backup_name, restore.schedule_name) }}"
+    restore_name: "{{ backups.restore.backup_name | ternary(backups.restore.backup_name, backups.restore.schedule_name) }}"
   block:
     - name: Wait for backup resource to be synced from s3
-      when: "restore.backup_name"
+      when: "backups.restore.backup_name"
       kubernetes.core.k8s_info:
         api_version: velero.io/v1
         kind: Backup
         namespace: backup-system
-        name: "{{ restore.backup_name }}"
+        name: "{{ backups.restore.backup_name }}"
       register: backup_get_result
       retries: 10 # Velero may need time to load the backup from s3.
       delay: 10
@@ -476,9 +476,9 @@
           - create
           - "{{ restore_name }}"
           - "--namespace=backup-system"
-          - "--from-schedule={{ restore.backup_name | ternary('', restore.schedule_name) }}"
-          - "--from-backup={{ restore.backup_name }}"
-          - "--include-resources={{ restore.included_resources | join(',') }}"
+          - "--from-schedule={{ backups.restore.backup_name | ternary('', backups.restore.schedule_name) }}"
+          - "--from-backup={{ backups.restore.backup_name }}"
+          - "--include-resources={{ backups.restore.included_resources | join(',') }}"
           - "--restore-volumes=true"
           - "--selector"
           - "owner notin (helm)"
