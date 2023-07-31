@@ -56,7 +56,7 @@ spec:
     - kind: Secret
       name: loki-basicauth
       valuesKey: password
-      targetPath: loki.tenants[0].password
+      targetPath: gateway.basicAuth.password
   values:
     storage:
       type: s3
@@ -107,6 +107,8 @@ spec:
     gateway:
       basicAuth:
         enabled: true
+        username: cluster
+        # password: "" # injected, see above
       replicas: 1
       resources:
         requests:
@@ -123,9 +125,6 @@ spec:
         retention_enabled: true
       limits_config:
         retention_period: 168h
-      tenants:
-        - name: cluster
-          # password: "" # injected, see above
     minio:
       enabled: true
       existingSecret: minio-root
