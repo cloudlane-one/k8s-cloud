@@ -39,8 +39,8 @@ parameters:
   csi.storage.k8s.io/node-publish-secret-namespace: longhorn-system
   csi.storage.k8s.io/node-stage-secret-name: longhorn-encryption
   csi.storage.k8s.io/node-stage-secret-namespace: longhorn-system
-{{- end }}
 ---
+{{- end }}
 {{- if not .Values.vcluster }}
 # VCluster storage classes are synced to host, where they reference the
 # already existing storage secret.
