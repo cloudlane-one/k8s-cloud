@@ -2,12 +2,12 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: snapshot-class
+  name: default-snapshot-class
 spec:
   interval: 1h
   chart:
     spec:
-      chart: ./charts/snapshot-class
+      chart: ./charts/default-snapshot-class
       sourceRef:
         kind: GitRepository
         name: base-repo

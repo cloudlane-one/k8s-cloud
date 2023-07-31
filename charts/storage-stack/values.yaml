@@ -2,7 +2,8 @@ host: ""
 
 cluster_name: ""
 
-encryption: false
+default_replicas: 2
+encrypt_default: false
 
 vcluster: false
 
