@@ -4,29 +4,6 @@
 # Required. Root domain, on which the cluster is to run.
 domain: ""
 
-# Required. SMTP config for notification emails.
-smtp:
-  host: ""
-  port: ""
-  user: ""
-  from_address: ""
-  # Put the password in ./<CLUSTER_NAME>.secrets.yaml
-
-# Required. S3 config for logs and backups storage.
-s3:
-  endpoint: "" # Full URL of your S3 endpoint (minus credentials)
-  region: "eu-central-1" # Required by Longhorn, just leave the default if you don't have zones
-  access_key_id: "" # Your S3 access key id
-  # Put the access key secret in ./<CLUSTER_NAME>.secrets.yaml
-
-# Required. Bucket names for logs and backups storage (have to be created manually in advance).
-s3_buckets:
-  backup: ""
-  logs: ""
-
-# Required. Email of initial admin accounts (for login and notifications).
-admin_email: ""
-
 # Information about the organization running the cluster
 org:
    # Required. Name of your organization.
@@ -35,23 +12,44 @@ org:
   tagline: ""
   logo_url: ""
 
-# Configure this cluster to be restored from an existing cluster backup.
-restore:
-  # Set to true to enable restoring.
-  enabled: false
-  # The unique name of the Velero schedule
-  # to restore from. If specified, and backup_name is empty, Velero will
-  # restore from the most recent successful backup created from this schedule.
-  schedule_name: cluster-backup
-  # The unique name of the Velero backup to restore from.
-  backup_name: ""
-  # See https://velero.io/docs/v1.11/resource-filtering/#--include-resources.
-  included_resources:
-    - secrets
-    - pvcs
-    - pvs
-    - helmrepositories
-    - helmreleases
+mail:
+  # Required. SMTP config for notification emails.
+  smtp:
+    host: ""
+    port: ""
+    user: ""
+    from_address: ""
+    # Put the password in ./<CLUSTER_NAME>.secrets.yaml
+
+  # Required. Email of initial admin accounts (for notifications and login).
+  admin_address: ""
+
+backups:
+  # Required. S3 config for logs and backups storage.
+  s3:
+    endpoint: "" # Full URL of your S3 endpoint (minus credentials)
+    region: "eu-central-1" # Required by Longhorn, just leave the default if you don't have zones
+    bucket: "" # Required.
+    access_key_id: "" # Your S3 access key id
+    # Put the access key secret in ./<CLUSTER_NAME>.secrets.yaml
+
+  # Configure this cluster to be restored from an existing cluster backup.
+  restore:
+    # Set to true to enable restoring.
+    enabled: false
+    # The unique name of the Velero schedule
+    # to restore from. If specified, and backup_name is empty, Velero will
+    # restore from the most recent successful backup created from this schedule.
+    schedule_name: cluster-backup
+    # The unique name of the Velero backup to restore from.
+    backup_name: ""
+    # See https://velero.io/docs/v1.11/resource-filtering/#--include-resources.
+    included_resources:
+      - secrets
+      - pvcs
+      - pvs
+      - helmrepositories
+      - helmreleases
 
 # Set to true to create a vcluster on top of a k3s host cluster
 vcluster: false

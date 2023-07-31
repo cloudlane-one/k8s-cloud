@@ -433,12 +433,12 @@
         cluster_name: "{{ cluster_name }}"
         oauth2_proxy_host: "{{ subdomains.oauth2_proxy }}.{{ domain }}"
         admin_group: "cluster-admins"
-        s3: "{{ s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
+        s3: "{{ backups.s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
 
     - name: backup-stack
       namespace: backup-system
       chart_values:
-        s3: "{{ s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.backup}) }}"
+        s3: "{{ backups.s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
 
 - name: Restore cluster from backup
   when: "restore.enabled"
@@ -506,7 +506,7 @@
     - name: cert-stack
       namespace: cert-system
       chart_values:
-        admin_email: "{{ admin_email }}"
+        admin_email: "{{ mail.admin_address }}"
         base_repo: "{{ base_repo }}"
         base_branch: "{{ base_branch }}"
         letsencrypt_staging: "{{ letsencrypt_staging }}"
@@ -547,7 +547,7 @@
             - "https://{{ subdomains.weave_gitops }}.{{ domain }}/oauth2/callback"
         smtp: "{{ smtp | combine({'password_secret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
         admin_group: "cluster-admins"
-        admin_email: "{{ admin_email }}"
+        admin_email: "{{ mail.admin_address }}"
         letsencrypt_staging: "{{ letsencrypt_staging }}"
 
     - name: telemetry-stack
@@ -563,9 +563,8 @@
             namespace: sso-system
             name: cluster-oidc
             key: secret
-        admin_email: "{{ admin_email }}"
+        admin_email: "{{ mail.admin_address }}"
         admin_group: "cluster-admins"
-        s3: "{{ s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}, 'bucket': s3_buckets.logs}) }}"
         smtp: "{{ smtp | combine({'password_secret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
         node_endpoints: "{{ groups['all'] }}"
         letsencrypt_staging: "{{ letsencrypt_staging }}"
