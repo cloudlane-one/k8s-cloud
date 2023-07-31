@@ -545,7 +545,7 @@
           redirect_uris:
             - "https://{{ subdomains.grafana }}.{{ domain }}/login/generic_oauth"
             - "https://{{ subdomains.weave_gitops }}.{{ domain }}/oauth2/callback"
-        smtp: "{{ smtp | combine({'password_secret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
+        smtp: "{{ mail.smtp | combine({'password_secret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
         admin_group: "cluster-admins"
         admin_email: "{{ mail.admin_address }}"
         letsencrypt_staging: "{{ letsencrypt_staging }}"
@@ -565,7 +565,7 @@
             key: secret
         admin_email: "{{ mail.admin_address }}"
         admin_group: "cluster-admins"
-        smtp: "{{ smtp | combine({'password_secret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
+        smtp: "{{ mail.smtp | combine({'password_secret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
         node_endpoints: "{{ groups['all'] }}"
         letsencrypt_staging: "{{ letsencrypt_staging }}"
         k3s: true
