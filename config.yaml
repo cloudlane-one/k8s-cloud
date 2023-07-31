@@ -51,6 +51,16 @@ backups:
       - helmrepositories
       - helmreleases
 
+# Configure k3s to build a mesh based on Tailscale instead of raw Wireguard.
+# Tailscale enables you to use nodes with dynamic IPs and behind NATs.
+# Please refer to the according [k3s setup guide](https://docs.k3s.io/installation/network-options#integration-with-the-tailscale-vpn-provider-experimental)
+# and perform steps 1 to 3 manually before deploying the cluster.
+tailscale:
+  enabled: false
+  # Optional. URL of self-hosted Headscale control server.
+  control_server_url: null
+  # Put the auth key in ./<CLUSTER_NAME>.secrets.yaml
+
 # Set to true to create a vcluster on top of a k3s host cluster
 vcluster: false
 

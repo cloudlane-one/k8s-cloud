@@ -93,6 +93,28 @@
     state: restarted
     name: multipathd.service
 
+- name: Ensure Tailscale is installed
+  when: "tailscale.enabled"
+  block:
+    - name: Check if Tailscale is installed
+      ansible.builtin.command: "which tailscale"
+      register: which_tailscale
+      changed_when: false
+      failed_when: false
+      ignore_errors: true
+
+    - name: Download Tailscale install script
+      when: "which_tailscale.rc != 0"
+      ansible.builtin.get_url:
+        url: https://tailscale.com/install.sh
+        dest: /tmp/tailscale-install.sh
+        mode: "0700"
+
+    - name: Run Tailscale install script
+      when: "which_tailscale.rc != 0"
+      ansible.builtin.command: /tmp/tailscale-install.sh
+      changed_when: true
+
 - name: Install k3s via official setup script # TODO: remove third-party ansible role and use k3s setup script
   block:
     - name: Ensure k3s config dir exists
