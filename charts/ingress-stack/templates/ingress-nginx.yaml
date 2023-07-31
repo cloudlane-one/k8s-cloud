@@ -41,6 +41,12 @@ spec:
         requests:
           cpu: 100m
           memory: 256Mi
+      autoscaling:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 4
+        targetCPUUtilizationPercentage: 65
+        targetMemoryUtilizationPercentage: 65
       metrics:
         enabled: true
         serviceMonitor:

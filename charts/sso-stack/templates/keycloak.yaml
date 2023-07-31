@@ -107,6 +107,12 @@ spec:
       requests:
         cpu: 100m
         memory: 800Mi
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 4
+      targetCPU: 65
+      targetMemory: 65
     postgresql:
       primary:
         persistence:
