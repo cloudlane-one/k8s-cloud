@@ -12,7 +12,7 @@ metadata:
   name: minio-root
 type: Opaque
 data:
-  rootUser: root
+  rootUser: {{ "root" | b64enc }}
   rootPassword: {{ include "common.secrets.passwords.manage" (dict "secret" "minio-root" "key" "rootPassword" "providedValues" (list "") "length" 16 "context" $) }}
 ---
 apiVersion: v1
@@ -21,7 +21,7 @@ metadata:
   name: minio-loki
 type: Opaque
 data:
-  id: loki
+  id: {{ "loki" | b64enc }}
   secret: {{ include "common.secrets.passwords.manage" (dict "secret" "minio-loki" "key" "secret" "providedValues" (list "") "length" 16 "context" $) }}
 ---
 apiVersion: v1
@@ -30,7 +30,7 @@ metadata:
   name: loki-basicauth
 type: Opaque
 data:
-  name: cluster
+  name: {{ "cluster" | b64enc }}
   password: {{ include "common.secrets.passwords.manage" (dict "secret" "loki-basicauth" "key" "password" "providedValues" (list "") "length" 16 "context" $) }}
 ---
 {{- if not .Values.bootstrap }}
