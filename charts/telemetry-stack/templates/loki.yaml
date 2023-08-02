@@ -42,7 +42,7 @@ spec:
           endpoint: http://minio:9000
           accessKeyId: loki
           # secretAccessKey: "" # injected, see above
-          s3forcepathstyle: true
+          s3ForcePathStyle: true
           insecure: true
       compactor:
         retention_enabled: true
