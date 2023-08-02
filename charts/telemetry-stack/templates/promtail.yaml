@@ -28,6 +28,7 @@ spec:
           basic_auth:
             username: cluster
             password: "${LOKI_PASS}"
+          tenant_id: 1
       snippets:
         extraScrapeConfigs: |
           # Add an additional scrape config for syslog

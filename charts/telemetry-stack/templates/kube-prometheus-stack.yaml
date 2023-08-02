@@ -335,8 +335,10 @@ spec:
           basicAuthUser: cluster
           jsonData:
             maxLines: 1000
+            httpHeaderName1: "X-Scope-OrgID"
           secureJsonData:
             basicAuthPassword: "${LOKI_PASS}"
+            httpHeaderValue1: "1"
 ---
 apiVersion: v1
 kind: Secret
