@@ -107,4 +107,6 @@ spec:
     monitoring:
       selfMonitoring:
         enabled: false
+    test:
+      enabled: false
 {{- end }}
