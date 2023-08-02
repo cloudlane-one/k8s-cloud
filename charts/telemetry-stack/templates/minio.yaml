@@ -47,6 +47,7 @@ spec:
       - accessKey: loki
         existingSecret: minio-loki
         existingSecretKey: secret
+        policy: readwrite
     buckets:
       - name: chunks
         policy: none
