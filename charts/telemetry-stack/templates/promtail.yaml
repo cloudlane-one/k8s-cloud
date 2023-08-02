@@ -16,6 +16,8 @@ spec:
   dependsOn:
     - name: loki
   values:
+    extraArgs:
+      - "-config.expand-env=true"
     extraEnv:
       - name: LOKI_PASS
         valueFrom:
