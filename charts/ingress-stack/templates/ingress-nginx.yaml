@@ -41,6 +41,8 @@ spec:
         requests:
           cpu: 100m
           memory: 256Mi
+      admissionWebhooks:
+        enabled: false
       autoscaling:
         enabled: true
         minReplicas: 2
