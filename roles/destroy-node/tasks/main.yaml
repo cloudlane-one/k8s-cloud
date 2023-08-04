@@ -1,21 +1,21 @@
-- name: Check whether whether control nodes were given explicitly
+- name: Determine the control nodes
   ansible.builtin.set_fact:
-    control_nodes_given: "{{ control_nodes | length > 0 }}"
+    control_nodes: "{{ hostvars | dict2items | selectattr('value.control') | map(attribute='key') }}"
 
-- name: Determine the main control host (first to join the cluster)
+- name: Set control nodes to default, if none given
   ansible.builtin.set_fact:
-    main_control_node: "{{ control_nodes_given | ternary(control_nodes[0], groups['all'][0]) }}"
+    control_nodes: "{{ control_nodes if control_nodes | length > 0 else [hostvars.keys() | list | first] }}"
 
 - name: Check whether this host is supposed to be a control node
   ansible.builtin.set_fact:
-    control_node: "{{ inventory_hostname in control_nodes or inventory_hostname == main_control_node }}"
+    control: "{{ control or inventory_hostname in control_nodes }}"
 
 - name: Uninstall k3s server
-  when: "control_node"
+  when: "control"
   ansible.builtin.command: /usr/local/bin/k3s-uninstall.sh
   changed_when: true
 
 - name: Uninstall k3s agent
-  when: "not control_node"
+  when: "not control"
   ansible.builtin.command: /usr/local/bin/k3s-agent-uninstall.sh
   changed_when: true

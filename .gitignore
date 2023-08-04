@@ -11,6 +11,7 @@ Chart.lock
 /*kubeconfig*.yml
 /join-token
 /*.hosts.ini
+/*.hosts.yaml
 /*.config.yaml
 /*.secrets.yaml
 /*.values.yaml

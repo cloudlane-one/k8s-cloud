@@ -81,28 +81,30 @@ ansible-galaxy install -r requirements.yaml
 
 ### 3. Provide configuration
 
-List the IPs or public domains of your hosts, which you intend to become k8s nodes, in a file called `./$CLUSTER_NAME.hosts.ini` within the project directory. Replace `$CLUSTER_NAME` with an arbitrary alphanumeric name for your cluster. Simply write one IP / domain per line, like so:
+#### Hosts
 
-```ini
-123.456.789
-my.domain.com
-111.111.111
-```
+Copy the template hosts file `./hosts.yaml` to `./$CLUSTER_NAME.hosts.yaml` within the project directory. Replace `$CLUSTER_NAME` with an arbitrary alphanumeric name for your cluster.
 
-By default, the first listed host is used as the sole control-plane node. If you want to have multiple control hosts, separate them into an explicit group called `control_nodes`, like so:
+#### Backbone hosts
 
-```ini
-123.456.789
-my.domain.com
+By default, all hosts in `./$CLUSTER_NAME.hosts.yaml` are taken to be backbone nodes, meaning they have a close connection to the internet backbone and thus low latency and high bandwith between each other over WAN. This is important especially for distributed storage. To exclude hosts with slower connections, set `backbone=false` on them, or to only include a subset of hosts into the backbone, set `backbone=true` on the subset.
 
-[control_nodes]
-111.111.111
-222.222.222
-my-other.domain.com
-```
+#### Control plane hosts
+
+By default, the first backbone host is taken as the sole control plane host. If you want to change this bevavior, set the value `control=true` on a subset of hosts.
 
 > It is recommended to have either one or at least 3 control plane nodes. Make sure you store the hosts file somewhere safe.
 > Please also set `control nodes` for vclusters. This has no effect on where the control plane pods run, but it tells Ansible on which machines it can execute administrative tasks.
+
+#### Ingress hosts
+
+By default, the first backbone host is taken as the sole ingress host. If you want to change this bevavior, set the value `ingress=true` on a subset of hosts.
+
+#### Storage hosts
+
+By default, all hosts are taken as storage hosts, yet non-backbone hosts are excluded from distributed storage for performance reasons, hence they can only host single-replica, local volumes. To exclude hosts from being used for storage at all, set `storage=false` on them, or to only include a subset of hosts for storage, set `storage=true` on the subset.
+
+#### Cluster config and secrets
 
 Then copy the default config values file `./config.yaml` to `./$CLUSTER_NAME.config.yaml` and the secrets template file `./secrets.yaml` to `./$CLUSTER_NAME.secrets.yaml`. Fill in the required values and change the optional ones to your liking. Replace `$CLUSTER_NAME` with the chosen name for your cluster. Make sure you store these files somewhere safe.
 

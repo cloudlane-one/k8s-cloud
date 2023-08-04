@@ -5,7 +5,7 @@ vpn-auth: "name=tailscale,joinKey={{ tailscale_auth_key }},controlServerURL={{ t
 vpn-auth: "name=tailscale,joinKey={{ tailscale_auth_key }}"
 {% endif %}
 {% endif %}
-node-external-ip: "{{ inventory_hostname }}"
+node-external-ip: "{{ ansible_hostname }}"
 kubelet-arg:
   - "node-ip=0.0.0.0"
   - "system-reserved=cpu=200m,memory=300Mi,ephemeral-storage=2Gi"

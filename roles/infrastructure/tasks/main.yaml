@@ -9,8 +9,21 @@
     registered_domain: "{{ main_name }}{{ suffix }}"
     host_kubeconfig: "{{ ansible_env.KUBECONFIG }}"
     kubeconfig: "{{ ansible_env.KUBECONFIG }}"
-    ingress_nodes: "{{ groups['ingress_nodes'] if 'ingress_nodes' in groups else [inventory_hostname] }}"
-    storage_nodes: "{{ groups['storage_nodes'] if 'storage_nodes' in groups else groups['all'] }}"
+    cluster_nodes: "{{ hostvars.keys() | list }}"
+    backbone_nodes: "{{ hostvars | dict2items | selectattr('value.backbone') | map(attribute='key') }}"
+    ingress_nodes: "{{ hostvars | dict2items | selectattr('value.ingress') | map(attribute='key') }}"
+    storage_nodes: "{{ hostvars | dict2items | selectattr('value.storage') | map(attribute='key') }}"
+    region: "{{ region | default('eu') }}"
+
+- name: Set node roles to default, if not customized
+  vars:
+    default_backbone_nodes: "{{ hostvars | dict2items | selectattr('value.backbone', '!=', false) | map(attribute='key') }}"
+    first_backbone_node: "{{ backbone_nodes | default(default_backbone_nodes) | first }}"
+    default_storage_nodes: "{{ hostvars | dict2items | selectattr('value.storage', '!=', false) | map(attribute='key') }}"
+  ansible.builtin.set_fact:
+    backbone_nodes: "{{ backbone_nodes | default(default_backbone_nodes) }}"
+    ingress_nodes: "{{ ingress_nodes | default([first_backbone_node]) }}"
+    storage_nodes: "{{ storage_nodes | default(default_storage_nodes) }}"
 
 - name: Print domain info
   ansible.builtin.debug:
@@ -34,35 +47,8 @@
   environment:
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
   block:
-    - name: Get all k8s nodes
-      kubernetes.core.k8s_info:
-        api_version: v1
-        kind: Node
-      register: all_k8s_nodes
-
-    - name: Filter out cluster nodes
-      ansible.builtin.set_fact:
-        cluster_node_names: "{{ all_k8s_nodes.resources | json_query(node_filter) | json_query(node_extractor) }}"
-      vars:
-        node_filter: '[?contains({{ groups["all"] }}, metadata.annotations."k3s.io/external-ip")]'
-        node_extractor: '[].metadata.annotations."k3s.io/hostname"'
-
-    - name: Filter out ingress nodes
-      ansible.builtin.set_fact:
-        ingress_node_names: "{{ all_k8s_nodes.resources | json_query(node_filter) | json_query(node_extractor) }}"
-      vars:
-        node_filter: '[?contains({{ ingress_nodes }}, metadata.annotations."k3s.io/external-ip")]'
-        node_extractor: '[].metadata.annotations."k3s.io/hostname"'
-
-    - name: Filter out storage nodes
-      ansible.builtin.set_fact:
-        storage_node_names: "{{ all_k8s_nodes.resources | json_query(node_filter) | json_query(node_extractor) }}"
-      vars:
-        node_filter: '[?contains({{ storage_nodes }}, metadata.annotations."k3s.io/external-ip")]'
-        node_extractor: '[].metadata.annotations."k3s.io/hostname"'
-
     - name: Add cluster label to inventory node
-      loop: "{{ cluster_node_names }}"
+      loop: "{{ cluster_nodes }}"
       kubernetes.core.k8s:
         state: patched
         kind: Node
@@ -71,8 +57,33 @@
           metadata:
             labels: "{{ {cluster_name: '1'} }}"
 
+    - name: Add topology labels to inventory node
+      loop: "{{ cluster_nodes }}"
+      var:
+        zone: "{{ hostvars[item].zone | default('eu-1') }}"
+      kubernetes.core.k8s:
+        state: patched
+        kind: Node
+        name: "{{ item }}"
+        definition:
+          metadata:
+            labels:
+              topology.kubernetes.io/region: "{{ region }}"
+              topology.kubernetes.io/zone: "{{ zone }}"
+
+    - name: Add backbone label to inventory node
+      loop: "{{ backbone_nodes }}"
+      kubernetes.core.k8s:
+        state: patched
+        kind: Node
+        name: "{{ item }}"
+        definition:
+          metadata:
+            labels:
+              backbone: "1"
+
     - name: Add cluster ingress label to inventory node
-      loop: "{{ ingress_node_names }}"
+      loop: "{{ ingress_nodes }}"
       kubernetes.core.k8s:
         state: patched
         kind: Node
@@ -84,7 +95,7 @@
               svccontroller.k3s.cattle.io/lbpool: "{{ cluster_name }}"
 
     - name: Add cluster storage label to inventory node
-      loop: "{{ storage_node_names }}"
+      loop: "{{ storage_nodes }}"
       vars:
         storage_key: "{{ cluster_name }}-storage"
       kubernetes.core.k8s:
@@ -355,7 +366,7 @@
     - name: telemetry-stack
       namespace: telemetry-system
 
-- name: Ensure cluster FQN label is applied to Longhorn nodes
+- name: Ensure zoning tags are applied to Longhorn nodes
   environment:
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
   block:
@@ -373,22 +384,28 @@
           status: "True"
       register: lhn_info
 
-    - name: Ensure cluster FQN is tag on all Longhorn nodes in inventory
+    - name: Ensure tags are set on all Longhorn nodes in inventory
       loop: "{{ lhn_info.results }}"
       loop_control:
         label: "{{ item.item }}"
       vars:
         existing_tags: "{{ item.resources[0].spec.tags }}"
-        lhn_name: "{{ item.resources[0].metadata.name }}"
+        node: "{{ item.resources[0].metadata.name }}"
+        zone: "{{ hostvars[node].zone | default('eu-1') }}"
+        cluster_tag: "{{ cluster_name }}"
+        zone_tag: "{{ ('%s/%s' | format(cluster_tag, zone)) }}"
+        backbone_tag: "{{ ('backbone/%s' | format(cluster_name)) if node in backbone_nodes else false }}"
+        backbone_zone_tag: "{{ ('%s/%s' | format(backbone_tag, zone)) if backbone_tag else false }}"
+        new_tags: "{{ [cluster_tag, backbone_tag, zone_tag, backbone_zone_tag] | select() }}"
       kubernetes.core.k8s:
         state: patched
         api_version: longhorn.io/v1beta2
         kind: Node
         namespace: longhorn-system
-        name: "{{ lhn_name }}"
+        name: "{{ node }}"
         definition:
           spec:
-            tags: "{{ (existing_tags + [cluster_name]) | unique | list }}"
+            tags: "{{ (existing_tags + new_tags) | unique | list }}"
       register: lhn_patch_result
       retries: 6 # Longhorn CRD webhook tends to be unavailable at times.
       delay: 20

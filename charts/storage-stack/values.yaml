@@ -2,8 +2,13 @@ host: ""
 
 cluster_name: ""
 
-default_replicas: 2
+backbone_replicas: 2
 encrypt_default: false
+
+zones: {}
+# zone-name-1:
+#   replicas: 2
+#   backbone: true
 
 vcluster: false
 

@@ -1,14 +1,25 @@
-- name: Check whether whether control nodes were given explicitly
+- name: Determine the backbone nodes
+  vars:
+    backbone_nodes: "{{ hostvars | dict2items | selectattr('value.backbone') | map(attribute='key') }}"
+    default_backbone_nodes: "{{ hostvars | dict2items | selectattr('value.backbone', '!=', false) | map(attribute='key') }}"
   ansible.builtin.set_fact:
-    control_nodes_given: "{{ control_nodes | length > 0 }}"
+    backbone_nodes: "{{ backbone_nodes | default(default_backbone_nodes) }}"
 
-- name: Determine the main control host (first to join the cluster)
+- name: Determine the control nodes
   ansible.builtin.set_fact:
-    main_control_node: "{{ control_nodes_given | ternary(control_nodes[0], groups['all'][0]) }}"
+    control_nodes: "{{ hostvars | dict2items | selectattr('value.control') | map(attribute='key') }}"
+
+- name: Set control nodes to default, if none given
+  ansible.builtin.set_fact:
+    control_nodes: "{{ control_nodes if control_nodes | length > 0 else [backbone_nodes | first] }}"
 
 - name: Check whether this host is supposed to be a control node
   ansible.builtin.set_fact:
-    control_node: "{{ inventory_hostname in control_nodes or inventory_hostname == main_control_node }}"
+    control: "{{ control or inventory_hostname in control_nodes }}"
+
+- name: Set hostname to node name (inventory name)
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}"
 
 - name: Ensure all required system packages are installed
   block:
@@ -150,7 +161,7 @@
         mode: "0700"
 
     - name: Install k3s on first node and download config
-      when: "inventory_hostname == main_control_node"
+      when: "inventory_hostname == control_nodes[0]"
       block:
         - name: Run k3s install script for first control node
           ansible.builtin.command:
@@ -168,7 +179,7 @@
             flat: true
 
     - name: Upload config and join additional node
-      when: "inventory_hostname != main_control_node"
+      when: "inventory_hostname != control_nodes[0]"
       block:
         - name: Ensure permanent config dir exists
           ansible.builtin.file:

@@ -1,0 +1,16 @@
+node-0:
+  ansible_host: 0.0.0.0
+  control: true # Explicitly set as control node.
+  ingress: true # Explicitly set as ingress node.
+node-1:
+  ansible_host: 1.1.1.1
+  control: true # Explicitly set as control node.
+node-2:
+  ansible_host: 2.2.2.2
+  control: true # Explicitly set as control node.
+node-3:
+  ansible_host: 3.3.3.3
+  storage: false # Explicitly exclude as storage node.
+node-4:
+  ansible_host: 4.4.4.4
+  backbone: false # Explicitly exclude from backbone.
