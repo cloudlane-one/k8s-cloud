@@ -628,9 +628,13 @@
         namespace: default
         annotations:
           nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-          nginx.ingress.kubernetes.io/ssl-passthrough: "true"
           nginx.ingress.kubernetes.io/ssl-redirect: "true"
+          kubernetes.io/tls-acme: "true"
       spec:
+        tls:
+          - hosts:
+              - "{{ k8s_api_host }}"
+            secretName: k8s-api-cert
         rules:
           - host: "{{ k8s_api_host }}"
             http:
