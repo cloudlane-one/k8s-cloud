@@ -1,7 +1,8 @@
 - name: Determine the backbone nodes
   vars:
-    backbone_nodes: "{{ hostvars | dict2items | selectattr('value.backbone') | map(attribute='key') }}"
-    default_backbone_nodes: "{{ hostvars | dict2items | selectattr('value.backbone', '!=', false) | map(attribute='key') }}"
+    backbone_nodes: "{{ hostvars | dict2items | selectattr('value.backbone', 'defined') | selectattr('value.backbone') | map(attribute='key') }}"
+    truthy_backbone_nodes: "{{ hostvars | dict2items | selectattr('value.backbone', 'defined') | selectattr('value.backbone', '!=', false) | map(attribute='key') }}"
+    default_backbone_nodes: "{{ hostvars | dict2items | selectattr('value.backbone', 'undefined') | map(attribute='key') | union(truthy_backbone_nodes) }}"
   ansible.builtin.set_fact:
     backbone_nodes: "{{ backbone_nodes | default(default_backbone_nodes) }}"
 

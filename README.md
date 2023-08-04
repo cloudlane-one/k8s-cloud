@@ -47,6 +47,7 @@ The cluster set up by this repo consists of a multitude of open-source projects,
 - Observability: [Kubernetes-Dashboard](https://github.com/kubernetes/dashboard) + [Prometheus](https://github.com/prometheus/prometheus) + [AlertManager](https://github.com/prometheus/alertmanager) + [Node-Exporter](https://github.com/prometheus/node_exporter) + [Loki](https://github.com/grafana/loki) + [Grafana](https://github.com/grafana/grafana)
 - Cluster Backups: [Velero](https://github.com/vmware-tanzu/velero)
 - GitOps: [FluxCD](https://github.com/fluxcd/flux2) + [Weave Gitops](https://github.com/weaveworks/weave-gitops)
+- Automatic, rolling k8s upgrades: [System Upgrade Controller](https://github.com/rancher/system-upgrade-controller)
 
 ## Setup
 
@@ -87,7 +88,13 @@ Copy the template hosts file `./hosts.yaml` to `./$CLUSTER_NAME.hosts.yaml` with
 
 #### Backbone hosts
 
-By default, all hosts in `./$CLUSTER_NAME.hosts.yaml` are taken to be backbone nodes, meaning they have a close connection to the internet backbone and thus low latency and high bandwith between each other over WAN. This is important especially for distributed storage. To exclude hosts with slower connections, set `backbone=false` on them, or to only include a subset of hosts into the backbone, set `backbone=true` on the subset.
+Backbone hosts are node hosts which have a direct and strong connection to the main network of your cluster and thus have low latency and high bandwith over that network. This is important especially for distributed storage.
+
+This main network could either be the WAN, aka the public internet, or the LAN network, where the majority of your hosts reside. Latency between all backbone nodes should be 100ms or less and bandwidth should be at least 1Gbps (up and down).
+
+> Note that `backbone` does not make any statement about failure domains or availability zones. If you want to build a hierarchy of zones, please add `region` and `zone` labels to your hosts.
+
+By default, all hosts in `./$CLUSTER_NAME.hosts.yaml` are taken to be backbone nodes. To exclude hosts with slower connections, set `backbone=false` on them, or to only include a subset of hosts into the backbone, set `backbone=true` on the subset.
 
 #### Control plane hosts
 
@@ -134,10 +141,6 @@ If you want to restore from a full-cluster backup, simply append `-e restore_fro
 For cluster operations, which do not change the set of nodes, this playbook isn't required. You can use `kubectl` or specific CLI tools relying on `kubectl` to perform these operations.
 
 `kubectl` is automatically installed and configured on all master nodes of the cluster. So best just `ssh` into one of them and perform below operations from there.
-
-### Kubernetes Version Upgrade
-
-This playbook installs Rancher's [System Upgrade Controller](https://github.com/rancher/system-upgrade-controller). In order to perform an upgrade via this controller, you need to create and apply one or more `Plan` CRDs. Please follow the official [Rancher instructions](https://docs.k3s.io/upgrades/automated#configure-plans) to learn how to do this.
 
 ### Manual Full-Cluster Backups
 

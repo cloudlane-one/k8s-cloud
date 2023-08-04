@@ -1,6 +1,6 @@
 - name: Determine the control nodes
   ansible.builtin.set_fact:
-    control_nodes: "{{ hostvars | dict2items | selectattr('value.control') | map(attribute='key') }}"
+    control_nodes: "{{ hostvars | dict2items | selectattr('value.control', 'defined') | selectattr('value.control') | map(attribute='key') }}"
 
 - name: Set control nodes to default, if none given
   ansible.builtin.set_fact:
@@ -8,7 +8,7 @@
 
 - name: Check whether this host is supposed to be a control node
   ansible.builtin.set_fact:
-    control: "{{ control or inventory_hostname in control_nodes }}"
+    control: "{{ (control is defined and control) or inventory_hostname in control_nodes }}"
 
 - name: Uninstall k3s server
   when: "control"

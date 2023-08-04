@@ -6,9 +6,12 @@ backbone_replicas: 2
 encrypt_default: false
 
 zones: {}
+# region-name-1:
+#   replicas: 2
+#   backbone_only: true
 # zone-name-1:
 #   replicas: 2
-#   backbone: true
+#   backbone_only: true
 
 vcluster: false
 
