@@ -5,12 +5,14 @@ vpn-auth: "name=tailscale,joinKey={{ tailscale_auth_key }},controlServerURL={{ t
 vpn-auth: "name=tailscale,joinKey={{ tailscale_auth_key }}"
 {% endif %}
 {% endif %}
-node-external-ip: "{{ ansible_hostname }}"
+{% if ansible_host is not ansible.utils.private %}
+node-external-ip: "{{ ansible_host }}"
+{% endif %}
 kubelet-arg:
   - "node-ip=0.0.0.0"
-  - "system-reserved=cpu=200m,memory=300Mi,ephemeral-storage=2Gi"
   - "eviction-hard=memory.available<100Mi,nodefs.available<5%"
   - "eviction-soft=memory.available<300Mi,nodefs.available<10%"
   - "eviction-soft-grace-period=memory.available=2m0s,nodefs.available=10m0s"
   - "eviction-max-pod-grace-period=180"
-  - "enforce-node-allocatable=pods,kube-reserved"
+  # - "system-reserved-cgroup=/system.slice"
+  # - "enforce-node-allocatable=pods,system-reserved"

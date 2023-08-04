@@ -1,15 +1,3 @@
-- name: Determine the control nodes
-  ansible.builtin.set_fact:
-    control_nodes: "{{ hostvars | dict2items | selectattr('value.control', 'defined') | selectattr('value.control') | map(attribute='key') }}"
-
-- name: Set control nodes to default, if none given
-  ansible.builtin.set_fact:
-    control_nodes: "{{ control_nodes if control_nodes | length > 0 else [hostvars.keys() | list | first] }}"
-
-- name: Check whether this host is supposed to be a control node
-  ansible.builtin.set_fact:
-    control: "{{ (control is defined and control) or inventory_hostname in control_nodes }}"
-
 - name: Uninstall k3s server
   when: "control"
   ansible.builtin.command: /usr/local/bin/k3s-uninstall.sh
@@ -19,3 +7,15 @@
   when: "not control"
   ansible.builtin.command: /usr/local/bin/k3s-agent-uninstall.sh
   changed_when: true
+
+- name: Ensure Tailscale is uninstalled
+  when: "tailscale.enabled"
+  ansible.builtin.package:
+    name: tailscale
+    state: absent
+
+- name: Ensure Tailscale state is removed
+  when: "tailscale.enabled"
+  ansible.builtin.file:
+    path: /var/lib/tailscale/tailscaled.state
+    state: absent

@@ -49,6 +49,14 @@ The cluster set up by this repo consists of a multitude of open-source projects,
 - GitOps: [FluxCD](https://github.com/fluxcd/flux2) + [Weave Gitops](https://github.com/weaveworks/weave-gitops)
 - Automatic, rolling k8s upgrades: [System Upgrade Controller](https://github.com/rancher/system-upgrade-controller)
 
+## Required resources
+
+- One or more linux machines managed by systemd, to which you have root access
+- A domain managed by Digitalocean and an access token for the Digitalocean API (more providers to be supported in the future)
+- Credentials to an SMTP server to send automatic emails from
+- Credentials to an existing, empty S3 bucket
+- Optional: Tailscale account and credentials
+
 ## Setup
 
 > How to setup a k8s production cluster on bare Linux hosts in 4 steps.
@@ -123,7 +131,7 @@ To setup all you provided hosts as kubernetes nodes and join them into a single 
 
 ```bash
 ansible-playbook setup.yaml \
-   -i $CLUSTER_NAME.hosts.ini \
+   -i $CLUSTER_NAME.hosts.yaml \
    -e @$CLUSTER_NAME.config.yaml \
    -e @$CLUSTER_NAME.secrets.yaml
 ```

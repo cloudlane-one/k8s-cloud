@@ -1,3 +1,2 @@
 kubelet-arg+:
-  - "kube-reserved=cpu=200m,memory=800Mi,ephemeral-storage=2Gi"
-  - "kube-reserved-cgroup=/system.slice/k3s-agent.service"
+  - "system-reserved=cpu=0.5,memory=1Gi,ephemeral-storage=10Gi"

@@ -8,27 +8,76 @@
     - role: auto-trust
       when: "(auto_trust_remotes is defined) and auto_trust_remotes and (auto_trust_remotes != 'false')"
 
+- name: Determine host groups
+  tags: infra
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Retrieve given host roles
+      ansible.builtin.set_fact:
+        backbone_hosts: "{{ hostvars | dict2items | selectattr('value.backbone', 'defined') | selectattr('value.backbone') | map(attribute='key') }}"
+        control_hosts: "{{ hostvars | dict2items | selectattr('value.control', 'defined') | selectattr('value.control') | map(attribute='key') }}"
+        ingress_hosts: "{{ hostvars | dict2items | selectattr('value.ingress', 'defined') | selectattr('value.ingress') | map(attribute='key') }}"
+        storage_hosts: "{{ hostvars | dict2items | selectattr('value.storage', 'defined') | selectattr('value.storage') | map(attribute='key') }}"
+
+    - name: Set host roles to default, if not customized
+      vars:
+        tru_bb_nodes: "{{ hostvars | dict2items | selectattr('value.backbone', 'defined') | selectattr('value.backbone', '!=', false) | map(attribute='key') }}"
+        default_backbone_hosts: "{{ hostvars | dict2items | selectattr('value.backbone', 'undefined') | map(attribute='key') | union(tru_bb_nodes) }}"
+        first_backbone_node: "{{ backbone_hosts | default(default_backbone_hosts) | first }}"
+        tru_strg_nodes: "{{ hostvars | dict2items | selectattr('value.storage', 'defined') | selectattr('value.storage', '!=', false) | map(attribute='key') }}"
+        default_storage_hosts: "{{ hostvars | dict2items | selectattr('value.storage', 'undefined') | map(attribute='key') | union(tru_strg_nodes) }}"
+      ansible.builtin.set_fact:
+        backbone_hosts: "{{ backbone_hosts if backbone_hosts | length > 0 else default_backbone_hosts }}"
+        control_hosts: "{{ control_hosts if control_hosts | length > 0 else [first_backbone_node] }}"
+        ingress_hosts: "{{ ingress_hosts if ingress_hosts | length > 0 else [first_backbone_node] }}"
+        storage_hosts: "{{ storage_hosts if storage_hosts | length > 0 else default_storage_hosts }}"
+
+    - name: Add host to backbone_hosts group
+      loop: "{{ backbone_hosts }}"
+      ansible.builtin.add_host:
+        name: "{{ item }}"
+        groups: backbone_hosts
+
+    - name: Add host to control_hosts group
+      loop: "{{ control_hosts }}"
+      ansible.builtin.add_host:
+        name: "{{ item }}"
+        groups: control_hosts
+
+    - name: Add host to ingress_hosts group
+      loop: "{{ ingress_hosts }}"
+      ansible.builtin.add_host:
+        name: "{{ item }}"
+        groups: ingress_hosts
+
+    - name: Add host to storage_hosts group
+      loop: "{{ storage_hosts }}"
+      ansible.builtin.add_host:
+        name: "{{ item }}"
+        groups: storage_hosts
+
 - name: Run setup for all nodes
   tags: nodes
   hosts: all
   become: true
   vars:
-    control_nodes: "{{ groups['control_nodes'] | default([]) }}"
+    control: "{{ 'control_hosts' in group_names }}"
+    main_control_node: "{{ groups['control_hosts'][0] }}"
   roles:
     - role: node
       when: "not vcluster"
-  tasks:
-    - name: Add first host to control_nodes group, if group wasn't explicitly created
-      when: "'control_nodes' not in groups and inventory_hostname == groups['all'][0]"
-      ansible.builtin.add_host:
-        name: "{{ inventory_hostname }}"
-        groups: control_nodes
 
 - name: Setup infrastructure via kubectl from one of the control hosts
   tags: infra
-  hosts: control_nodes
+  hosts: control_hosts
   run_once: true
   become: true
+  vars:
+    cluster_nodes: "{{ groups['all'] }}"
+    backbone_nodes: "{{ groups['backbone_hosts'] }}"
+    ingress_nodes: "{{ groups['ingress_hosts'] }}"
+    storage_nodes: "{{ groups['storage_hosts'] }}"
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   roles:

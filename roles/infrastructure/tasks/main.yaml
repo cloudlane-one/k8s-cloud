@@ -9,22 +9,6 @@
     registered_domain: "{{ main_name }}{{ suffix }}"
     host_kubeconfig: "{{ ansible_env.KUBECONFIG }}"
     kubeconfig: "{{ ansible_env.KUBECONFIG }}"
-    cluster_nodes: "{{ hostvars.keys() | list }}"
-    backbone_nodes: "{{ hostvars | dict2items | selectattr('value.backbone', 'defined') | selectattr('value.backbone') | map(attribute='key') }}"
-    ingress_nodes: "{{ hostvars | dict2items | selectattr('value.ingress', 'defined') | selectattr('value.ingress') | map(attribute='key') }}"
-    storage_nodes: "{{ hostvars | dict2items | selectattr('value.storage', 'defined') | selectattr('value.storage') | map(attribute='key') }}"
-
-- name: Set node roles to default, if not customized
-  vars:
-    truthy_bb_nodes: "{{ hostvars | dict2items | selectattr('value.backbone', 'defined') | selectattr('value.backbone', '!=', false) | map(attribute='key') }}"
-    default_backbone_nodes: "{{ hostvars | dict2items | selectattr('value.backbone', 'undefined') | map(attribute='key') | union(truthy_bb_nodes) }}"
-    first_backbone_node: "{{ backbone_nodes | default(default_backbone_nodes) | first }}"
-    truthy_strg_nodes: "{{ hostvars | dict2items | selectattr('value.storage', 'defined') | selectattr('value.storage', '!=', false) | map(attribute='key') }}"
-    default_storage_nodes: "{{ hostvars | dict2items | selectattr('value.storage', 'undefined') | map(attribute='key') | union(truthy_strg_nodes) }}"
-  ansible.builtin.set_fact:
-    backbone_nodes: "{{ backbone_nodes | default(default_backbone_nodes) }}"
-    ingress_nodes: "{{ ingress_nodes | default([first_backbone_node]) }}"
-    storage_nodes: "{{ storage_nodes | default(default_storage_nodes) }}"
 
 - name: Print domain info
   ansible.builtin.debug:
@@ -60,7 +44,7 @@
 
     - name: Add topology labels to inventory node
       loop: "{{ cluster_nodes }}"
-      var:
+      vars:
         region: "{{ hostvars[item].region | default('eu') }}"
         zone: "{{ hostvars[item].zone | default('eu-1') }}"
       kubernetes.core.k8s:
@@ -373,7 +357,7 @@
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
   block:
     - name: Get list of current Longhorn node tags
-      loop: "{{ storage_node_names }}"
+      loop: "{{ storage_nodes }}"
       kubernetes.core.k8s_info:
         api_version: longhorn.io/v1beta2
         kind: Node
@@ -396,12 +380,12 @@
         region: "{{ hostvars[node].region | default('eu') }}"
         zone: "{{ hostvars[node].zone | default('eu-1') }}"
         cluster_tag: "{{ cluster_name }}"
-        region_tag: "{{ ('%s/%s' | format(cluster_tag, region)) }}"
-        zone_tag: "{{ ('%s/%s' | format(cluster_tag, zone)) }}"
-        backbone_tag: "{{ ('backbone/%s' | format(cluster_name)) if node in backbone_nodes else false }}"
+        region_tag: "{{ ('%s.%s' | format(region, cluster_tag)) }}"
+        zone_tag: "{{ ('%s.%s' | format(zone, cluster_tag)) }}"
+        backbone_tag: "{{ ('backbone.%s' | format(cluster_tag)) if node in backbone_nodes else false }}"
         # Assuming here that regions and zones do not share names.
-        backbone_region_tag: "{{ ('%s/%s' | format(backbone_tag, region)) if backbone_tag else false }}"
-        backbone_zone_tag: "{{ ('%s/%s' | format(backbone_tag, zone)) if backbone_tag else false }}"
+        backbone_region_tag: "{{ ('backbone.%s' | format(region_tag)) if backbone_tag else false }}"
+        backbone_zone_tag: "{{ ('backbone.%s' | format(zone_tag)) if backbone_tag else false }}"
         new_tags: "{{ [cluster_tag, backbone_tag, region_tag, zone_tag, backbone_region_tag, backbone_zone_tag] | select() }}"
       kubernetes.core.k8s:
         state: patched
@@ -457,17 +441,11 @@
         oauth2_proxy_host: "{{ subdomains.oauth2_proxy }}.{{ domain }}"
         admin_group: "cluster-admins"
         s3: "{{ backups.s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
-      wait_on:
-        - kind: DaemonSet
-          name: longhorn-csi-plugin
 
     - name: backup-stack
       namespace: backup-system
       chart_values:
         s3: "{{ backups.s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
-      wait_on:
-        - kind: Deployment
-          name: velero
 
 - name: Restore cluster from backup
   when: "backups.restore.enabled"
@@ -483,7 +461,7 @@
         name: "{{ backups.restore.backup_name }}"
       register: backup_get_result
       retries: 10 # Velero may need time to load the backup from s3.
-      delay: 10
+      delay: 20
       until: "backup_get_result.resources | length > 0"
 
     - name: Check if restoration for given backup already exists
@@ -539,17 +517,11 @@
         base_repo: "{{ base_repo }}"
         base_branch: "{{ base_branch }}"
         letsencrypt_staging: "{{ letsencrypt_staging }}"
-      wait_on:
-        - kind: Deployment
-          name: cert-manager-webhook
 
     - name: ingress-stack
       namespace: ingress-system
       chart_values:
         cluster_name: "{{ cluster_name }}"
-      wait_on:
-        - kind: Deployment
-          name: inginx-ctl
 
     - name: control-stack
       namespace: kube-system
@@ -604,9 +576,6 @@
         node_endpoints: "{{ groups['all'] }}"
         letsencrypt_staging: "{{ letsencrypt_staging }}"
         k3s: true
-      wait_on:
-        - kind: Deployment
-          name: prometheus-kube-prometheus-stack-prometheus
 
     - name: cicd-stack
       namespace: flux-system
