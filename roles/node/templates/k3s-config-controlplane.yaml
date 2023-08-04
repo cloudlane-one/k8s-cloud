@@ -23,4 +23,3 @@ kube-scheduler-arg:
 tls-san: "{{ subdomains.k8s_api }}.{{ domain }}"
 kubelet-arg+:
   - "kube-reserved=cpu=1.3,memory=1.6Gi,ephemeral-storage=8Gi"
-  - "kube-reserved-cgroup=k3s.service"

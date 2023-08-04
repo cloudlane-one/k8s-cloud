@@ -1,0 +1,16 @@
+- name: Run k3s under kubesystem.slice cgroup
+  ansible.builtin.include_tasks:
+    file: k3s-cgroup-config.yaml
+    apply:
+      vars:
+        service: "{{ control | ternary('k3s', 'k3s-agent') }}"
+
+- name: Reboot host
+  ansible.builtin.reboot:
+
+- name: Restart k3s
+  vars:
+    service: "{{ control | ternary('k3s', 'k3s-agent') }}"
+  ansible.builtin.systemd:
+    state: restarted
+    name: "{{ service }}.service"

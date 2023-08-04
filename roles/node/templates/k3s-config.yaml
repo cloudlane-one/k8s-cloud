@@ -14,5 +14,4 @@ kubelet-arg:
   - "eviction-soft=memory.available<300Mi,nodefs.available<10%"
   - "eviction-soft-grace-period=memory.available=2m0s,nodefs.available=10m0s"
   - "eviction-max-pod-grace-period=180"
-  - "enforce-node-allocatable=pods,kube-reserved"
   - "system-reserved=cpu=200m,memory=400Mi,ephemeral-storage=8Gi"
