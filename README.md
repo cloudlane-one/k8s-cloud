@@ -152,7 +152,7 @@ For cluster operations, which do not change the set of nodes, this playbook isn'
 
 ### Manual Full-Cluster Backups
 
-This playbook installs [Velero](https://velero.io/) for managing full-cluster backups including persistent volumes. By default, a full backup is performed once a day and saved to the dafault backup location provided via infrastructure chart values. Nevertheless you might want to manually perform such a backup in between, for instance to migrate the cluster.
+This playbook installs [Velero](https://velero.io/) for managing full-cluster backups including persistent volumes. By default, a full backup is performed once a day and saved to the dafault backup location provided via cluster chart values. Nevertheless you might want to manually perform such a backup in between, for instance to migrate the cluster.
 
 To do so, first [install the velero CLI](https://velero.io/docs/v1.9/basic-install/#install-the-cli) (just the CLI!) on a machine with kubectl-access to the cluster (e.g. one of the masters) and then simply type `velero backup create <BACKUP-NAME>`. The backup will then be saved under given name in the default backup storage location along with all automatic backups.
 

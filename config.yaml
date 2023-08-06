@@ -83,7 +83,7 @@ clear_known_hosts: false
 # Provision SSL certificates from letsencrypt-staging instead of production (to avoid API rate-limiting)
 letsencrypt_staging: false
 
-# Git repo to connect to for infrastructure updates via gitops.
+# Git repo to connect to for cluster updates via gitops.
 base_repo: https://github.com/cloudlane-one/k8s-cloud
 # Branch of repo to poll for updates.
 base_branch: main

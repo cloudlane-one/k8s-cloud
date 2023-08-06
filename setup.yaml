@@ -1,4 +1,4 @@
-- name: Perform localhost setup steps, if according flags are set
+- name: Perform ssh setup steps, if according flags are set
   tags: nodes
   hosts: localhost
   connection: local
@@ -9,7 +9,9 @@
       when: "(auto_trust_remotes is defined) and auto_trust_remotes and (auto_trust_remotes != 'false')"
 
 - name: Determine host groups
-  tags: infra
+  tags:
+    - nodes
+    - cluster
   hosts: localhost
   connection: local
   tasks:
@@ -68,8 +70,8 @@
     - role: node
       when: "not vcluster"
 
-- name: Setup infrastructure via kubectl from one of the control hosts
-  tags: infra
+- name: Setup cluster via kubectl from one of the control hosts
+  tags: cluster
   hosts: control_hosts
   run_once: true
   become: true
@@ -81,4 +83,4 @@
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   roles:
-    - role: infrastructure
+    - role: cluster
