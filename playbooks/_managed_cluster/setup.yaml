@@ -76,12 +76,15 @@
   run_once: true
   become: true
   vars:
-    cluster_nodes: "{{ groups['all'] }}"
-    backbone_nodes: "{{ groups['backbone_hosts'] }}"
-    ingress_nodes: "{{ groups['ingress_hosts'] }}"
-    storage_nodes: "{{ groups['storage_hosts'] }}"
+    nodes:
+      cluster: "{{ groups['all'] }}"
+      backbone: "{{ groups['backbone_hosts'] }}"
+      ingress: "{{ groups['ingress_hosts'] }}"
+      storage: "{{ groups['storage_hosts'] }}"
   pre_tasks:
     - name: Load cluster config values
       ansible.builtin.include_vars: config.yaml
+    - name: Load cluster secrets
+      ansible.builtin.include_vars: secrets.yaml
   roles:
     - role: cluster

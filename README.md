@@ -59,90 +59,26 @@ The cluster set up by this repo consists of a multitude of open-source projects,
 
 ## Setup
 
-> How to setup a k8s production cluster on bare Linux hosts in 4 steps.
-
-### 1. Setup your workstation
+> How to setup a k8s production cluster on bare Linux hosts in under 15 minutes.
 
 The Ansible playbook code in here is meant to be run from a Linux workstation. On Windows you may use WSL.
 
-Make sure your workstation can connext and authenticate via ssh to all of the remote hosts, which are to be setup as the nodes of your cluster.
+Make sure your workstation can connect and authenticate via ssh to all of the remote hosts, which are to be setup as the nodes of your cluster.
 
 These system dependencies are to be installed on your local machine.
 
 - [Python](https://www.python.org/downloads/)
 - [Poetry](https://python-poetry.org)
 
-Then clone this repo to your workstation and `cd` into its directory (or open the directory in an IDE like VSCode).
-
-### 2. Install dependencies
-
-From the repo folder run following bash code to install all Python deps into a virtual environment:
+Then clone this repo to your workstation, copy the playbook template `playbooks/_managed_cluster` and switch dirs into it:
 
 ```bash
-poetry install
+cp ./playbooks/_managed_cluster ./playbooks/$CLUSTER_NAME
+cd ./playbooks/$CLUSTER_NAME
 ```
 
-Then run this to install Ansible-specific dependencies:
-
-```bash
-ansible-galaxy install -r requirements.yaml
-```
-
-### 3. Provide configuration
-
-#### Hosts
-
-Copy the template hosts file `./hosts.yaml` to `./$CLUSTER_NAME.hosts.yaml` within the project directory. Replace `$CLUSTER_NAME` with an arbitrary alphanumeric name for your cluster.
-
-#### Backbone hosts
-
-Backbone hosts are node hosts which have a direct and strong connection to the main network of your cluster and thus have low latency and high bandwith over that network. This is important especially for distributed storage.
-
-This main network could either be the WAN, aka the public internet, or the LAN network, where the majority of your hosts reside. Latency between all backbone nodes should be 100ms or less and bandwidth should be at least 1Gbps (up and down).
-
-> Note that `backbone` does not make any statement about failure domains or availability zones. If you want to build a hierarchy of zones, please add `region` and `zone` labels to your hosts.
-
-By default, all hosts in `./$CLUSTER_NAME.hosts.yaml` are taken to be backbone nodes. To exclude hosts with slower connections, set `backbone=false` on them, or to only include a subset of hosts into the backbone, set `backbone=true` on the subset.
-
-#### Control plane hosts
-
-By default, the first backbone host is taken as the sole control plane host. If you want to change this bevavior, set the value `control=true` on a subset of hosts.
-
-> It is recommended to have either one or at least 3 control plane nodes. Make sure you store the hosts file somewhere safe.
-> Please also set `control nodes` for vclusters. This has no effect on where the control plane pods run, but it tells Ansible on which machines it can execute administrative tasks.
-
-#### Ingress hosts
-
-By default, the first backbone host is taken as the sole ingress host. If you want to change this bevavior, set the value `ingress=true` on a subset of hosts.
-
-#### Storage hosts
-
-By default, all hosts are taken as storage hosts, yet non-backbone hosts are excluded from distributed storage for performance reasons, hence they can only host single-replica, local volumes. To exclude hosts from being used for storage at all, set `storage=false` on them, or to only include a subset of hosts for storage, set `storage=true` on the subset.
-
-#### Cluster config and secrets
-
-Then copy the default cluster config file `./roles/cluster/vars/config.yaml` to `./$CLUSTER_NAME.config.yaml` and the cluster secrets template file `./roles/cluster/vars/secrets.yaml` to `./$CLUSTER_NAME.secrets.yaml`. Fill in the required values and change or delete the optional ones to your liking. Replace `$CLUSTER_NAME` with the chosen name for your cluster. Make sure you store these files somewhere safe.
-
-### 4. Setup the cluster
-
-> Please either manually make sure that all your nodes are listed as trusted in `known_hosts` or append `-e auto_trust_remotes=true` to below command, otherwise you will have to type `yes` and hit Enter for each of your hosts at the beginning of the playbook run.
-
-To setup all you provided hosts as kubernetes nodes and join them into a single cluster, run:
-
-```bash
-ansible-playbook setup.yaml \
-   -i $CLUSTER_NAME.hosts.yaml \
-   -e @$CLUSTER_NAME.config.yaml \
-   -e @$CLUSTER_NAME.secrets.yaml
-```
-
-Replace `$CLUSTER_NAME` with the chosen name for your cluster.
-
-> If you recently rebuilt the OS on any of the hosts and thereby lost its public key, make sure to also update (or at least delete) its `known_hosts` entry, otherwise Ansible will throw an error. You can also append `-e clear_known_hosts=true` to above command to delete the `known_hosts` entries for all hosts in the inventory before executing the setup.
-
-#### Restore from backup
-
-If you want to restore from a full-cluster backup, simply append `-e restore_from_backup=<BACKUP-NAME>` to above setup command.
+Replace `$CLUSTER_NAME` with an arbitrary alphanumeric name for your cluster.
+Continue with the steps described in the template's README.
 
 ## Operations
 
@@ -155,10 +91,6 @@ For cluster operations, which do not change the set of nodes, this playbook isn'
 This playbook installs [Velero](https://velero.io/) for managing full-cluster backups including persistent volumes. By default, a full backup is performed once a day and saved to the dafault backup location provided via cluster chart values. Nevertheless you might want to manually perform such a backup in between, for instance to migrate the cluster.
 
 To do so, first [install the velero CLI](https://velero.io/docs/v1.9/basic-install/#install-the-cli) (just the CLI!) on a machine with kubectl-access to the cluster (e.g. one of the masters) and then simply type `velero backup create <BACKUP-NAME>`. The backup will then be saved under given name in the default backup storage location along with all automatic backups.
-
-### Extending the cluster
-
-Simply add new node hosts to your `inventory.yaml` and re-run the setup playbook.
 
 ## Troubleshooting
 

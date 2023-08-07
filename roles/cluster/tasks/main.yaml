@@ -42,7 +42,7 @@
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
   block:
     - name: Add cluster label to inventory node
-      loop: "{{ cluster_nodes }}"
+      loop: "{{ nodes.cluster }}"
       kubernetes.core.k8s:
         state: patched
         kind: Node
@@ -52,7 +52,7 @@
             labels: "{{ {cluster_name: '1'} }}"
 
     - name: Add topology labels to inventory node
-      loop: "{{ cluster_nodes }}"
+      loop: "{{ nodes.cluster }}"
       vars:
         region: "{{ hostvars[item].region | default('eu') }}"
         zone: "{{ hostvars[item].zone | default('eu-1') }}"
@@ -67,7 +67,7 @@
               topology.kubernetes.io/zone: "{{ zone }}"
 
     - name: Add backbone label to inventory node
-      loop: "{{ backbone_nodes }}"
+      loop: "{{ nodes.backbone }}"
       kubernetes.core.k8s:
         state: patched
         kind: Node
@@ -78,7 +78,7 @@
               backbone: "1"
 
     - name: Add cluster ingress label to inventory node
-      loop: "{{ ingress_nodes }}"
+      loop: "{{ nodes.ingress }}"
       kubernetes.core.k8s:
         state: patched
         kind: Node
@@ -90,7 +90,7 @@
               svccontroller.k3s.cattle.io/lbpool: "{{ cluster_name }}"
 
     - name: Add cluster storage label to inventory node
-      loop: "{{ storage_nodes }}"
+      loop: "{{ nodes.storage }}"
       vars:
         storage_key: "{{ cluster_name }}-storage"
       kubernetes.core.k8s:
@@ -365,7 +365,7 @@
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
   block:
     - name: Get list of current Longhorn node tags
-      loop: "{{ storage_nodes }}"
+      loop: "{{ nodes.storage }}"
       kubernetes.core.k8s_info:
         api_version: longhorn.io/v1beta2
         kind: Node
@@ -390,7 +390,7 @@
         cluster_tag: "{{ cluster_name }}"
         region_tag: "{{ ('%s.%s' | format(region, cluster_tag)) }}"
         zone_tag: "{{ ('%s.%s' | format(zone, cluster_tag)) }}"
-        backbone_tag: "{{ ('backbone.%s' | format(cluster_tag)) if node in backbone_nodes else false }}"
+        backbone_tag: "{{ ('backbone.%s' | format(cluster_tag)) if node in nodes.backbone else false }}"
         # Assuming here that regions and zones do not share names.
         backbone_region_tag: "{{ ('backbone.%s' | format(region_tag)) if backbone_tag else false }}"
         backbone_zone_tag: "{{ ('backbone.%s' | format(zone_tag)) if backbone_tag else false }}"
