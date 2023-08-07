@@ -1,6 +1,6 @@
-{% if tailscale.enabled %}
-{% if tailscale.headscale_url %}
-vpn-auth: "name=tailscale,joinKey={{ tailscale_auth_key }},controlServerURL={{ tailscale.headscale_url }}"
+{% if config.tailscale.enabled %}
+{% if config.tailscale.headscale_url %}
+vpn-auth: "name=tailscale,joinKey={{ tailscale_auth_key }},controlServerURL={{ config.tailscale.headscale_url }}"
 {% else %}
 vpn-auth: "name=tailscale,joinKey={{ tailscale_auth_key }}"
 {% endif %}

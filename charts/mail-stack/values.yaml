@@ -10,11 +10,11 @@ hosts:
 
 oidc_client:
   idp_url: ""
-  id: ""
+  id: cluster-oidc
   secret:
-    namespace: null
-    name: ""
-    key: "secret"
+    namespace: sso-system
+    name: cluster-oidc
+    key: secret
 
 oauth2_proxy_host: ""
 

@@ -1,18 +1,18 @@
 - name: Set dynamic facts
   vars:
-    suffix: "{{ domain | community.dns.get_public_suffix }}"
-    main_name: "{{ domain | replace(suffix, '') | split('.') | last }}"
+    suffix: "{{ cluster.domain | community.dns.get_public_suffix }}"
+    main_name: "{{ cluster.domain | replace(suffix, '') | split('.') | last }}"
   ansible.builtin.set_fact:
-    k8s_api_host: "{{ subdomains.k8s_api }}.{{ domain }}"
+    k8s_api_host: "{{ cluster.subdomains.k8s_api }}.{{ cluster.domain }}"
     charts_dir: "{{ playbook_dir }}/charts"
-    cluster_name: "{{ domain | replace('.', '-') }}-cluster"
+    cluster_name: "{{ cluster.domain | replace('.', '-') }}-cluster"
     registered_domain: "{{ main_name }}{{ suffix }}"
     host_kubeconfig: "{{ ansible_env.KUBECONFIG }}"
     kubeconfig: "{{ ansible_env.KUBECONFIG }}"
 
-- name: Print domain info
+- name: Print cluster.domain info
   ansible.builtin.debug:
-    msg: "Setting up cluster '{{ cluster_name }}' for domain '{{ domain }}' on registered domain '{{ registered_domain }}'"
+    msg: "Setting up cluster '{{ cluster_name }}' for cluster.domain '{{ cluster.domain }}' on registered cluster.domain '{{ registered_domain }}'"
 
 - name: Switch to host cluster context via kubectl
   when: "host_cluster_name"
@@ -92,8 +92,8 @@
           metadata:
             labels: "{{ {storage_key: '1'} }}"
 
-- name: Ensure vcluster for domain exists and selected in kubeconfig
-  when: "vcluster"
+- name: Ensure vcluster for cluster.domain exists and selected in kubeconfig
+  when: "cluster.virtual"
   environment:
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
     KUBECONFIG: "{{ host_kubeconfig }}"
@@ -114,8 +114,7 @@
                 cluster_name: "{{ cluster_name }}"
                 host: "{{ k8s_api_host }}"
                 oidc_client:
-                  idp_url: "https://{{ subdomains.keycloak }}.{{ domain }}/realms/master"
-                  id: cluster-oidc
+                  idp_url: "https://{{ cluster.subdomains.keycloak }}.{{ cluster.domain }}/realms/master"
             kubeconfig: "{{ host_kubeconfig }}"
 
     - name: Wait for vcluster deployment to become ready
@@ -142,7 +141,7 @@
           - "--namespace={{ cluster_name }}"
           - "--local-port={{ vcluster_port }}"
           - "--update-current=false"
-          - "--kube-config=/tmp/virtual-kubeconfig.yaml"
+          - "--kube-config=/tmp/virtual-kubecluster.yaml"
           - "--kube-config-context-name={{ cluster_name }}"
       ansible.builtin.shell: "nohup vcluster connect vcluster {{ connect_flags | join(' ') }} </dev/null >/dev/null 2>&1 &"
       changed_when: true
@@ -159,7 +158,7 @@
 
     - name: Activate vcluster kubeconfig
       ansible.builtin.set_fact:
-        kubeconfig: /tmp/virtual-kubeconfig.yaml
+        kubeconfig: /tmp/virtual-kubecluster.yaml
 
     - name: Wait for vcluster coredns deployment to become available
       environment:
@@ -177,7 +176,7 @@
       vars:
         host_ctx: "{{ host_cluster_name | ternary(host_cluster_name, default_ctx) }}"
       ansible.builtin.set_fact:
-        ctx_name: "{{ vcluster | ternary(cluster_name, host_ctx) }}"
+        ctx_name: "{{ cluster.virtual | ternary(cluster_name, host_ctx) }}"
 
     - name: Use remote kubeconfig file as basis
       block:
@@ -185,12 +184,12 @@
           ansible.builtin.copy:
             remote_src: true
             src: "{{ kubeconfig }}"
-            dest: /tmp/public-kubeconfig.yaml
+            dest: /tmp/public-kubecluster.yaml
             mode: '0644'
 
         - name: List remote kubeconfig contexts
           environment:
-            KUBECONFIG: /tmp/public-kubeconfig.yaml
+            KUBECONFIG: /tmp/public-kubecluster.yaml
           ansible.builtin.command: "kubectl config get-contexts -o name"
           register: all_ctx
           changed_when: false
@@ -199,7 +198,7 @@
           loop: "{{ all_ctx.stdout_lines }}"
           when: "item != ctx_name"
           environment:
-            KUBECONFIG: /tmp/public-kubeconfig.yaml
+            KUBECONFIG: /tmp/public-kubecluster.yaml
           ansible.builtin.command: "kubectl config delete-context {{ item }}"
           changed_when: true
 
@@ -207,7 +206,7 @@
           loop: "{{ all_ctx.stdout_lines }}"
           when: "item != ctx_name"
           environment:
-            KUBECONFIG: /tmp/public-kubeconfig.yaml
+            KUBECONFIG: /tmp/public-kubecluster.yaml
           ansible.builtin.command: "kubectl config delete-cluster {{ item }}"
           changed_when: true
 
@@ -215,7 +214,7 @@
           loop: "{{ all_ctx.stdout_lines }}"
           when: "item != ctx_name"
           environment:
-            KUBECONFIG: /tmp/public-kubeconfig.yaml
+            KUBECONFIG: /tmp/public-kubecluster.yaml
           ansible.builtin.command: "kubectl config delete-user {{ item }}"
           changed_when: true
 
@@ -232,33 +231,33 @@
         - name: Copy local kubeconfig to remote
           ansible.builtin.copy:
             src: "{{ playbook_dir }}/{{ local_kubeconfig }}"
-            dest: /tmp/local-kubeconfig.yaml
+            dest: /tmp/local-kubecluster.yaml
             mode: '0644'
 
         - name: Delete existing context in local config
           environment:
-            KUBECONFIG: /tmp/local-kubeconfig.yaml
+            KUBECONFIG: /tmp/local-kubecluster.yaml
           ansible.builtin.command: "kubectl config delete-context {{ ctx_name }}"
           changed_when: true
           failed_when: false
 
         - name: Delete existing cluster in local config
           environment:
-            KUBECONFIG: /tmp/local-kubeconfig.yaml
+            KUBECONFIG: /tmp/local-kubecluster.yaml
           ansible.builtin.command: "kubectl config delete-cluster {{ ctx_name }}"
           changed_when: true
           failed_when: false
 
         - name: Delete existing user in local config
           environment:
-            KUBECONFIG: /tmp/local-kubeconfig.yaml
+            KUBECONFIG: /tmp/local-kubecluster.yaml
           ansible.builtin.command: "kubectl config delete-user {{ ctx_name }}"
           changed_when: true
           failed_when: false
 
         - name: Merge local kubeconfig with remote
           environment:
-            KUBECONFIG: "/tmp/public-kubeconfig.yaml:/tmp/local-kubeconfig.yaml"
+            KUBECONFIG: "/tmp/public-kubecluster.yaml:/tmp/local-kubecluster.yaml"
           ansible.builtin.command:
             argv:
               - kubectl
@@ -270,13 +269,13 @@
 
         - name: Save merged kubeconfig to file
           ansible.builtin.copy:
-            content: "{{ merged_kubeconfig.stdout }}"
-            dest: /tmp/public-kubeconfig.yaml
+            content: "{{ merged_kubecluster.stdout }}"
+            dest: /tmp/public-kubecluster.yaml
             mode: '0644'
 
     - name: Change server address of copied kubeconfig to public cluster FQN
       environment:
-        KUBECONFIG: /tmp/public-kubeconfig.yaml
+        KUBECONFIG: /tmp/public-kubecluster.yaml
       ansible.builtin.command:
         argv:
           - kubectl
@@ -288,8 +287,8 @@
 
     - name: Download kubeconfig file
       ansible.builtin.fetch:
-        src: /tmp/public-kubeconfig.yaml
-        dest: "{{ playbook_dir }}/kubeconfig.yaml"
+        src: /tmp/public-kubecluster.yaml
+        dest: "{{ playbook_dir }}/kubecluster.yaml"
         flat: true
 
 - name: Ensure GitOps via FluxCD is setup
@@ -329,9 +328,9 @@
             namespace: flux-system
           spec:
             interval: 1h
-            url: "{{ base_repo }}"
+            url: "{{ cluster.base_repo }}"
             ref:
-              branch: "{{ base_branch }}"
+              branch: "{{ cluster.base_branch }}"
 
     - name: Reconcile base git repo
       ansible.builtin.command: "flux reconcile source git base-repo -n flux-system"
@@ -401,7 +400,21 @@
       delay: 20
       until: "lhn_patch_result is not failed"
 
-- name: Ensure all required secrets exist
+- name: Store cluster config
+  environment:
+    K8S_AUTH_KUBECONFIG: "{{ kubeconfig }}"
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: cluster
+        namespace: kube-system
+      data:
+        cluster.yaml: "{{ ansible.builtin.to_yaml }}"
+
+- name: Store cluster secrets
   environment:
     K8S_AUTH_KUBECONFIG: "{{ kubeconfig }}"
   kubernetes.core.k8s:
@@ -410,18 +423,11 @@
       apiVersion: v1
       kind: Secret
       metadata:
-        name: "{{ item.name }}"
+        name: "{{ item.key }}"
         namespace: kube-system
       type: Opaque
-      data:
-        secret: "{{ vars[item.inventoryKey] | b64encode }}"
-  loop:
-    - inventoryKey: smtp_password
-      name: smtp
-    - inventoryKey: s3_access_key_secret
-      name: s3
-    - inventoryKey: external_dns_token
-      name: external-dns
+      stringData: "{{ item.value }}"
+  loop: "{{ secrets | dict2items }}"
 
 - name: Ensure pre-restore infrastructure is fully set up
   ansible.builtin.include_tasks:
@@ -436,21 +442,21 @@
     - name: storage-stack
       namespace: longhorn-system
       chart_values:
-        host: "{{ subdomains.longhorn }}.{{ domain }}"
+        host: "{{ cluster.subdomains.longhorn }}.{{ cluster.domain }}"
         cluster_name: "{{ cluster_name }}"
-        oauth2_proxy_host: "{{ subdomains.oauth2_proxy }}.{{ domain }}"
+        oauth2_proxy_host: "{{ cluster.subdomains.oauth2_proxy }}.{{ cluster.domain }}"
         admin_group: "cluster-admins"
-        s3: "{{ backups.s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
+        s3: "{{ cluster.backups.s3 }}"
 
     - name: backup-stack
       namespace: backup-system
       chart_values:
-        s3: "{{ backups.s3 | combine({'access_key_secret': {'name': 's3', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
+        s3: "{{ cluster.backups.s3 }}"
 
 - name: Restore cluster from backup
   when: "backups.restore.enabled"
   vars:
-    restore_name: "{{ backups.restore.backup_name | ternary(backups.restore.backup_name, backups.restore.schedule_name) }}"
+    restore_name: "{{ cluster.backups.restore.backup_name | ternary(backups.restore.backup_name, cluster.backups.restore.schedule_name) }}"
   block:
     - name: Wait for backup resource to be synced from s3
       when: "backups.restore.backup_name"
@@ -458,7 +464,7 @@
         api_version: velero.io/v1
         kind: Backup
         namespace: backup-system
-        name: "{{ backups.restore.backup_name }}"
+        name: "{{ cluster.backups.restore.backup_name }}"
       register: backup_get_result
       retries: 10 # Velero may need time to load the backup from s3.
       delay: 20
@@ -483,9 +489,9 @@
           - create
           - "{{ restore_name }}"
           - "--namespace=backup-system"
-          - "--from-schedule={{ backups.restore.backup_name | ternary('', backups.restore.schedule_name) }}"
-          - "--from-backup={{ backups.restore.backup_name }}"
-          - "--include-resources={{ backups.restore.included_resources | join(',') }}"
+          - "--from-schedule={{ cluster.backups.restore.backup_name | ternary('', cluster.backups.restore.schedule_name) }}"
+          - "--from-backup={{ cluster.backups.restore.backup_name }}"
+          - "--include-resources={{ cluster.backups.restore.included_resources | join(',') }}"
           - "--restore-volumes=true"
           - "--selector"
           - "owner notin (helm)"
@@ -513,10 +519,10 @@
     - name: cert-stack
       namespace: cert-system
       chart_values:
-        admin_email: "{{ mail.admin_address }}"
-        base_repo: "{{ base_repo }}"
-        base_branch: "{{ base_branch }}"
-        letsencrypt_staging: "{{ letsencrypt_staging }}"
+        admin_email: "{{ cluster.mail.admin_address }}"
+        base_repo: "{{ cluster.base_repo }}"
+        base_branch: "{{ cluster.base_branch }}"
+        letsencrypt_staging: "{{ cluster.letsencrypt_staging }}"
 
     - name: ingress-stack
       namespace: ingress-system
@@ -526,69 +532,55 @@
     - name: control-stack
       namespace: kube-system
       chart_values:
-        host: "{{ subdomains.k8s_dashboard }}.{{ domain }}"
-        oauth2_proxy_host: "{{ subdomains.oauth2_proxy }}.{{ domain }}"
+        host: "{{ cluster.subdomains.k8s_dashboard }}.{{ cluster.domain }}"
+        oauth2_proxy_host: "{{ cluster.subdomains.oauth2_proxy }}.{{ cluster.domain }}"
         admin_group: "cluster-admins"
 
     - name: dns-stack
       namespace: dns-system
       chart_values:
         domain: "{{ registered_domain }}"
-        token_secret:
-          namespace: kube-system
-          name: external-dns
-          key: secret
 
     - name: sso-stack
       namespace: sso-system
       chart_values:
-        domain: "{{ domain }}"
-        org: "{{ org }}"
+        domain: "{{ cluster.domain }}"
+        org: "{{ cluster.org }}"
         hosts:
-          keycloak: "{{ subdomains.keycloak }}.{{ domain }}"
-          authproxy: "{{ subdomains.oauth2_proxy }}.{{ domain }}"
+          keycloak: "{{ cluster.subdomains.keycloak }}.{{ cluster.domain }}"
+          authproxy: "{{ cluster.subdomains.oauth2_proxy }}.{{ cluster.domain }}"
         cluster_client:
           id: cluster-oidc
           redirect_uris:
-            - "https://{{ subdomains.grafana }}.{{ domain }}/login/generic_oauth"
-            - "https://{{ subdomains.weave_gitops }}.{{ domain }}/oauth2/callback"
-        smtp: "{{ mail.smtp | combine({'password_secret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
+            - "https://{{ cluster.subdomains.grafana }}.{{ cluster.domain }}/login/generic_oauth"
+            - "https://{{ cluster.subdomains.weave_gitops }}.{{ cluster.domain }}/oauth2/callback"
+        smtp: "{{ cluster.mail.smtp }}"
         admin_group: "cluster-admins"
-        admin_email: "{{ mail.admin_address }}"
-        letsencrypt_staging: "{{ letsencrypt_staging }}"
+        admin_email: "{{ cluster.mail.admin_address }}"
+        letsencrypt_staging: "{{ cluster.letsencrypt_staging }}"
 
     - name: telemetry-stack
       namespace: telemetry-system
       chart_values:
-        domain: "{{ domain }}"
-        org: "{{ org }}"
-        host: "{{ subdomains.grafana }}.{{ domain }}"
+        domain: "{{ cluster.domain }}"
+        org: "{{ cluster.org }}"
+        host: "{{ cluster.subdomains.grafana }}.{{ cluster.domain }}"
         oidc_client:
-          idp_url: "https://{{ subdomains.keycloak }}.{{ domain }}/realms/master"
-          id: "cluster-oidc"
-          secret:
-            namespace: sso-system
-            name: cluster-oidc
-            key: secret
-        admin_email: "{{ mail.admin_address }}"
+          idp_url: "https://{{ cluster.subdomains.keycloak }}.{{ cluster.domain }}/realms/master"
+        admin_email: "{{ cluster.mail.admin_address }}"
         admin_group: "cluster-admins"
-        smtp: "{{ mail.smtp | combine({'password_secret': {'name': 'smtp', 'namespace': 'kube-system', 'key': 'secret'}}) }}"
+        smtp: "{{ cluster.mail.smtp }}"
         node_endpoints: "{{ groups['all'] }}"
-        letsencrypt_staging: "{{ letsencrypt_staging }}"
+        letsencrypt_staging: "{{ cluster.letsencrypt_staging }}"
         k3s: true
 
     - name: cicd-stack
       namespace: flux-system
       chart_values:
-        host: "{{ subdomains.weave_gitops }}.{{ domain }}"
+        host: "{{ cluster.subdomains.weave_gitops }}.{{ cluster.domain }}"
         oidc_client:
-          idp_url: "https://{{ subdomains.keycloak }}.{{ domain }}/realms/master"
-          id: "cluster-oidc"
-          secret:
-            namespace: sso-system
-            name: cluster-oidc
-            key: secret
-        letsencrypt_staging: "{{ letsencrypt_staging }}"
+          idp_url: "https://{{ cluster.subdomains.keycloak }}.{{ cluster.domain }}/realms/master"
+        letsencrypt_staging: "{{ cluster.letsencrypt_staging }}"
 
 - name: Expose k8s API via Ingress
   environment:
@@ -621,10 +613,6 @@
                         number: 443
                   path: /
                   pathType: ImplementationSpecific
-  register: k8s_ingress_result
-  retries: 6 # NGINX webhook tends to be unavailable at times.
-  delay: 20
-  until: "k8s_ingress_result is not failed"
 
 - name: Reset kubectl context
   when: "host_cluster_name and default_ctx is defined"
@@ -634,7 +622,7 @@
   changed_when: "host_cluster_name != default_ctx.stdout"
 
 - name: Cleanup port forwarding
-  when: "vcluster"
+  when: "cluster.virtual"
   block:
     - name: Get PIDs of running vcluster port-forwarders
       community.general.pids:

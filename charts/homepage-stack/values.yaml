@@ -11,9 +11,9 @@ smtp: # For admin notifications
   port: ""
   user: ""
   password_secret:
-    namespace: null
-    name: ""
-    key: "secret"
+    namespace: kube-system
+    name: smtp
+    key: password
   from_address: ""
 
 admin_email: ""

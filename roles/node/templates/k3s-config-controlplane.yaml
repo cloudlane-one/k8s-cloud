@@ -1,4 +1,4 @@
-{% if not tailscale.enabled %}
+{% if not config.tailscale.enabled %}
 flannel-backend: "wireguard-native"
 flannel-external-ip: True
 {% endif %}

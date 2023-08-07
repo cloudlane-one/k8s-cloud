@@ -4,6 +4,6 @@ policy: sync # External DNS policy ("upsert-only" or "sync")
 
 # Currently only Digitalocean provider supported.
 token_secret:
-  namespace: null
-  name: ""
-  key: "token"
+  namespace: kube-system
+  name: external-dns
+  key: token

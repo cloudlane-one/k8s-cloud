@@ -10,11 +10,11 @@ org:
 
 oidc_client:
   idp_url: ""
-  id: ""
+  id: cluster-oidc
   secret:
-    namespace: null
-    name: ""
-    key: "secret"
+    namespace: sso-system
+    name: cluster-oidc
+    key: secret
 
 s3:
   endpoint: "" # Domain without protocol of your S3 endpoint (e.g. "s3.example.org")
@@ -22,9 +22,9 @@ s3:
   access_key_id: "" # Your S3 access key id
   access_key_secret:
     # Your S3 access key secret
-    namespace: null
-    name: ""
-    key: "secret"
+    namespace: kube-system
+    name: s3
+    key: access_key_secret
   bucket: "" # Name of bucket
 
 smtp: # For admin notifications
@@ -32,9 +32,9 @@ smtp: # For admin notifications
   port: ""
   user: ""
   password_secret:
-    namespace: null
-    name: ""
-    key: "secret"
+    namespace: kube-system
+    name: smtp
+    key: password
   from_address: ""
 
 ingress: true
