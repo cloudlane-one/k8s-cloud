@@ -1,3 +1,12 @@
+- name: Load default config values
+  ansible.builtin.include_vars:
+    file: config.yaml
+    name: default_config
+
+- name: Merge custom with default config
+  ansible.builtin.set_fact:
+    cluster: "{{ default_config.cluster | combine(cluster, recursive=true) }}"
+
 - name: Set dynamic facts
   vars:
     suffix: "{{ cluster.domain | community.dns.get_public_suffix }}"
@@ -412,7 +421,7 @@
         name: cluster
         namespace: kube-system
       data:
-        cluster.yaml: "{{ ansible.builtin.to_yaml }}"
+        cluster.yaml: "{{ cluster | to_yaml }}"
 
 - name: Store cluster secrets
   environment:
@@ -427,7 +436,7 @@
         namespace: kube-system
       type: Opaque
       stringData: "{{ item.value }}"
-  loop: "{{ secrets | dict2items }}"
+  loop: "{{ cluster_secrets | dict2items }}"
 
 - name: Ensure pre-restore infrastructure is fully set up
   ansible.builtin.include_tasks:

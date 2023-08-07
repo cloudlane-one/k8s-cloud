@@ -1,7 +1,5 @@
-# Default values, copy to ./<CLUSTER_NAME>.config.yaml before making changes.
-# Do not forget to also copy and fill out ./secrets.yaml!
-
-# Cluster-wide config values
+# Default custer values.
+# Do not forget to also fill out ./secrets.yaml!
 cluster:
   # Set to true to create a vcluster on top of a k3s host cluster
   virtual: false
@@ -83,12 +81,3 @@ cluster:
 
   # Provision SSL certificates from letsencrypt-staging instead of production (to avoid API rate-limiting)
   letsencrypt_staging: false
-
-# Default linux user to use for running setup on remote hosts (needs sudo privileges).
-ansible_user: root
-
-# Auto-trust unknown ssh-hosts.
-auto_trust_remotes: false
-
-# Clear inventory hosts from ssh known_hosts before running setup.
-clear_known_hosts: false

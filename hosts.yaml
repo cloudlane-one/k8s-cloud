@@ -10,9 +10,17 @@ all:
     node-2:
       ansible_host: 2.2.2.2
       control: true # Explicitly set as control node.
+      ansible_user: root # Linux user to use for running setup on remote host.
     node-3:
       ansible_host: 3.3.3.3
       storage: false # Explicitly exclude as storage node.
     node-4:
       ansible_host: 4.4.4.4
       backbone: false # Explicitly exclude from backbone.
+  vars:
+    # Default Linux user to use for running setup on remote hosts (needs sudo privileges).
+    ansible_user: root
+    # Auto-trust unknown ssh-hosts.
+    auto_trust_remotes: false
+    # Clear inventory hosts from ssh known_hosts before running setup.
+    clear_known_hosts: false

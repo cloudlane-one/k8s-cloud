@@ -121,7 +121,7 @@ By default, all hosts are taken as storage hosts, yet non-backbone hosts are exc
 
 #### Cluster config and secrets
 
-Then copy the default config values file `./config.yaml` to `./$CLUSTER_NAME.config.yaml` and the secrets template file `./secrets.yaml` to `./$CLUSTER_NAME.secrets.yaml`. Fill in the required values and change the optional ones to your liking. Replace `$CLUSTER_NAME` with the chosen name for your cluster. Make sure you store these files somewhere safe.
+Then copy the default cluster config file `./roles/cluster/vars/config.yaml` to `./$CLUSTER_NAME.config.yaml` and the cluster secrets template file `./roles/cluster/vars/secrets.yaml` to `./$CLUSTER_NAME.secrets.yaml`. Fill in the required values and change or delete the optional ones to your liking. Replace `$CLUSTER_NAME` with the chosen name for your cluster. Make sure you store these files somewhere safe.
 
 ### 4. Setup the cluster
 
