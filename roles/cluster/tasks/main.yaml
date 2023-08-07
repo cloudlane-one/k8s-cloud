@@ -16,8 +16,8 @@
     charts_dir: "{{ playbook_dir }}/charts"
     cluster_name: "{{ cluster.domain | replace('.', '-') }}-cluster"
     registered_domain: "{{ main_name }}{{ suffix }}"
-    host_kubeconfig: "{{ ansible_env.KUBECONFIG }}"
-    kubeconfig: "{{ ansible_env.KUBECONFIG }}"
+    kubeconfig: "{{ kubeconfig | default(ansible_env.KUBECONFIG) }}"
+    host_kubeconfig: "{{ kubeconfig | default(ansible_env.KUBECONFIG) }}"
 
 - name: Print cluster.domain info
   ansible.builtin.debug:
@@ -102,7 +102,7 @@
             labels: "{{ {storage_key: '1'} }}"
 
 - name: Ensure vcluster for cluster.domain exists and selected in kubeconfig
-  when: "cluster.virtual"
+  when: "vcluster"
   environment:
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
     KUBECONFIG: "{{ host_kubeconfig }}"
@@ -185,7 +185,7 @@
       vars:
         host_ctx: "{{ host_cluster_name | ternary(host_cluster_name, default_ctx) }}"
       ansible.builtin.set_fact:
-        ctx_name: "{{ cluster.virtual | ternary(cluster_name, host_ctx) }}"
+        ctx_name: "{{ vcluster | ternary(cluster_name, host_ctx) }}"
 
     - name: Use remote kubeconfig file as basis
       block:
@@ -631,7 +631,7 @@
   changed_when: "host_cluster_name != default_ctx.stdout"
 
 - name: Cleanup port forwarding
-  when: "cluster.virtual"
+  when: "vcluster"
   block:
     - name: Get PIDs of running vcluster port-forwarders
       community.general.pids:

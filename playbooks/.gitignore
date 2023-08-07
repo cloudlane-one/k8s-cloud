@@ -1,0 +1,5 @@
+# Ignore contents of all directories by default:
+/*/**
+
+# Unignore contents of dirs prefixed with "_":
+!/_*/**

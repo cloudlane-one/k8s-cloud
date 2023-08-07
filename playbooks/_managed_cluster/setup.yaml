@@ -80,7 +80,8 @@
     backbone_nodes: "{{ groups['backbone_hosts'] }}"
     ingress_nodes: "{{ groups['ingress_hosts'] }}"
     storage_nodes: "{{ groups['storage_hosts'] }}"
-  environment:
-    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  pre_tasks:
+    - name: Load cluster config values
+      ansible.builtin.include_vars: config.yaml
   roles:
     - role: cluster

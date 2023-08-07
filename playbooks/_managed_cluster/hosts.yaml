@@ -18,9 +18,15 @@ all:
       ansible_host: 4.4.4.4
       backbone: false # Explicitly exclude from backbone.
   vars:
+    # Create a virtual cluster on top of an existing host cluster.
+    # Host cluster nodes must be a superset of the virtual nodes given here.
+    vcluster: false
+
     # Default Linux user to use for running setup on remote hosts (needs sudo privileges).
     ansible_user: root
+
     # Auto-trust unknown ssh-hosts.
     auto_trust_remotes: false
+    
     # Clear inventory hosts from ssh known_hosts before running setup.
     clear_known_hosts: false
