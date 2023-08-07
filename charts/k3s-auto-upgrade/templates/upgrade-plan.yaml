@@ -7,10 +7,12 @@ spec:
   dependsOn:
     - name: system-upgrade-controller
   interval: 1h
-  sourceRef:
-    kind: GitRepository
-    name: base-repo
-    namespace: flux-system
-  path: "./manifests/k3s-auto-upgrade-plan"
-  prune: true
+  chart:
+    spec:
+      chart: ./charts/k3s-auto-upgrade-plan
+      sourceRef:
+        kind: GitRepository
+        name: base-repo
+        namespace: flux-system
+      reconcileStrategy: Revision
 {{- end }}
