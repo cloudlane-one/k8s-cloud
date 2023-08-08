@@ -51,7 +51,7 @@ The cluster set up by this repo consists of a multitude of open-source projects,
 - One or more linux machines managed by systemd, to which you have root access
   - Cheapest tested option: [Strato VPS](https://www.strato.de/server/linux-vserver/)
   - Best value for money among tested: [Hetzner VPS](https://www.hetzner.com/cloud)
-- A domain managed by one of the [providers supported by external-dns](https://github.com/kubernetes-sigs/external-dns#status-of-providers)
+- A domain managed by one of the [providers supported by external-dns](https://github.com/kubernetes-sigs/external-dns#status-of-providers) with API access
   - Both [Digitalocean](https://www.digitalocean.com) and [Cloudflare](https://www.cloudflare.com) offer free DNS plans and have been tested with this setup.
 - Credentials to an SMTP server to send automatic emails from
   - [Strato](https://www.strato.de/mail/) offers very affordable mail packages
