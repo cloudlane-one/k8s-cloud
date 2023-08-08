@@ -5,6 +5,8 @@ cluster:
   domain: ""
 
   dns:
+    # Enable automatic dns management via external provider API.
+    enabled: true
     # Name of external DNS provider.
     # Supported values: akamai, alibabacloud, aws, azure, azure-private-dns, cloudflare, coredns, designate, digitalocean, google, hetzner, infoblox, linode, oci, ovh, pdns, rfc2136, transip, vinyldns
     provider: ""

@@ -507,6 +507,22 @@
           - "--wait"
       changed_when: true
 
+- name: Ensure dns-stack is deployed
+  when: "dns.enabled"
+  ansible.builtin.include_tasks:
+    file: deploy-chart.yaml
+    apply:
+      vars:
+        chart:
+          name: dns-stack
+          namespace: dns-system
+          chart_values:
+            domain: "{{ registered_domain }}"
+            provider:
+              name: "{{ dns.provider }}"
+              extra_config: "{{ dns.extra_config }}"
+        kubeconfig: "{{ kubeconfig }}"
+
 - name: Ensure remaining infrastructure is fully set up
   ansible.builtin.include_tasks:
     file: deploy-chart.yaml
@@ -544,11 +560,6 @@
         host: "{{ cluster.subdomains.k8s_dashboard }}.{{ cluster.domain }}"
         oauth2_proxy_host: "{{ cluster.subdomains.oauth2_proxy }}.{{ cluster.domain }}"
         admin_group: "cluster-admins"
-
-    - name: dns-stack
-      namespace: dns-system
-      chart_values:
-        domain: "{{ registered_domain }}"
 
     - name: sso-stack
       namespace: sso-system

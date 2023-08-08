@@ -14,7 +14,7 @@ provider:
   # If yours does not, you'll have to pass the creds via `provider.extra_config`.
   secret:
     namespace: kube-system
-    name: external-dns
+    name: dns
 
   # Additional, provider specific options to be inserted into the
   # <provider name> section of the external-dns helm chart.
