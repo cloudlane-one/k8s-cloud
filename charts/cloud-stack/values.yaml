@@ -23,7 +23,7 @@ s3:
   access_key_secret:
     # Your S3 access key secret
     namespace: kube-system
-    name: s3
+    name: backup-s3
     key: access_key_secret
   bucket: "" # Name of bucket
 
@@ -33,7 +33,7 @@ smtp: # For admin notifications
   user: ""
   password_secret:
     namespace: kube-system
-    name: smtp
+    name: mail-smtp
     key: password
   from_address: ""
 

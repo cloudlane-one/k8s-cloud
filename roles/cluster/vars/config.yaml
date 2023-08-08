@@ -1,11 +1,15 @@
 # Default custer values.
 # Do not forget to also fill out ./secrets.yaml!
 cluster:
-  # Set to true to create a vcluster on top of a k3s host cluster
-  virtual: false
-  
   # Required. Root domain, on which the cluster is to run.
   domain: ""
+
+  dns:
+    # Name of external DNS provider.
+    # Supported values: akamai, alibabacloud, aws, azure, azure-private-dns, cloudflare, coredns, designate, digitalocean, google, hetzner, infoblox, linode, oci, ovh, pdns, rfc2136, transip, vinyldns
+    provider: ""
+    extra_config: {}
+    # Put secret credentials in ./secrets.yaml
 
   # Information about the organization running the cluster
   org:
@@ -22,19 +26,19 @@ cluster:
       port: ""
       user: ""
       from_address: ""
-      # Put the password in ./<CLUSTER_NAME>.secrets.yaml
+      # Put the password in ./secrets.yaml
 
     # Required. Email of initial admin accounts (for notifications and login).
     admin_address: ""
 
-  backups:
+  backup:
     # Required. S3 config for logs and backups storage.
     s3:
       endpoint: "" # Full URL of your S3 endpoint (minus credentials)
       region: "eu-central-1" # Required by Longhorn, just leave the default if you don't have zones
       bucket: "" # Required.
       access_key_id: "" # Your S3 access key id
-      # Put the access key secret in ./<CLUSTER_NAME>.secrets.yaml
+      # Put the access key secret in ./secrets.yaml
 
     # Configure this cluster to be restored from an existing cluster backup.
     restore:
@@ -62,7 +66,7 @@ cluster:
     enabled: false
     # Optional. URL of self-hosted Headscale control server.
     headscale_url: null
-    # Put the auth key in ./<CLUSTER_NAME>.secrets.yaml
+    # Put the auth key in ./secrets.yaml
 
   # Subdomains created and managed by this cluster.
   subdomains:
@@ -77,7 +81,7 @@ cluster:
   # Git repo to connect to for cluster updates via gitops.
   base_repo: https://github.com/cloudlane-one/k8s-cloud
   # Branch of repo to poll for updates.
-  base_branch: main
+  base_branch: v0
 
   # Provision SSL certificates from letsencrypt-staging instead of production (to avoid API rate-limiting)
   letsencrypt_staging: false

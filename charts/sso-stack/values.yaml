@@ -31,7 +31,7 @@ smtp:
   starttls: false
   password_secret:
     namespace: kube-system
-    name: smtp
+    name: mail-smtp
     key: password
 
 org:

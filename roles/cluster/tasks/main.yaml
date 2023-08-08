@@ -455,25 +455,25 @@
         cluster_name: "{{ cluster_name }}"
         oauth2_proxy_host: "{{ cluster.subdomains.oauth2_proxy }}.{{ cluster.domain }}"
         admin_group: "cluster-admins"
-        s3: "{{ cluster.backups.s3 }}"
+        s3: "{{ cluster.backup.s3 }}"
 
     - name: backup-stack
       namespace: backup-system
       chart_values:
-        s3: "{{ cluster.backups.s3 }}"
+        s3: "{{ cluster.backup.s3 }}"
 
 - name: Restore cluster from backup
-  when: "backups.restore.enabled"
+  when: "backup.restore.enabled"
   vars:
-    restore_name: "{{ cluster.backups.restore.backup_name | ternary(backups.restore.backup_name, cluster.backups.restore.schedule_name) }}"
+    restore_name: "{{ cluster.backup.restore.backup_name | ternary(backup.restore.backup_name, cluster.backup.restore.schedule_name) }}"
   block:
     - name: Wait for backup resource to be synced from s3
-      when: "backups.restore.backup_name"
+      when: "backup.restore.backup_name"
       kubernetes.core.k8s_info:
         api_version: velero.io/v1
         kind: Backup
         namespace: backup-system
-        name: "{{ cluster.backups.restore.backup_name }}"
+        name: "{{ cluster.backup.restore.backup_name }}"
       register: backup_get_result
       retries: 10 # Velero may need time to load the backup from s3.
       delay: 20
@@ -498,9 +498,9 @@
           - create
           - "{{ restore_name }}"
           - "--namespace=backup-system"
-          - "--from-schedule={{ cluster.backups.restore.backup_name | ternary('', cluster.backups.restore.schedule_name) }}"
-          - "--from-backup={{ cluster.backups.restore.backup_name }}"
-          - "--include-resources={{ cluster.backups.restore.included_resources | join(',') }}"
+          - "--from-schedule={{ cluster.backup.restore.backup_name | ternary('', cluster.backup.restore.schedule_name) }}"
+          - "--from-backup={{ cluster.backup.restore.backup_name }}"
+          - "--include-resources={{ cluster.backup.restore.included_resources | join(',') }}"
           - "--restore-volumes=true"
           - "--selector"
           - "owner notin (helm)"
