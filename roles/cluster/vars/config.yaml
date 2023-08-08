@@ -58,6 +58,7 @@ cluster:
         - helmrepositories
         - helmreleases
 
+  # Only for host clusters.
   # Configure k3s to build a mesh based on Tailscale instead of raw Wireguard.
   # Tailscale enables you to use nodes which don't have a static public ip or no public ip at all.
   # Please refer to the according [k3s setup guide](https://docs.k3s.io/installation/network-options#integration-with-the-tailscale-vpn-provider-experimental)
