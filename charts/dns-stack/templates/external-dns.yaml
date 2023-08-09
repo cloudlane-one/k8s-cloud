@@ -38,7 +38,7 @@ spec:
       - ingress
     txtOwnerId: {{ .Values.domain }}
     provider: {{ .Values.provider.name }}
-    {{- $providerConfName := eq .Values.provider.name "azure-private-dns" | ternary("azure", .Values.provider.name) }}
+    {{- $providerConfName := eq .Values.provider.name "azure-private-dns" | ternary "azure" .Values.provider.name }}
     {{ $providerConfName }}:
       {{- if eq .Values.provider.name "aws" }}
       credentials:
