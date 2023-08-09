@@ -9,7 +9,7 @@
     main_name: "{{ cluster.domain | replace(suffix, '') | split('.') | last }}"
   ansible.builtin.set_fact:
     k8s_api_host: "{{ cluster.subdomains.k8s_api }}.{{ cluster.domain }}"
-    charts_dir: "{{ inventory_dir }}/charts"
+    charts_dir: "{{ playbook_dir }}/charts"
     cluster_name: "{{ cluster.domain | replace('.', '-') }}-cluster"
     registered_domain: "{{ main_name }}{{ suffix }}"
     kubeconfig: "{{ kubeconfig if kubeconfig else ansible_env.KUBECONFIG if 'KUBECONFIG' in ansible_env else '/etc/rancher/k3s/k3s.yaml' }}"
@@ -240,7 +240,7 @@
       delegate_to: localhost
       become: false
       ansible.builtin.stat:
-        path: "{{ inventory_dir }}/{{ local_kubeconfig }}"
+        path: "{{ playbook_dir }}/{{ local_kubeconfig }}"
       register: local_kubeconfig_file
 
     - name: Copy and merge local config file
@@ -248,7 +248,7 @@
       block:
         - name: Copy local kubeconfig to remote
           ansible.builtin.copy:
-            src: "{{ inventory_dir }}/{{ local_kubeconfig }}"
+            src: "{{ playbook_dir }}/{{ local_kubeconfig }}"
             dest: /tmp/local-kubeconfig.yaml
             mode: '0644'
 
@@ -306,7 +306,7 @@
     - name: Download kubeconfig file
       ansible.builtin.fetch:
         src: /tmp/public-kubeconfig.yaml
-        dest: "{{ inventory_dir }}/kubeconfig.yaml"
+        dest: "{{ playbook_dir }}/kubeconfig.yaml"
         flat: true
 
 - name: Ensure GitOps via FluxCD is setup
