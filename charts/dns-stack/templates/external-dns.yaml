@@ -39,7 +39,8 @@ spec:
     txtOwnerId: {{ .Values.domain }}
     provider: {{ .Values.provider.name }}
     {{ $providerConfName := eq .Values.provider.name "azure-private-dns" | ternary "azure" .Values.provider.name }}
-    {{ $providerConfName }}:
+    testconf:
+      prov: {{ $providerConfName }}
       {{ if eq .Values.provider.name "aws" }}
       credentials:
         secretName: dns-credentials
