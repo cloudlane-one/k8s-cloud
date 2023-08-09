@@ -77,33 +77,34 @@ spec:
       rules:
         general: false
     {{- end }}
-    nodeExporter:
+    prometheus-node-exporter:
       resources:
         requests:
           cpu: 30m
           memory: 32Mi
-    kubeStateMetrics:
+    kube-state-metrics:
       resources:
         requests:
-          cpu: 10m
+          cpu: 30m
           memory: 32Mi
     alertmanager:
       enabled: true
       alertmanagerSpec:
         resources:
-          cpu: 50m
-          memory: 64Mi
+          requests:
+            cpu: 30m
+            memory: 32Mi
     prometheusOperator:
       admissionWebhooks:
         timeoutSeconds: 30 # Prevent timeouts during helm upgrade
         patch:
           resources:
-            cpu: 50m
-            memory: 64Mi
+            cpu: 30m
+            memory: 32Mi
       resources:
         requests:
-          cpu: 100m
-          memory: 128Mi
+          cpu: 50m
+          memory: 64Mi
     prometheus:
       prometheusSpec:
         serviceMonitorSelectorNilUsesHelmValues: false
@@ -120,9 +121,16 @@ spec:
         retention: 2d
         resources:
           requests:
-            cpu: 500m
-            memory: 1Gi
+            cpu: 200m
+            memory: 2.5Gi
+          limits:
+            cpu: 300m
+            memory: 3Gi
     grafana:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 256Mi
       envValueFrom:
         SMTP_PASSWORD:
           secretKeyRef:

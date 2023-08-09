@@ -105,8 +105,8 @@ spec:
         enabled: true
     resources:
       requests:
-        cpu: 100m
-        memory: 800Mi
+        cpu: 200m
+        memory: 1Gi
     autoscaling:
       enabled: true
       minReplicas: 2
@@ -117,6 +117,10 @@ spec:
       primary:
         persistence:
           size: 4Gi
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
     keycloakConfigCli:
       enabled: true
       extraEnvVars:

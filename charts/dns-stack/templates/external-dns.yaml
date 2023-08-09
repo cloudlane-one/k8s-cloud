@@ -52,7 +52,7 @@ spec:
       {{ .Values.provider.extra_config | empty | not | ternary (.Values.provider.extra_config | toYaml | nindent 6) "" }}
     resources:
       requests:
-        cpu: 50m
+        cpu: 30m
         memory: 64Mi
     metrics:
       enabled: true

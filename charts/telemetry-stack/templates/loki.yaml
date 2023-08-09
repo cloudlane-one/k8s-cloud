@@ -52,7 +52,7 @@ spec:
       replicas: 1
       resources:
         requests:
-          cpu: 50m
+          cpu: 30m
           memory: 64Mi
       autoscaling:
         enabled: true
@@ -64,7 +64,7 @@ spec:
       replicas: 1
       resources:
         requests:
-          cpu: 50m
+          cpu: 30m
           memory: 64Mi
       autoscaling:
         enabled: true
@@ -80,7 +80,7 @@ spec:
       replicas: 1
       resources:
         requests:
-          cpu: 50m
+          cpu: 30m
           memory: 64Mi
       autoscaling:
         enabled: true
@@ -96,8 +96,8 @@ spec:
       replicas: 1
       resources:
         requests:
-          cpu: 50m
-          memory: 64Mi
+          cpu: 30m
+          memory: 32Mi
       autoscaling:
         enabled: true
         minReplicas: 1
