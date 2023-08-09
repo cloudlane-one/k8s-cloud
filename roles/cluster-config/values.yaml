@@ -1,0 +1,93 @@
+# Default custer values.
+# Do not forget to also fill out ./secrets.yaml!
+cluster:
+  # Create a virtual cluster on top of an existing host cluster.
+  # Host cluster nodes must be a superset of the virtual nodes given here.
+  virtual: false
+
+  # Required. Root domain, on which the cluster is to run.
+  domain: ""
+
+  dns:
+    # Enable automatic dns management via external provider API.
+    enabled: true
+    # Name of external DNS provider.
+    # Supported values: akamai, alibabacloud, aws, azure, azure-private-dns, cloudflare, coredns, designate, digitalocean, google, hetzner, infoblox, linode, oci, ovh, pdns, rfc2136, transip, vinyldns
+    provider: ""
+    extra_config: {}
+    # Put secret credentials in ./secrets.yaml
+
+  # Information about the organization running the cluster
+  org:
+    # Required. Name of your organization.
+    name: ""
+    default_locale: "en_US"
+    tagline: ""
+    logo_url: ""
+
+  mail:
+    # Required. SMTP config for notification emails.
+    smtp:
+      host: ""
+      port: ""
+      user: ""
+      from_address: ""
+      # Put the password in ./secrets.yaml
+
+    # Required. Email of initial admin accounts (for notifications and login).
+    admin_address: ""
+
+  backup:
+    # Required. S3 config for logs and backups storage.
+    s3:
+      endpoint: "" # Full URL of your S3 endpoint (minus credentials)
+      region: "eu-central-1" # Required by Longhorn, just leave the default if you don't have zones
+      bucket: "" # Required.
+      access_key_id: "" # Your S3 access key id
+      # Put the access key secret in ./secrets.yaml
+
+    # Configure this cluster to be restored from an existing cluster backup.
+    restore:
+      # Set to true to enable restoring.
+      enabled: false
+      # The unique name of the Velero schedule
+      # to restore from. If specified, and backup_name is empty, Velero will
+      # restore from the most recent successful backup created from this schedule.
+      schedule_name: cluster-backup
+      # The unique name of the Velero backup to restore from.
+      backup_name: ""
+      # See https://velero.io/docs/v1.11/resource-filtering/#--include-resources.
+      included_resources:
+        - secrets
+        - pvcs
+        - pvs
+        - helmrepositories
+        - helmreleases
+
+  # You can configure k3s to build a mesh based on Tailscale instead of raw Wireguard.
+  # Tailscale enables you to use nodes which don't have a static public ip or no public ip at all.
+  # Please refer to the according [k3s setup guide](https://docs.k3s.io/installation/network-options#integration-with-the-tailscale-vpn-provider-experimental) 
+  # and perform steps 1 to 3 manually before deploying the cluster.
+  tailscale:
+    enabled: false
+    # Optional. URL of self-hosted Headscale control server.
+    headscale_url: null
+    # Put the auth key in ./secrets.yaml
+
+  # Subdomains created and managed by this cluster.
+  subdomains:
+    k8s_api: "k8s"
+    keycloak: "id"
+    oauth2_proxy: "oauth"
+    k8s_dashboard: "kubectl"
+    weave_gitops: "gitops"
+    grafana: "grafana"
+    longhorn: "longhorn" # Only set up for host clusters
+
+  # Git repo to connect to for cluster updates via gitops.
+  base_repo: https://github.com/cloudlane-one/k8s-cloud
+  # Branch of repo to poll for updates.
+  base_branch: v0
+
+  # Provision SSL certificates from letsencrypt-staging instead of production (to avoid API rate-limiting)
+  letsencrypt_staging: false

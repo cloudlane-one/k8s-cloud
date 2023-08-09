@@ -1,0 +1,31 @@
+- name: Node group assignment
+  tags:
+    - nodes
+    - infra
+  hosts: localhost
+  connection: local
+  roles:
+    - role: node-grouping
+
+- name: Cluster config
+  tags:
+    - nodes
+    - infra
+  hosts: localhost
+  connection: local
+  pre_tasks:
+    - name: Load cluster config values
+      ansible.builtin.include_vars: values.yaml
+    - name: Load cluster secrets
+      ansible.builtin.include_vars: secrets.yaml
+  roles:
+    - role: cluster-config
+
+- name: Destroy all nodes
+  hosts: all
+  become: true
+  vars:
+    control: "{{ inventory_hostname in group_names }}"
+  roles:
+    - role: node-destruction
+      when: "not cluster.virtual"

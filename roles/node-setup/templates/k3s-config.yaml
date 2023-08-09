@@ -1,0 +1,17 @@
+{% if cluster.tailscale.enabled %}
+{% if cluster.tailscale.headscale_url %}
+vpn-auth: "name=tailscale,joinKey={{ cluster_secrets.tailscale.auth_key }},controlServerURL={{ cluster.tailscale.headscale_url }}"
+{% else %}
+vpn-auth: "name=tailscale,joinKey={{ cluster_secrets.tailscale.auth_key }}"
+{% endif %}
+{% endif %}
+{% if ansible_host is not ansible.utils.private %}
+node-external-ip: "{{ ansible_host }}"
+{% endif %}
+kubelet-arg:
+  - "node-ip=0.0.0.0"
+  - "eviction-hard=memory.available<100Mi,nodefs.available<5%"
+  - "eviction-soft=memory.available<300Mi,nodefs.available<10%"
+  - "eviction-soft-grace-period=memory.available=2m0s,nodefs.available=10m0s"
+  - "eviction-max-pod-grace-period=180"
+  - "system-reserved=cpu=200m,memory=400Mi,ephemeral-storage=8Gi"

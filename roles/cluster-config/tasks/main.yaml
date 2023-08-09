@@ -1,0 +1,8 @@
+- name: Load default config values
+  ansible.builtin.include_vars:
+    file: values.yaml
+    name: default_config
+
+- name: Merge custom with default config
+  ansible.builtin.set_fact:
+    cluster: "{{ default_config.cluster | combine(cluster, recursive=true) }}"

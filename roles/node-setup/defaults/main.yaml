@@ -1,0 +1,8 @@
+cluster: {} # Required. Cluster config.
+cluster_secrets: [] # Required. Secrets associated with cluster config.
+
+# Whether this node is to be a control plane node.
+control: false
+
+# Name of the main control node (first to join the cluster).
+main_control_node: ""

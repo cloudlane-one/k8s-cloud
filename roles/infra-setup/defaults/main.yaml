@@ -1,0 +1,6 @@
+cluster: {} # Required. Cluster config.
+cluster_secrets: [] # Required. Secrets associated with cluster config.
+
+kubeconfig: null # Setting to null instructs ansible to use the remote host's default kubeconfig.
+local_kubeconfig: "./kubeconfig.yaml" # Where to merge generated kubeconfig into.
+host_cluster_name: "default" # Set to `null` to use current context on host.

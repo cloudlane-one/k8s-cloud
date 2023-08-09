@@ -1,0 +1,54 @@
+- name: SSH config
+  tags: nodes
+  hosts: localhost
+  connection: local
+  roles:
+    - role: ssh-setup
+
+- name: Host group assignment
+  tags:
+    - nodes
+    - infra
+  hosts: all
+  run_once: true
+  roles:
+    - role: host-grouping
+
+- name: Cluster config
+  tags:
+    - nodes
+    - infra
+  hosts: all
+  run_once: true
+  pre_tasks:
+    - name: Load cluster config values
+      ansible.builtin.include_vars: values.yaml
+    - name: Load cluster secrets
+      ansible.builtin.include_vars: secrets.yaml
+  roles:
+    - role: cluster-config
+
+- name: Run setup for all nodes
+  tags: nodes
+  hosts: all
+  become: true
+  roles:
+    - role: node-setup
+      when: "not cluster.virtual"
+      vars:
+        control: "{{ inventory_hostname in control_hosts }}"
+        main_control_node: "{{ control_hosts[0] }}"
+
+- name: Setup infrastructure via kubectl from one of the control hosts
+  tags: infra
+  hosts: control_hosts
+  run_once: true
+  become: true
+  roles:
+    - role: infra-setup
+      vars:
+        nodes:
+          cluster: "{{ groups['all'] }}"
+          backbone: "{{ backbone_hosts }}"
+          ingress: "{{ ingress_hosts }}"
+          storage: "{{ storage_hosts }}"

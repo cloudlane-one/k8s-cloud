@@ -59,28 +59,40 @@ The cluster set up by this repo consists of a multitude of open-source projects,
   - [OVH](https://www.ovhcloud.com/de/public-cloud/object-storage/) offers low-prices S3-compatible storage
 - Optional: Free [Tailscale](https://tailscale.com/) account and credentials
 
-## Setup
-
-> How to setup a k8s production cluster on bare Linux hosts in under 15 minutes.
+### Workstation setup
 
 The Ansible playbook code in here is meant to be run from a Linux workstation. On Windows you may use WSL.
-
-Make sure your workstation can connect and authenticate as a privileged user via ssh to all of the remote hosts, which are to be setup as the nodes of your cluster.
 
 These system dependencies are to be installed on your local machine.
 
 - [Python](https://www.python.org/downloads/)
 - [Poetry](https://python-poetry.org)
 
-Then clone this repo to your workstation, copy the playbook template `playbooks/_managed_cluster` and switch dirs into it:
+Clone the repo, `cd` to the cloned folder, and run following bash code to install all Python deps into a virtual environment:
 
 ```bash
-cp ./playbooks/_managed_cluster ./playbooks/$CLUSTER_NAME
+poetry install
+```
+
+Then run this to install Ansible-specific dependencies:
+
+```bash
+ansible-galaxy install -r requirements.yaml
+```
+
+## Cluster setup
+
+> How to setup a k8s production cluster on bare Linux hosts in under 15 minutes.
+
+Copy the playbook template `playbooks/_cluster` and switch dirs into it:
+
+```bash
+cp ./playbooks/_cluster ./playbooks/$CLUSTER_NAME
 cd ./playbooks/$CLUSTER_NAME
 ```
 
 Replace `$CLUSTER_NAME` with an arbitrary alphanumeric name for your cluster.
-Continue with the steps described in the template's README.
+Continue with the steps described in the template's [README](./playbooks/_cluster/README.md).
 
 ## Operations
 

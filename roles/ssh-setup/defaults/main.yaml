@@ -1,0 +1,3 @@
+group_name: all
+clear_known_hosts: false
+auto_trust: false
