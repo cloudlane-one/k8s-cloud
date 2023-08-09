@@ -9,12 +9,14 @@
   ansible.builtin.reboot:
 
 - name: Restart k3s
+  throttle: 1
+  any_errors_fatal: true
   vars:
-    service: "{{ control | ternary('k3s', 'k3s-agent') }}"
+    service: "{{ control | ternary('k3s', 'k3s-agent') }}.service"
   when: "service in ansible_facts.services.keys()"
   ansible.builtin.systemd:
     state: restarted
-    name: "{{ service }}.service"
+    name: "{{ service }}"
 
 - name: Restart multipathd
   ansible.builtin.systemd:

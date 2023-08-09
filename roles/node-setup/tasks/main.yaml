@@ -188,6 +188,8 @@
             mode: '0644'
 
         - name: Run k3s install script for additional node
+          throttle: 1
+          any_errors_fatal: true
           ansible.builtin.command:
             argv:
               - /tmp/k3s-install.sh
