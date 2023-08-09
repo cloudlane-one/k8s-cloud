@@ -144,7 +144,7 @@
           - "--namespace={{ cluster_name }}"
           - "--local-port={{ vcluster_port }}"
           - "--update-current=false"
-          - "--kube-config=/tmp/virtual-kubecluster.yaml"
+          - "--kube-config=/tmp/virtual-kubeconfig.yaml"
           - "--kube-config-context-name={{ cluster_name }}"
       ansible.builtin.shell: "nohup vcluster connect vcluster {{ connect_flags | join(' ') }} </dev/null >/dev/null 2>&1 &"
       changed_when: true
@@ -161,7 +161,7 @@
 
     - name: Activate vcluster kubeconfig
       ansible.builtin.set_fact:
-        kubeconfig: /tmp/virtual-kubecluster.yaml
+        kubeconfig: /tmp/virtual-kubeconfig.yaml
 
     - name: Wait for vcluster coredns deployment to become available
       environment:
@@ -187,12 +187,12 @@
           ansible.builtin.copy:
             remote_src: true
             src: "{{ kubeconfig }}"
-            dest: /tmp/public-kubecluster.yaml
+            dest: /tmp/public-kubeconfig.yaml
             mode: '0644'
 
         - name: List remote kubeconfig contexts
           environment:
-            KUBECONFIG: /tmp/public-kubecluster.yaml
+            KUBECONFIG: /tmp/public-kubeconfig.yaml
           ansible.builtin.command: "kubectl config get-contexts -o name"
           register: all_ctx
           changed_when: false
@@ -201,7 +201,7 @@
           loop: "{{ all_ctx.stdout_lines }}"
           when: "item != ctx_name"
           environment:
-            KUBECONFIG: /tmp/public-kubecluster.yaml
+            KUBECONFIG: /tmp/public-kubeconfig.yaml
           ansible.builtin.command: "kubectl config delete-context {{ item }}"
           changed_when: true
 
@@ -209,7 +209,7 @@
           loop: "{{ all_ctx.stdout_lines }}"
           when: "item != ctx_name"
           environment:
-            KUBECONFIG: /tmp/public-kubecluster.yaml
+            KUBECONFIG: /tmp/public-kubeconfig.yaml
           ansible.builtin.command: "kubectl config delete-cluster {{ item }}"
           changed_when: true
 
@@ -217,7 +217,7 @@
           loop: "{{ all_ctx.stdout_lines }}"
           when: "item != ctx_name"
           environment:
-            KUBECONFIG: /tmp/public-kubecluster.yaml
+            KUBECONFIG: /tmp/public-kubeconfig.yaml
           ansible.builtin.command: "kubectl config delete-user {{ item }}"
           changed_when: true
 
@@ -234,33 +234,33 @@
         - name: Copy local kubeconfig to remote
           ansible.builtin.copy:
             src: "{{ playbook_dir }}/{{ local_kubeconfig }}"
-            dest: /tmp/local-kubecluster.yaml
+            dest: /tmp/local-kubeconfig.yaml
             mode: '0644'
 
         - name: Delete existing context in local config
           environment:
-            KUBECONFIG: /tmp/local-kubecluster.yaml
+            KUBECONFIG: /tmp/local-kubeconfig.yaml
           ansible.builtin.command: "kubectl config delete-context {{ ctx_name }}"
           changed_when: true
           failed_when: false
 
         - name: Delete existing cluster in local config
           environment:
-            KUBECONFIG: /tmp/local-kubecluster.yaml
+            KUBECONFIG: /tmp/local-kubeconfig.yaml
           ansible.builtin.command: "kubectl config delete-cluster {{ ctx_name }}"
           changed_when: true
           failed_when: false
 
         - name: Delete existing user in local config
           environment:
-            KUBECONFIG: /tmp/local-kubecluster.yaml
+            KUBECONFIG: /tmp/local-kubeconfig.yaml
           ansible.builtin.command: "kubectl config delete-user {{ ctx_name }}"
           changed_when: true
           failed_when: false
 
         - name: Merge local kubeconfig with remote
           environment:
-            KUBECONFIG: "/tmp/public-kubecluster.yaml:/tmp/local-kubecluster.yaml"
+            KUBECONFIG: "/tmp/public-kubeconfig.yaml:/tmp/local-kubeconfig.yaml"
           ansible.builtin.command:
             argv:
               - kubectl
@@ -272,13 +272,13 @@
 
         - name: Save merged kubeconfig to file
           ansible.builtin.copy:
-            content: "{{ merged_kubecluster.stdout }}"
-            dest: /tmp/public-kubecluster.yaml
+            content: "{{ merged_kubeconfig.stdout }}"
+            dest: /tmp/public-kubeconfig.yaml
             mode: '0644'
 
     - name: Change server address of copied kubeconfig to public cluster FQN
       environment:
-        KUBECONFIG: /tmp/public-kubecluster.yaml
+        KUBECONFIG: /tmp/public-kubeconfig.yaml
       ansible.builtin.command:
         argv:
           - kubectl
@@ -290,8 +290,8 @@
 
     - name: Download kubeconfig file
       ansible.builtin.fetch:
-        src: /tmp/public-kubecluster.yaml
-        dest: "{{ playbook_dir }}/kubecluster.yaml"
+        src: /tmp/public-kubeconfig.yaml
+        dest: "{{ playbook_dir }}/kubeconfig.yaml"
         flat: true
 
 - name: Ensure GitOps via FluxCD is setup
