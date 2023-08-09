@@ -43,13 +43,12 @@ spec:
       {{- if eq .Values.provider.name "aws" }}
       credentials:
         secretName: dns-credentials
-        {{- .Values.provider.extra_config.credentials | default dict | toYaml | nindent 8 }}
       {{- else if eq .Values.provider.name "google" }}
       serviceAccountSecret: dns-credentials
       {{- else }}
       secretName: dns-credentials
       {{- end }}
-      {{- .Values.provider.extra_config | omit "credentials" | toYaml | nindent 6 }}
+      {{- .Values.provider.extra_config | toYaml | nindent 6 }}
     resources:
       requests:
         cpu: 50m
