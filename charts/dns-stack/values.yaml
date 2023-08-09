@@ -4,7 +4,7 @@ domain: ""
 provider:
   # Name of external DNS provider.
   # Supported values: akamai, alibabacloud, aws, azure, azure-private-dns, cloudflare, coredns, designate, digitalocean, google, hetzner, infoblox, linode, oci, ovh, pdns, rfc2136, transip, vinyldns
-  name: cloudflare
+  name: ""
 
   # Reference to secret containing private credentials for selected provider.
   # Naming of secret key(s) depends on provider and can be looked up in 
