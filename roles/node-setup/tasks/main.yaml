@@ -1,3 +1,13 @@
+- name: Load configuration
+  ansible.builtin.import_role:
+    name: cluster-config
+    allow_duplicates: false
+
+- name: Set dynamic facts
+  ansible.builtin.set_fact:
+    control: "{{ inventory_hostname in groups['control'] }}"
+    main_control_node: "{{ groups['control'][0] }}"
+
 - name: Set hostname to node name (inventory name)
   ansible.builtin.hostname:
     name: "{{ inventory_hostname }}"

@@ -1,10 +1,15 @@
+- name: Load configuration
+  ansible.builtin.import_role:
+    name: cluster-config
+    allow_duplicates: false
+
 - name: Set dynamic facts
   vars:
     suffix: "{{ cluster.domain | community.dns.get_public_suffix }}"
     main_name: "{{ cluster.domain | replace(suffix, '') | split('.') | last }}"
   ansible.builtin.set_fact:
     k8s_api_host: "{{ cluster.subdomains.k8s_api }}.{{ cluster.domain }}"
-    charts_dir: "{{ playbook_dir }}/charts"
+    charts_dir: "{{ inventory_dir }}/charts"
     cluster_name: "{{ cluster.domain | replace('.', '-') }}-cluster"
     registered_domain: "{{ main_name }}{{ suffix }}"
     kubeconfig: "{{ kubeconfig if kubeconfig else ansible_env.KUBECONFIG if 'KUBECONFIG' in ansible_env else '/etc/rancher/k3s/k3s.yaml' }}"
@@ -31,12 +36,22 @@
       ansible.builtin.command: "kubectl config use-context {{ host_cluster_name }}"
       changed_when: "host_cluster_name != default_ctx.stdout"
 
+- name: Wait for Kubernetes API to become available
+  environment:
+    KUBECONFIG: "{{ host_kubeconfig }}"
+  ansible.builtin.command: kubectl cluster-info
+  register: kubectl_info_result
+  retries: 6
+  delay: 20
+  until: "kubectl_info_result is not failed"
+  changed_when: false
+
 - name: Ensure cluster labels are applied to nodes
   environment:
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
   block:
     - name: Add cluster label to inventory node
-      loop: "{{ nodes.cluster }}"
+      loop: "{{ groups['cluster'] }}"
       kubernetes.core.k8s:
         state: patched
         kind: Node
@@ -46,7 +61,7 @@
             labels: "{{ {cluster_name: '1'} }}"
 
     - name: Add topology labels to inventory node
-      loop: "{{ nodes.cluster }}"
+      loop: "{{ groups['cluster'] }}"
       vars:
         region: "{{ hostvars[item].region | default('eu') }}"
         zone: "{{ hostvars[item].zone | default('eu-1') }}"
@@ -61,7 +76,7 @@
               topology.kubernetes.io/zone: "{{ zone }}"
 
     - name: Add backbone label to inventory node
-      loop: "{{ nodes.backbone }}"
+      loop: "{{ groups['backbone'] }}"
       kubernetes.core.k8s:
         state: patched
         kind: Node
@@ -72,7 +87,7 @@
               backbone: "1"
 
     - name: Add cluster ingress label to inventory node
-      loop: "{{ nodes.ingress }}"
+      loop: "{{ groups['ingress'] }}"
       kubernetes.core.k8s:
         state: patched
         kind: Node
@@ -84,7 +99,7 @@
               svccontroller.k3s.cattle.io/lbpool: "{{ cluster_name }}"
 
     - name: Add cluster storage label to inventory node
-      loop: "{{ nodes.storage }}"
+      loop: "{{ groups['storage'] }}"
       vars:
         storage_key: "{{ cluster_name }}-storage"
       kubernetes.core.k8s:
@@ -225,7 +240,7 @@
       delegate_to: localhost
       become: false
       ansible.builtin.stat:
-        path: "{{ playbook_dir }}/{{ local_kubeconfig }}"
+        path: "{{ inventory_dir }}/{{ local_kubeconfig }}"
       register: local_kubeconfig_file
 
     - name: Copy and merge local config file
@@ -233,7 +248,7 @@
       block:
         - name: Copy local kubeconfig to remote
           ansible.builtin.copy:
-            src: "{{ playbook_dir }}/{{ local_kubeconfig }}"
+            src: "{{ inventory_dir }}/{{ local_kubeconfig }}"
             dest: /tmp/local-kubeconfig.yaml
             mode: '0644'
 
@@ -291,7 +306,7 @@
     - name: Download kubeconfig file
       ansible.builtin.fetch:
         src: /tmp/public-kubeconfig.yaml
-        dest: "{{ playbook_dir }}/kubeconfig.yaml"
+        dest: "{{ inventory_dir }}/kubeconfig.yaml"
         flat: true
 
 - name: Ensure GitOps via FluxCD is setup
@@ -359,7 +374,7 @@
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
   block:
     - name: Get list of current Longhorn node tags
-      loop: "{{ nodes.storage }}"
+      loop: "{{ groups['storage'] }}"
       kubernetes.core.k8s_info:
         api_version: longhorn.io/v1beta2
         kind: Node
@@ -384,7 +399,7 @@
         cluster_tag: "{{ cluster_name }}"
         region_tag: "{{ ('%s.%s' | format(region, cluster_tag)) }}"
         zone_tag: "{{ ('%s.%s' | format(zone, cluster_tag)) }}"
-        backbone_tag: "{{ ('backbone.%s' | format(cluster_tag)) if node in nodes.backbone else false }}"
+        backbone_tag: "{{ ('backbone.%s' | format(cluster_tag)) if node in groups['backbone'] else false }}"
         # Assuming here that regions and zones do not share names.
         backbone_region_tag: "{{ ('backbone.%s' | format(region_tag)) if backbone_tag else false }}"
         backbone_zone_tag: "{{ ('backbone.%s' | format(zone_tag)) if backbone_tag else false }}"

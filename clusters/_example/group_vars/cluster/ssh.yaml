@@ -1,0 +1,2 @@
+# Default Linux user to use for running setup on remote hosts (needs sudo privileges).
+ansible_user: root

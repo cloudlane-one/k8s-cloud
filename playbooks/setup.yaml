@@ -1,0 +1,29 @@
+- name: SSH config
+  tags: nodes
+  hosts: localhost
+  connection: local
+  roles:
+    - role: ssh-setup
+
+- name: Load cluster config
+  tags:
+    - nodes
+    - infra
+  hosts: cluster
+  roles:
+    - role: cluster-config
+
+- name: Run setup for all nodes
+  tags: nodes
+  hosts: cluster
+  become: true
+  roles:
+    - role: node-setup
+
+- name: Setup infrastructure via kubectl from one of the control hosts
+  tags: infra
+  hosts: control
+  run_once: true
+  become: true
+  roles:
+    - role: infra-setup
