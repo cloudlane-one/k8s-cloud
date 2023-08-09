@@ -37,6 +37,7 @@ spec:
       - service
       - ingress
     txtOwnerId: {{ .Values.domain }}
+    logLevel: debug
     provider: {{ .Values.provider.name }}
     {{- $providerConfName := eq .Values.provider.name "azure-private-dns" | ternary "azure" .Values.provider.name }}
     {{ $providerConfName }}:
