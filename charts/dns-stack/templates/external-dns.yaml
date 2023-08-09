@@ -48,7 +48,7 @@ spec:
       {{ else }}
       secretName: dns-credentials
       {{ end }}
-      {{ .Values.provider.extra_config | ternary (.Values.provider.extra_config | toYaml | nindent 6) "" }}
+      {{ .Values.provider.extra_config | empty | ternary (.Values.provider.extra_config | toYaml | nindent 6) "" }}
     resources:
       requests:
         cpu: 50m
