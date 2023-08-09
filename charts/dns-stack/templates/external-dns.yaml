@@ -38,17 +38,17 @@ spec:
       - ingress
     txtOwnerId: {{ .Values.domain }}
     provider: {{ .Values.provider.name }}
-    {{- $providerConfName := eq .Values.provider.name "azure-private-dns" | ternary "azure" .Values.provider.name }}
+    {{ $providerConfName := eq .Values.provider.name "azure-private-dns" | ternary "azure" .Values.provider.name }}
     {{ $providerConfName }}:
-      {{- if eq .Values.provider.name "aws" }}
+      {{ if eq .Values.provider.name "aws" }}
       credentials:
         secretName: dns-credentials
-      {{- else if eq .Values.provider.name "google" }}
+      {{ else if eq .Values.provider.name "google" }}
       serviceAccountSecret: dns-credentials
-      {{- else }}
+      {{ else }}
       secretName: dns-credentials
-      {{- end }}
-      {{ .Values.provider.extra_config | default "" | toYaml | nindent 6 }}
+      {{ end }}
+      {{ .Values.provider.extra_config | ternary (.Values.provider.extra_config | toYaml | nindent 6) "" }}
     resources:
       requests:
         cpu: 50m
