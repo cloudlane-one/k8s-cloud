@@ -1,18 +1,12 @@
 - name: Node group assignment
-  tags:
-    - nodes
-    - infra
-  hosts: localhost
-  connection: local
+  hosts: all
+  run_once: true
   roles:
-    - role: node-grouping
+    - role: host-grouping
 
 - name: Cluster config
-  tags:
-    - nodes
-    - infra
-  hosts: localhost
-  connection: local
+  hosts: all
+  run_once: true
   pre_tasks:
     - name: Load cluster config values
       ansible.builtin.include_vars: values.yaml
@@ -24,8 +18,8 @@
 - name: Destroy all nodes
   hosts: all
   become: true
-  vars:
-    control: "{{ inventory_hostname in group_names }}"
   roles:
     - role: node-destruction
       when: "not cluster.virtual"
+      vars:
+        control: "{{ inventory_hostname in control_hosts }}"
