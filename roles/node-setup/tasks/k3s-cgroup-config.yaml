@@ -19,9 +19,18 @@
     - Reboot host
 
 - name: Configure kube-reserve enforcement
+  when: "cluster.enforce_kube_reserved"
   ansible.builtin.template:
     src: k3s-config-kube-reserve.yaml
     dest: /etc/rancher/k3s/config.yaml.d/kube-reserve.yaml
     mode: '0644'
+  notify:
+    - Restart k3s
+
+- name: Unconfigure kube-reserve enforcement
+  when: "not cluster.enforce_kube_reserved"
+  ansible.builtin.file:
+    state: absent
+    path: /etc/rancher/k3s/config.yaml.d/kube-reserve.yaml
   notify:
     - Restart k3s

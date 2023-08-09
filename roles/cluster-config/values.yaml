@@ -91,3 +91,6 @@ cluster:
 
   # Provision SSL certificates from letsencrypt-staging instead of production (to avoid API rate-limiting)
   letsencrypt_staging: false
+
+  # Force k3s agent and server daemons to not exceed their reserved resources.
+  enforce_kube_reserved: false
