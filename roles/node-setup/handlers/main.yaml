@@ -11,6 +11,12 @@
 - name: Restart k3s
   vars:
     service: "{{ control | ternary('k3s', 'k3s-agent') }}"
+  when: "service in ansible_facts.services.keys()"
   ansible.builtin.systemd:
     state: restarted
     name: "{{ service }}.service"
+
+- name: Restart multipathd
+  ansible.builtin.systemd:
+    state: restarted
+    name: multipathd.service

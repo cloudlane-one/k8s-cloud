@@ -8,6 +8,9 @@
     control: "{{ inventory_hostname in groups['control'] }}"
     main_control_node: "{{ groups['control'][0] }}"
 
+- name: Populate service facts
+  ansible.builtin.service_facts:
+
 - name: Set hostname to node name (inventory name)
   ansible.builtin.hostname:
     name: "{{ inventory_hostname }}"
@@ -89,11 +92,7 @@
       blacklist {
           devnode "^sd[a-z0-9]+"
       }
-
-- name: Restart multipath
-  ansible.builtin.systemd:
-    state: restarted
-    name: multipathd.service
+  notify: Restart multipathd
 
 - name: Ensure Tailscale is installed
   when: "cluster.tailscale.enabled"
@@ -130,6 +129,7 @@
         src: k3s-config.yaml
         dest: /etc/rancher/k3s/config.yaml
         mode: '0644'
+      notify: Restart k3s
 
     - name: Template out k3s agent config file
       when: "not control"
@@ -137,6 +137,7 @@
         src: k3s-config-agent.yaml
         dest: /etc/rancher/k3s/config.yaml.d/agent.yaml
         mode: '0644'
+      notify: Restart k3s
 
     - name: Template out k3s controlplane config file
       when: "control"
@@ -144,6 +145,7 @@
         src: k3s-config-controlplane.yaml
         dest: /etc/rancher/k3s/config.yaml.d/controlplane.yaml
         mode: '0644'
+      notify: Restart k3s
 
     - name: Download k3s install script
       ansible.builtin.get_url:
