@@ -73,6 +73,7 @@ spec:
               key: url
     coredns:
       replicas: 2
+      image: coredns/coredns:1.10.1 # workaround for: https://github.com/loft-sh/vcluster/issues/1141
     proxy:
       metricsServer:
         nodes:
