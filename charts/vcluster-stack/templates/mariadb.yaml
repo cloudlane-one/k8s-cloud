@@ -33,7 +33,7 @@ spec:
       resources:
         requests:
           cpu: 100m
-          memory: 256Mi
+          memory: 512Mi
 ---
 apiVersion: snapshot.storage.k8s.io/v1
 kind: VolumeSnapshot
