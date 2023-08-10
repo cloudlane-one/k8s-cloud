@@ -91,7 +91,7 @@ spec:
       resources:
         requests:
           cpu: 30m
-          memory: 32Mi
+          memory: 64Mi
     alertmanager:
       enabled: true
       alertmanagerSpec:
