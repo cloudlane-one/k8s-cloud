@@ -30,7 +30,7 @@ spec:
   chart:
     spec:
       chart: vcluster
-      version: "^0.15.3 || 0.15.3-beta.0" # Need this fix: https://github.com/loft-sh/vcluster/pull/1089
+      version: "^0.15.3 || 0.15.3-beta.2" # Need this fix: https://github.com/loft-sh/vcluster/pull/1089
       sourceRef:
         kind: HelmRepository
         name: loft-sh
@@ -60,6 +60,10 @@ spec:
       extraArgs:
         - "--tls-san={{ .Values.host }}"
         - "--sync-labels=svccontroller.k3s.cattle.io/lbpool"
+      resources:
+        requests:
+          cpu: 20m
+          memory: 128Mi
     vcluster:
       extraArgs:
         - "--kube-apiserver-arg=oidc-issuer-url={{ .Values.oidc_client.idp_url }}"
@@ -71,6 +75,10 @@ spec:
             secretKeyRef:
               name: vcluster-mariadb-endpoint
               key: url
+      resources:
+        requests:
+          cpu: 200m
+          memory: 1Gi
     coredns:
       replicas: 2
       image: coredns/coredns:1.10.1 # workaround for: https://github.com/loft-sh/vcluster/issues/1141
