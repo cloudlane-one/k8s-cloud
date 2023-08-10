@@ -96,7 +96,6 @@ Copy the cluster inventory template `clusters/_example`:
 
 ```bash
 cp ./clusters/_example_ ./clusters/$CLUSTER_NAME
-cd ./clusters/$CLUSTER_NAME
 ```
 
 Replace `$CLUSTER_NAME` with an arbitrary alphanumeric name for your cluster.
