@@ -30,7 +30,7 @@ spec:
   chart:
     spec:
       chart: vcluster
-      version: "^0.15.3 || 0.15.3-beta.2" # Need this fix: https://github.com/loft-sh/vcluster/pull/1089
+      version: "^0.15.3 || 0.15.3-beta.0 || 0.15.3-beta.1 || 0.15.3-beta.2" # Need this fix: https://github.com/loft-sh/vcluster/pull/1089
       sourceRef:
         kind: HelmRepository
         name: loft-sh
