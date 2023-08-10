@@ -41,6 +41,7 @@ The cluster set up by this repo consists of a multitude of open-source projects,
   - Nightly full-cluster backups
   - Easy manual backing up and restoring
 - GitOps System: [FluxCD](https://github.com/fluxcd/flux2)
+  - Continuous, rolling updates of deployed apps based on semver ranges
   - [Weave Gitops](https://github.com/weaveworks/weave-gitops) as Web UI
 - Upgrade System: [System Upgrade Controller](https://github.com/rancher/system-upgrade-controller)
   - Automatic, non-disruptive upgrades from k3s stable channel
