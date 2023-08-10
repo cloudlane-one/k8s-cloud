@@ -48,6 +48,8 @@ spec:
         retention_enabled: true
       limits_config:
         retention_period: 168h
+      commonConfig:
+        replication_factor: 1
     read:
       replicas: 1
       resources:
