@@ -48,34 +48,39 @@ spec:
 
 {{- else }}
 
-    {{- if and .Values.k3s (.Values.node_endpoints | len | gt 0) }}
     defaultRules:
       rules:
         general: false
-    kubeControllerManager:
-      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
-    kubeProxy:
-      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
-    kubeScheduler:
-      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
-    {{- else if .Values.k3s }}
-    defaultRules:
-      rules:
-        general: false
+        {{- if and .Values.k3s (.Values.node_endpoints | len | eq 0) }}
         kubeControllerManager: false
         kubeProxy: false
         kubeSchedulerAlerting: false
         kubeSchedulerRecording: false
+        {{- end }}
+        {{- if .Values.vcluster }}
+        nodeExporterAlerting: false
+        nodeExporterRecording: false
+        {{- end }}
+    {{- if .Values.k3s }}
+    {{- if .Values.node_endpoints | len | gt 0 }}
+    kubeControllerManager:
+      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
+    kubeProxy:
+      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
+    kubeScheduler:
+      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
+    {{- else }}
     kubeControllerManager:
       enabled: false
     kubeProxy:
       enabled: false
     kubeScheduler:
       enabled: false
-    {{- else }}
-    defaultRules:
-      rules:
-        general: false
+    {{- end }}
+    {{- end }}
+    {{- if .Values.vcluster }}
+    nodeExporter:
+      enabled: false
     {{- end }}
     prometheus-node-exporter:
       resources:

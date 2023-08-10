@@ -27,6 +27,8 @@ k3s: false
 # Pass public k8s node ips so that k3s metrics endpoints can be monitored
 node_endpoints: []
 
+vcluster: false
+
 letsencrypt_staging: false
 ingress: true
 
