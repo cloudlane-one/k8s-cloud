@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: dns-token
+  name: dns-credentials
 type: Opaque
 data:
-  {{- $secretRef := .Values.token_secret }}
-  digitalocean_api_token: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
+  {{- $secretRef := .Values.provider.secret }}
+  {{- (lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data | toYaml | nindent 2 }}
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
@@ -37,9 +37,23 @@ spec:
       - service
       - ingress
     txtOwnerId: {{ .Values.domain }}
-    provider: digitalocean
-    digitalocean:
-      secretName: dns-token
+    logLevel: debug
+    provider: {{ .Values.provider.name }}
+    {{- $providerConfName := eq .Values.provider.name "azure-private-dns" | ternary "azure" .Values.provider.name }}
+    {{ $providerConfName }}:
+      {{- if eq .Values.provider.name "aws" }}
+      credentials:
+        secretName: dns-credentials
+      {{- else if eq .Values.provider.name "google" }}
+      serviceAccountSecret: dns-credentials
+      {{- else }}
+      secretName: dns-credentials
+      {{- end }}
+      {{ .Values.provider.extra_config | empty | not | ternary (.Values.provider.extra_config | toYaml | nindent 6) "" }}
+    resources:
+      requests:
+        cpu: 30m
+        memory: 64Mi
     metrics:
       enabled: true
       serviceMonitor:

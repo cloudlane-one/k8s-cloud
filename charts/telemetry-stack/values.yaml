@@ -3,31 +3,20 @@ host: ""
 oidc_client:
   # Only works with keycloak currently.
   idp_url: ""
-  id: ""
+  id: cluster-oidc
   secret:
-    namespace: null
-    name: ""
-    key: "secret"
-
-s3:
-  endpoint: "" # Domain without protocol of your S3 endpoint (e.g. "s3.example.org")
-  region: "eu-central-1" # Required by Longhorn, just leave the default if you don't have zones
-  access_key_id: "" # Your S3 access key id
-  access_key_secret:
-    # Your S3 access key secret
-    namespace: null
-    name: ""
-    key: "secret"
-  bucket: "" # Name of bucket
+    namespace: sso-system
+    name: cluster-oidc
+    key: secret
 
 smtp: # For admin notifications
   host: ""
   port: ""
   user: ""
   password_secret:
-    namespace: null
-    name: ""
-    key: "secret"
+    namespace: kube-system
+    name: mail-smtp
+    key: password
   from_address: ""
 
 admin_email: ""
@@ -35,8 +24,9 @@ admin_email: ""
 admin_group: ""
 
 k3s: false
-# Pass public k8s node ips so that k3s metrics endpoints can be monitored (if not vcluster)
+# Pass public k8s node ips so that k3s metrics endpoints can be monitored
 node_endpoints: []
+
 vcluster: false
 
 letsencrypt_staging: false

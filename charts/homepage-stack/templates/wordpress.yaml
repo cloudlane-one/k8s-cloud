@@ -81,11 +81,11 @@ kind: HelmRelease
 metadata:
   name: wordpress
 spec:
-  interval: 10m
+  interval: 1h
   chart:
     spec:
       chart: wordpress
-      version: "^16"
+      version: "16.1.33"
       sourceRef:
         kind: HelmRepository
         name: bitnami
@@ -180,3 +180,23 @@ spec:
         nginx.ingress.kubernetes.io/proxy-body-size: 4G
       {{- end -}}
       {{- end }}
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "wordpress-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: wordpress
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "wordpress-mariadb-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: data-wordpress-mariadb-0

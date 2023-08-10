@@ -1,35 +1,31 @@
-- name: Perform localhost setup steps, if according flags are set
+- name: SSH config
   tags: nodes
   hosts: localhost
   connection: local
   roles:
-    - role: clear-known-hosts
-      when: "(clear_known_hosts is defined) and clear_known_hosts and (clear_known_hosts != 'false')"
-    - role: auto-trust
-      when: "(auto_trust_remotes is defined) and auto_trust_remotes and (auto_trust_remotes != 'false')"
+    - role: ssh-setup
+
+- name: Load cluster config
+  tags:
+    - nodes
+    - infra
+  hosts: cluster
+  run_once: true
+  roles:
+    - role: cluster-config
 
 - name: Run setup for all nodes
   tags: nodes
-  hosts: all
+  hosts: cluster
   become: true
-  vars:
-    control_nodes: "{{ groups['control_nodes'] | default([]) }}"
   roles:
-    - role: node
-      when: "not vcluster"
-  tasks:
-    - name: Add first host to control_nodes group, if group wasn't explicitly created
-      when: "'control_nodes' not in groups and inventory_hostname == groups['all'][0]"
-      ansible.builtin.add_host:
-        name: "{{ inventory_hostname }}"
-        groups: control_nodes
+    - role: node-setup
+      when: "not cluster.virtual"
 
 - name: Setup infrastructure via kubectl from one of the control hosts
   tags: infra
-  hosts: control_nodes
+  hosts: control
   run_once: true
   become: true
-  environment:
-    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   roles:
-    - role: infrastructure
+    - role: infra-setup

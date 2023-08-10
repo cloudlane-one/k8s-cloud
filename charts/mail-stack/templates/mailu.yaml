@@ -3,48 +3,34 @@ kind: HelmRepository
 metadata:
   name: mailu
 spec:
-  interval: 60m
+  interval: 1h
   url: https://mailu.github.io/helm-charts/
 ---
-apiVersion: cert-manager.io/v1
-kind: Issuer
-metadata:
-  name: letsencrypt-issuer
-spec:
-  acme:
-    email: {{ .Values.admin_email | quote }}
-    server: https://acme-v02.api.letsencrypt.org/directory
-    privateKeySecretRef:
-      # Secret resource that will be used to store the account's private key.
-      name: letsencrypt-issuer-account-key
-    solvers:
-      - http01:
-          ingress:
-            class: {{ .Values.ingress_class }}
----
+{{- if not .Values.ingress }}
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: mailu-tls
+  name: mailu-selfsigned-tls
 spec:
-  secretName: mailu-tls
+  secretName: mailu-selfsigned-tls
   dnsNames:
-  - {{ .Values.hosts.mailu }}
+    - {{ .Values.hosts.mailu }}
   issuerRef:
-    name: letsencrypt-issuer
+    name: selfsigned-issuer
     kind: Issuer
     group: cert-manager.io
 ---
+{{- end }}
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
   name: mailu
 spec:
-  interval: 10m
+  interval: 1h
   chart:
     spec:
       chart: mailu
-      version: "^1.2"
+      version: "1.2.0"
       sourceRef:
         kind: HelmRepository
         name: mailu
@@ -68,16 +54,24 @@ spec:
       single_pvc: false
     ingress:
       enabled: {{ .Values.ingress }}
-      existingSecret: mailu-tls
+      {{- if not .Values.ingress }}
+      existingSecret: mailu-selfsigned-tls
+      {{- end }}
       annotations:
         nginx.ingress.kubernetes.io/auth-response-headers: "Authorization, X-Auth-Request-User, X-Auth-Request-Groups, X-Auth-Request-Email, X-Auth-Request-Preferred-Username, X-Auth-Request-Access-Token"
         nginx.ingress.kubernetes.io/auth-signin: {{ printf "https://%s/oauth2/start?rd=$scheme%%3A%%2F%%2F$host$escaped_request_uri" .Values.oauth2_proxy_host }}
         nginx.ingress.kubernetes.io/auth-url: {{ printf "https://%s/oauth2/auth" .Values.oauth2_proxy_host }}
+        kubernetes.io/tls-acme: "true"
     mariadb:
       enabled: true
       primary:
         persistence:
           enabled: true
+          size: 4Gi
+    redis:
+      master:
+        persistence:
+          size: 2Gi
     front:
       kind: DaemonSet
       hostPort:
@@ -101,7 +95,8 @@ spec:
         PTR: {{ .Values.hosts.mailu }}
       {{ end -}}
       persistence:
-        size: 5Gi
+        size: 2Gi
+        claimNameOverride: mailu-postfix
       extraVolumes:
         - name: mailman
           persistentVolumeClaim:
@@ -121,7 +116,8 @@ spec:
           relay_domains = regexp:/mailman/var/data/postfix_domains
     admin:
       persistence:
-        size: 5Gi
+        size: 2Gi
+        claimNameOverride: mailu-admin
       {{- if .Values.use_mailu_proxy_auth }}
       extraEnvVars:
         - name: PROXY_AUTH_WHITELIST
@@ -133,10 +129,12 @@ spec:
       {{- end }}
     dovecot:
       persistence:
-        size: 5Gi
+        size: 4Gi
+        claimNameOverride: mailu-dovecot
     webmail:
       persistence:
-        size: 5Gi
+        size: 2Gi
+        claimNameOverride: mailu-webmail
       {{- if .Values.use_mailu_proxy_auth }}
       extraEnvVars:
         - name: PROXY_AUTH_WHITELIST
@@ -149,8 +147,80 @@ spec:
     fetchmail:
       enabled: true
       persistence:
-        size: 5Gi
+        size: 2Gi
+        claimNameOverride: mailu-fetchmail
     webdav:
       enabled: true
       persistence:
-        size: 5Gi
+        size: 2Gi
+        claimNameOverride: mailu-webdav
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "mailu-postfix-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: mailu-postfix
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "mailu-admin-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: mailu-admin
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "mailu-dovecot-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: mailu-dovecot
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "mailu-webmail-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: mailu-webmail
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "mailu-fetchmail-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: mailu-fetchmail
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "mailu-webdav-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: mailu-webdav
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "mailu-mariadb-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: data-mailu-mariadb-0

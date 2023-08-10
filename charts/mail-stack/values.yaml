@@ -10,14 +10,11 @@ hosts:
 
 oidc_client:
   idp_url: ""
-  id: ""
+  id: cluster-oidc
   secret:
-    namespace: null
-    name: ""
-    key: "secret"
-
-admin_email: "" # external admin email for Letsencrypt
-ingress_class: nginx # needed for ACME challenge
+    namespace: sso-system
+    name: cluster-oidc
+    key: secret
 
 oauth2_proxy_host: ""
 

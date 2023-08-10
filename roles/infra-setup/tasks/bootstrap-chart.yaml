@@ -1,0 +1,49 @@
+- name: Chart details
+  ansible.builtin.debug:
+    msg: "Bootstrapping chart {{ chart.name }} into namespace {{ chart.namespace }}"
+
+- name: Ensure chart namespace exists
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    wait: true
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ chart.namespace }}"
+
+- name: Check if chart release already exists
+  kubernetes.core.helm_info:
+    kubeconfig: "{{ kubeconfig }}"
+    name: "{{ chart.name }}"
+    release_namespace: "{{ chart.namespace }}"
+  register: existing_release
+
+- name: Bootstrap chart release, if it doesn't exist yet
+  when: "existing_release.status is undefined or existing_release.status.keys() | length == 0"
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    wait: true
+    wait_timeout: 600
+    wait_condition:
+      type: Ready
+      status: "True"
+    definition:
+      apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      metadata:
+        name: "{{ chart['name'] }}"
+        namespace: "{{ chart['namespace'] }}"
+      spec:
+        interval: 1h
+        chart:
+          spec:
+            chart: "./charts/{{ chart['name'] }}"
+            sourceRef:
+              kind: GitRepository
+              name: base-repo
+              namespace: flux-system
+            reconcileStrategy: Revision
+        values:
+          bootstrap: true
+          vcluster: "{{ cluster.virtual }}"

@@ -26,6 +26,10 @@ spec:
         replicas: 2
     metricsScraper:
       enabled: true
+    resources:
+      requests:
+        cpu: 30m
+        memory: 64Mi
     ingress:
       enabled: true
       annotations:

@@ -1,0 +1,173 @@
+- name: Ensure k3s kubeconfig is set as default
+  ansible.builtin.lineinfile:
+    path: ~/.bashrc
+    create: true
+    line: "export KUBECONFIG=/etc/rancher/k3s/k3s.yaml"
+    mode: '0640'
+
+- name: Copy requirements.txt to remote
+  ansible.builtin.copy:
+    src: requirements.txt
+    dest: /tmp
+    mode: '0644'
+
+- name: Ensure PIP dependencies are installed
+  ansible.builtin.pip:
+    requirements: /tmp/requirements.txt
+
+- name: Check if Helm CLI is installed
+  ansible.builtin.command: "which helm"
+  register: which_helm
+  changed_when: false
+  failed_when: false
+  ignore_errors: true
+
+- name: Download Helm install script
+  when: "which_helm.rc != 0"
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+    dest: /tmp/helm-install.sh
+    mode: "0700"
+
+- name: Run Helm install script
+  when: "which_helm.rc != 0"
+  ansible.builtin.command: /tmp/helm-install.sh
+  changed_when: true
+
+- name: Ensure helm diff plugin is installed
+  kubernetes.core.helm_plugin:
+    plugin_path: https://github.com/databus23/helm-diff
+
+- name: Check if Flux CLI is installed
+  ansible.builtin.command: "which flux"
+  register: which_flux
+  changed_when: false
+  failed_when: false
+  ignore_errors: true
+
+- name: Download Flux install script
+  when: "which_flux.rc != 0"
+  ansible.builtin.get_url:
+    url: https://fluxcd.io/install.sh
+    dest: /tmp/flux-install.sh
+    mode: "0700"
+
+- name: Run Flux install script
+  when: "which_flux.rc != 0"
+  ansible.builtin.command: /tmp/flux-install.sh
+  changed_when: true
+
+- name: Check if VCluster CLI is installed
+  ansible.builtin.command: "which vcluster"
+  register: which_vcluster
+  changed_when: false
+  failed_when: false
+  ignore_errors: true
+
+- name: Download VCluster CLI
+  when: "which_vcluster.rc != 0"
+  ansible.builtin.get_url:
+    url: https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64
+    dest: /tmp/vcluster-cli
+    mode: "0700"
+
+- name: Install VCluster CLI
+  when: "which_vcluster.rc != 0"
+  ansible.builtin.command: "install -c -m 0755 /tmp/vcluster-cli /usr/local/bin/vcluster"
+  changed_when: true
+
+- name: Check if Velero CLI is installed
+  ansible.builtin.command: "which velero"
+  register: which_velero
+  changed_when: false
+  failed_when: false
+  ignore_errors: true
+
+- name: Install Velero
+  when: "which_velero.rc != 0"
+  vars:
+    velero_repo: https://github.com/vmware-tanzu/velero
+    velero_version: "1.11.0"
+    arch: "{{ ansible_architecture | lower }}"
+  block:
+    - name: Pick amd64 architecture for Velero CLI
+      when: "arch | regex_search('(x86_64|amd64)')"
+      ansible.builtin.set_fact:
+        velero_arch: amd64
+
+    - name: Pick arm64 architecture for Velero CLI
+      when: "arch | regex_search('arm64')"
+      ansible.builtin.set_fact:
+        velero_arch: arm64
+
+    - name: Pick arm architecture for Velero CLI
+      when: "not velero_arch and (arch | regex_search('arm'))"
+      ansible.builtin.set_fact:
+        velero_arch: arm
+
+    - name: Ensure velero tmp dir exists
+      ansible.builtin.file:
+        path: /tmp/velero
+        state: directory
+        mode: '0755'
+
+    - name: Download and extract Velero CLI
+      ansible.builtin.unarchive:
+        src: "{{ velero_repo }}/releases/download/v{{ velero_version }}/velero-v{{ velero_version }}-linux-{{ velero_arch }}.tar.gz"
+        dest: /tmp/velero
+        remote_src: true
+
+    - name: Copy Velero CLI to bin dir
+      ansible.builtin.copy:
+        remote_src: true
+        src: "/tmp/velero/velero-v{{ velero_version }}-linux-{{ velero_arch }}/velero"
+        dest: /usr/local/bin/velero
+        mode: '0755'
+
+- name: Check if Kubelogin is installed
+  ansible.builtin.command: "which kubectl-oidc-login"
+  register: which_kubelogin
+  changed_when: false
+  failed_when: false
+  ignore_errors: true
+
+- name: Install Kubelogin
+  when: "which_kubelogin.rc != 0"
+  vars:
+    kubelogin_repo: https://github.com/int128/kubelogin
+    kubelogin_version: "1.27.0"
+    arch: "{{ ansible_architecture | lower }}"
+  block:
+    - name: Pick amd64 architecture for Kubelogin
+      when: "arch | regex_search('(x86_64|amd64)')"
+      ansible.builtin.set_fact:
+        kubelogin_arch: amd64
+
+    - name: Pick arm64 architecture for Kubelogin
+      when: "arch | regex_search('arm64')"
+      ansible.builtin.set_fact:
+        kubelogin_arch: arm64
+
+    - name: Pick arm architecture for Kubelogin
+      when: "not kubelogin_arch and (arch | regex_search('arm'))"
+      ansible.builtin.set_fact:
+        kubelogin_arch: arm
+
+    - name: Ensure kubelogin tmp dir exists
+      ansible.builtin.file:
+        path: /tmp/kubelogin
+        state: directory
+        mode: '0755'
+
+    - name: Download and extract Kubelogin
+      ansible.builtin.unarchive:
+        src: "{{ kubelogin_repo }}/releases/download/v{{ kubelogin_version }}/kubelogin_linux_{{ kubelogin_arch }}.zip"
+        dest: /tmp/kubelogin
+        remote_src: true
+
+    - name: Copy Kubelogin to bin dir
+      ansible.builtin.copy:
+        remote_src: true
+        src: "/tmp/kubelogin/kubelogin"
+        dest: /usr/local/bin/kubectl-oidc-login
+        mode: '0755'

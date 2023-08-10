@@ -1,3 +1,4 @@
+{{- if not .Values.vcluster }}
 # This VolumeSnapshotClass will be used by Velero to automatically 
 # trigger volume snapshotting and snapshot backup via Longhorn.
 # See here: https://longhorn.io/docs/1.4.1/snapshots-and-backups/csi-snapshot-support/csi-volume-snapshot-associated-with-longhorn-backup/#create-a-csi-volumesnapshot-associated-with-longhorn-backup
@@ -7,11 +8,12 @@ metadata:
   labels:
       velero.io/csi-volumesnapshot-class: "true"
   name: velero-backup
-driver: {{ .Values.storageDriver }}
+driver: driver.longhorn.io
 deletionPolicy: Delete
 parameters:
   type: bak
 ---
+{{- end }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -69,7 +71,7 @@ spec:
           prefix: velero
           config:
             region: {{ .Values.s3.region }}
-            s3Url: {{ printf "https://%s" .Values.s3.endpoint }}
+            s3Url: {{ .Values.s3.endpoint }}
             serverSideEncryption: AES256
       volumeSnapshotLocation:
         - name: default
@@ -90,7 +92,7 @@ spec:
           - mountPath: /target
             name: plugins
     schedules:
-      full-backup:
+      cluster-backup:
         disabled: false
         schedule: "0 0 * * *"
         useOwnerReferencesInBackup: false
@@ -100,7 +102,7 @@ spec:
           includeClusterResources: true
           snapshotVolumes: true
           storageLocation: default
-          ttl: "7d"
+          ttl: "168h"
 ---
 apiVersion: v1
 kind: ConfigMap

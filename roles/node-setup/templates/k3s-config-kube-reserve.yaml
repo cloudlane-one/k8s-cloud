@@ -1,0 +1,3 @@
+kubelet-arg+:
+  - "kube-reserved-cgroup=/kubesystem.slice"
+  - "enforce-node-allocatable=pods,kube-reserved"

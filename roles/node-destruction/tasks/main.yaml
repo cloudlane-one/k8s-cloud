@@ -1,0 +1,30 @@
+- name: Load configuration
+  ansible.builtin.import_role:
+    name: cluster-config
+    allow_duplicates: false
+
+- name: Set dynamic facts
+  ansible.builtin.set_fact:
+    control: "{{ inventory_hostname in groups['control_hosts'] }}"
+
+- name: Uninstall k3s server
+  when: "control"
+  ansible.builtin.command: /usr/local/bin/k3s-uninstall.sh
+  changed_when: true
+
+- name: Uninstall k3s agent
+  when: "not control"
+  ansible.builtin.command: /usr/local/bin/k3s-agent-uninstall.sh
+  changed_when: true
+
+- name: Ensure Tailscale is uninstalled
+  when: "cluster.tailscale.enabled"
+  ansible.builtin.package:
+    name: tailscale
+    state: absent
+
+- name: Ensure Tailscale state is removed
+  when: "cluster.tailscale.enabled"
+  ansible.builtin.file:
+    path: /var/lib/tailscale/tailscaled.state
+    state: absent

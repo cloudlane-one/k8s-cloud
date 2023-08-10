@@ -9,20 +9,20 @@ org:
 oidc_client:
   # Only works with keycloak currently.
   idp_url: ""
-  id: ""
+  id: cluster-oidc
   secret:
-    namespace: null
-    name: ""
-    key: "secret"
+    namespace: sso-system
+    name: cluster-oidc
+    key: secret
 
 smtp: # For admin notifications
   host: ""
   port: ""
   user: ""
   password_secret:
-    namespace: null
-    name: ""
-    key: "secret"
+    namespace: kube-system
+    name: mail-smtp
+    key: password
   from_address: ""
 
 admin_email: ""

@@ -1,20 +1,13 @@
-# Chart dependencies
-**/charts/*.tgz
-Chart.lock
-
 # Files marked as local-only
 *.local
 *.local.*
 
-# Files containing secrets & custom config
-/*kubeconfig*.yaml
-/*kubeconfig*.yml
+# Kubeconfig etc.
+/kubeconfig
+/kubeconfig.yaml
+/kubeconfig.yml
 /join-token
-/*.hosts.ini
-/*.config.yaml
-/*.secrets.yaml
-/*.values.yaml
-/*.hr.yaml
+/admin-password
 
-# Do not commit lockfil
+# Do not commit lockfile
 /poetry.lock

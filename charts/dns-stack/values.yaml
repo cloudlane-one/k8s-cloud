@@ -1,9 +1,24 @@
+# Domain to manage (including all subdomains).
 domain: ""
 
-policy: sync # External DNS policy ("upsert-only" or "sync")
-
-# Currently only Digitalocean provider supported.
-token_secret:
-  namespace: null
+provider:
+  # Name of external DNS provider.
+  # Supported values: akamai, alibabacloud, aws, azure, azure-private-dns, cloudflare, coredns, designate, digitalocean, google, hetzner, infoblox, linode, oci, ovh, pdns, rfc2136, transip, vinyldns
   name: ""
-  key: "token"
+
+  # Reference to secret containing private credentials for selected provider.
+  # Naming of secret key(s) depends on provider and can be looked up in 
+  # external-dns chart values: https://artifacthub.io/packages/helm/bitnami/external-dns?modal=values
+  # Look for `<provider name>.secretName` setting.
+  # Note that not all providers support reading credentials from a secret. 
+  # If yours does not, you'll have to pass the creds via `provider.extra_config`.
+  secret:
+    namespace: kube-system
+    name: dns
+
+  # Additional, provider specific options to be inserted into the
+  # <provider name> section of the external-dns helm chart.
+  extra_config: {}
+
+# External DNS policy ("upsert-only" or "sync")
+policy: sync

@@ -1,0 +1,18 @@
+{{- if not .Values.vcluster }}
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: k3s-auto-upgrade-plan
+spec:
+  dependsOn:
+    - name: system-upgrade-controller
+  interval: 1h
+  chart:
+    spec:
+      chart: ./charts/k3s-auto-upgrade-plan
+      sourceRef:
+        kind: GitRepository
+        name: base-repo
+        namespace: flux-system
+      reconcileStrategy: Revision
+{{- end }}

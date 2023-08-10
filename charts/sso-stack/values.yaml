@@ -30,9 +30,9 @@ smtp:
   from_address: ""
   starttls: false
   password_secret:
-    namespace: null
-    name: ""
-    key: "password"
+    namespace: kube-system
+    name: mail-smtp
+    key: password
 
 org:
   name: ""

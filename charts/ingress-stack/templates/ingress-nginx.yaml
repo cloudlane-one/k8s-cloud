@@ -21,16 +21,35 @@ spec:
         name: ingress-nginx
   timeout: '15m0s' # Account for slow performance of cluster on first setup.
   values:
+    # Override names with shorter ones to avoid hitting 63 char limit 
+    # after syncing with vcluster and klipper-lb.
+    fullnameOverride: inginx
     controller:
+      name: ctl
       replicaCount: 2
       ingressClassResource:
         default: true
       watchIngressWithoutClass: true
       extraArgs:
         enable-ssl-passthrough: "true"
+        update-status-on-shutdown: "false"
       config:
         proxy-buffer-size: "16k" # See https://andrewlock.net/fixing-nginx-upstream-sent-too-big-header-error-when-running-an-ingress-controller-in-kubernetes/ for explanation
-{{- if not .Values.bootstrap }}
+      service:
+        labels:
+          svccontroller.k3s.cattle.io/lbpool: {{ .Values.cluster_name }}
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+      admissionWebhooks:
+        enabled: false
+      autoscaling:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 4
+        targetCPUUtilizationPercentage: 65
+        targetMemoryUtilizationPercentage: 65
       metrics:
         enabled: true
         serviceMonitor:
@@ -79,4 +98,3 @@ metadata:
     grafana_dashboard: "1"
 data:
 {{ (.Files.Glob "config/grafana-dashboards/nginx*").AsConfig | indent 2 }}
-{{- end }}

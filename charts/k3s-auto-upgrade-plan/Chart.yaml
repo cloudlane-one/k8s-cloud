@@ -1,0 +1,6 @@
+apiVersion: v2
+name: k3s-auto-upgrade-plan
+description: Plan CR for automatic, non-disruptive k3s upgrades
+type: application
+version: "0.0.1"
+appVersion: "0.0.1"

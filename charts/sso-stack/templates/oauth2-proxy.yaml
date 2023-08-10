@@ -3,7 +3,7 @@ kind: HelmRepository
 metadata:
   name: oauth2-proxy
 spec:
-  interval: 10m
+  interval: 1h
   url: https://oauth2-proxy.github.io/manifests
 ---
 apiVersion: v1
@@ -19,7 +19,7 @@ kind: HelmRelease
 metadata:
   name: oauth2-proxy
 spec:
-  interval: 5m
+  interval: 1h
   chart:
     spec:
       chart: oauth2-proxy
@@ -45,6 +45,10 @@ spec:
       enabled: true
       servicemonitor:
         enabled: true
+    resources:
+      requests:
+        cpu: 30m
+        memory: 32Mi
     config:
       clientID: cluster-oidc
       # clientSecret: "" # injected via valuesFrom

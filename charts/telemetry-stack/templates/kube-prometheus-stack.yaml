@@ -33,8 +33,10 @@ spec:
   upgrade:
     crds: CreateReplace
   timeout: '15m0s' # Account for slow performance of cluster on first setup.
-{{- if .Values.bootstrap }}
   values:
+
+{{- if .Values.bootstrap }}
+
     kubeControllerManager:
       enabled: false
     kubeProxy:
@@ -43,46 +45,71 @@ spec:
       enabled: false
     nodeExporter:
       enabled: false
+
 {{- else }}
-  values:
-    {{- if and .Values.k3s (.Values.node_endpoints | len | gt 0) }}
+
     defaultRules:
       rules:
         general: false
-    kubeControllerManager:
-      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
-    kubeProxy:
-      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
-    kubeScheduler:
-      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
-    {{- else if .Values.k3s }}
-    defaultRules:
-      rules:
-        general: false
+        {{- if and .Values.k3s (.Values.node_endpoints | len | eq 0) }}
         kubeControllerManager: false
         kubeProxy: false
         kubeSchedulerAlerting: false
         kubeSchedulerRecording: false
+        {{- end }}
+        {{- if .Values.vcluster }}
+        nodeExporterAlerting: false
+        nodeExporterRecording: false
+        {{- end }}
+    {{- if .Values.k3s }}
+    {{- if .Values.node_endpoints | len | gt 0 }}
+    kubeControllerManager:
+      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
+    kubeProxy:
+      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
+    kubeScheduler:
+      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
+    {{- else }}
     kubeControllerManager:
       enabled: false
     kubeProxy:
       enabled: false
     kubeScheduler:
       enabled: false
-    {{- else }}
-    defaultRules:
-      rules:
-        general: false
+    {{- end }}
     {{- end }}
     {{- if .Values.vcluster }}
     nodeExporter:
       enabled: false
     {{- end }}
+    prometheus-node-exporter:
+      resources:
+        requests:
+          cpu: 30m
+          memory: 32Mi
+    kube-state-metrics:
+      resources:
+        requests:
+          cpu: 30m
+          memory: 64Mi
     alertmanager:
       enabled: true
+      alertmanagerSpec:
+        resources:
+          requests:
+            cpu: 30m
+            memory: 32Mi
     prometheusOperator:
       admissionWebhooks:
         timeoutSeconds: 30 # Prevent timeouts during helm upgrade
+        patch:
+          resources:
+            cpu: 30m
+            memory: 32Mi
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
     prometheus:
       prometheusSpec:
         serviceMonitorSelectorNilUsesHelmValues: false
@@ -95,9 +122,20 @@ spec:
               accessModes: ["ReadWriteOnce"]
               resources:
                 requests:
-                  storage: 8Gi
+                  storage: 16Gi
         retention: 2d
+        resources:
+          requests:
+            cpu: 200m
+            memory: 2.5Gi
+          limits:
+            cpu: 300m
+            memory: 3Gi
     grafana:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 256Mi
       envValueFrom:
         SMTP_PASSWORD:
           secretKeyRef:
@@ -107,6 +145,10 @@ spec:
           secretKeyRef:
             name: oidc-client
             key: secret
+        LOKI_PASS:
+          secretKeyRef:
+            name: loki-basicauth
+            key: password
       admin:
         existingSecret: grafana-admin
         userKey: username
@@ -151,6 +193,7 @@ spec:
             secretName: grafana-cert
       persistence:
         enabled: true
+        size: 5Gi
         accessModes:
           - ReadWriteMany
       alerting:
@@ -296,6 +339,19 @@ spec:
                   mute_time_intervals:
                     - always
                   continue: false
+      additionalDataSources:
+        - name: Loki
+          type: loki
+          access: proxy
+          url: http://loki-gateway
+          basicAuth: true
+          basicAuthUser: cluster
+          jsonData:
+            maxLines: 1000
+            httpHeaderName1: "X-Scope-OrgID"
+          secureJsonData:
+            basicAuthPassword: "${LOKI_PASS}"
+            httpHeaderValue1: "1"
 ---
 apiVersion: v1
 kind: Secret

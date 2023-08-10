@@ -1,3 +1,4 @@
+{{- if not .Values.vcluster }}
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
@@ -53,7 +54,7 @@ data:
   # See https://longhorn.io/docs/1.2.4/snapshots-and-backups/backup-and-restore/set-backup-target/#set-up-aws-s3-backupstore
   AWS_ACCESS_KEY_ID: {{ .Values.s3.access_key_id | b64enc }}
   AWS_SECRET_ACCESS_KEY: {{ $s3_secret }}
-  AWS_ENDPOINTS: {{ printf "https://%s" .Values.s3.endpoint | b64enc }}
+  AWS_ENDPOINTS: {{ .Values.s3.endpoint | b64enc }}
   VIRTUAL_HOSTED_STYLE: dHJ1ZQ== # true
 ---
 apiVersion: monitoring.coreos.com/v1
@@ -103,4 +104,5 @@ metadata:
     role: alert-rules
   name: longhorn
 spec: {{ .Files.Get "config/alert-rules.yaml" | nindent 2 }}
+{{- end }}
 {{- end }}
