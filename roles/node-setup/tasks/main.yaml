@@ -26,6 +26,7 @@
           - wireguard
           - python3
           - python3-pip
+          - unzip
         update_cache: true
 
     - name: Install packages via yum
@@ -37,6 +38,7 @@
           - wireguard-tools
           - python3
           - python3-pip
+          - unzip
         update_cache: true
 
     - name: Install packages via apk
@@ -48,6 +50,7 @@
           - wireguard-tools
           - python3
           - py3-pip
+          - unzip
         update_cache: true
 
     - name: Install packages via dnf
@@ -59,6 +62,7 @@
           - wireguard-tools
           - python3
           - python3-pip
+          - unzip
         update_cache: true
 
     - name: Install packages via zypper
@@ -70,6 +74,7 @@
           - wireguard-tools
           - python3
           - python3-pip
+          - unzip
         update_cache: true
 
     - name: Install packages via pacman
@@ -81,6 +86,7 @@
           - wireguard-tools
           - python
           - python-pip
+          - unzip
         update_cache: true
 
 - name: Disable multipath for all sdx devices

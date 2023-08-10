@@ -7,6 +7,7 @@
 /kubeconfig.yaml
 /kubeconfig.yml
 /join-token
+/admin-password
 
 # Do not commit lockfile
 /poetry.lock

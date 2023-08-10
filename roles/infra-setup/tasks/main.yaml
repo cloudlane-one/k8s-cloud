@@ -188,127 +188,6 @@
         wait: true
         wait_timeout: 120
 
-- name: Ensure kubeconfig file is available on local machine
-  block:
-    - name: Determine kubeconfig context name
-      vars:
-        host_ctx: "{{ host_cluster_name | ternary(host_cluster_name, default_ctx) }}"
-      ansible.builtin.set_fact:
-        ctx_name: "{{ cluster.virtual | ternary(cluster_name, host_ctx) }}"
-
-    - name: Use remote kubeconfig file as basis
-      block:
-        - name: Copy remote kubeconfig file
-          ansible.builtin.copy:
-            remote_src: true
-            src: "{{ kubeconfig }}"
-            dest: /tmp/public-kubeconfig.yaml
-            mode: '0644'
-
-        - name: List remote kubeconfig contexts
-          environment:
-            KUBECONFIG: /tmp/public-kubeconfig.yaml
-          ansible.builtin.command: "kubectl config get-contexts -o name"
-          register: all_ctx
-          changed_when: false
-
-        - name: Delete all other remote contexts
-          loop: "{{ all_ctx.stdout_lines }}"
-          when: "item != ctx_name"
-          environment:
-            KUBECONFIG: /tmp/public-kubeconfig.yaml
-          ansible.builtin.command: "kubectl config delete-context {{ item }}"
-          changed_when: true
-
-        - name: Delete all other remote clusters
-          loop: "{{ all_ctx.stdout_lines }}"
-          when: "item != ctx_name"
-          environment:
-            KUBECONFIG: /tmp/public-kubeconfig.yaml
-          ansible.builtin.command: "kubectl config delete-cluster {{ item }}"
-          changed_when: true
-
-        - name: Delete all other remote users
-          loop: "{{ all_ctx.stdout_lines }}"
-          when: "item != ctx_name"
-          environment:
-            KUBECONFIG: /tmp/public-kubeconfig.yaml
-          ansible.builtin.command: "kubectl config delete-user {{ item }}"
-          changed_when: true
-
-    - name: Check for local kubeconfig
-      delegate_to: localhost
-      become: false
-      ansible.builtin.stat:
-        path: "{{ playbook_dir }}/{{ local_kubeconfig }}"
-      register: local_kubeconfig_file
-
-    - name: Copy and merge local config file
-      when: "local_kubeconfig_file.stat.exists"
-      block:
-        - name: Copy local kubeconfig to remote
-          ansible.builtin.copy:
-            src: "{{ playbook_dir }}/{{ local_kubeconfig }}"
-            dest: /tmp/local-kubeconfig.yaml
-            mode: '0644'
-
-        - name: Delete existing context in local config
-          environment:
-            KUBECONFIG: /tmp/local-kubeconfig.yaml
-          ansible.builtin.command: "kubectl config delete-context {{ ctx_name }}"
-          changed_when: true
-          failed_when: false
-
-        - name: Delete existing cluster in local config
-          environment:
-            KUBECONFIG: /tmp/local-kubeconfig.yaml
-          ansible.builtin.command: "kubectl config delete-cluster {{ ctx_name }}"
-          changed_when: true
-          failed_when: false
-
-        - name: Delete existing user in local config
-          environment:
-            KUBECONFIG: /tmp/local-kubeconfig.yaml
-          ansible.builtin.command: "kubectl config delete-user {{ ctx_name }}"
-          changed_when: true
-          failed_when: false
-
-        - name: Merge local kubeconfig with remote
-          environment:
-            KUBECONFIG: "/tmp/public-kubeconfig.yaml:/tmp/local-kubeconfig.yaml"
-          ansible.builtin.command:
-            argv:
-              - kubectl
-              - config
-              - view
-              - --flatten
-          register: merged_kubeconfig
-          changed_when: false
-
-        - name: Save merged kubeconfig to file
-          ansible.builtin.copy:
-            content: "{{ merged_kubeconfig.stdout }}"
-            dest: /tmp/public-kubeconfig.yaml
-            mode: '0644'
-
-    - name: Change server address of copied kubeconfig to public cluster FQN
-      environment:
-        KUBECONFIG: /tmp/public-kubeconfig.yaml
-      ansible.builtin.command:
-        argv:
-          - kubectl
-          - config
-          - set-cluster
-          - "{{ ctx_name }}"
-          - "--server=https://{{ k8s_api_host }}"
-      changed_when: true
-
-    - name: Download kubeconfig file
-      ansible.builtin.fetch:
-        src: /tmp/public-kubeconfig.yaml
-        dest: "{{ playbook_dir }}/kubeconfig.yaml"
-        flat: true
-
 - name: Ensure GitOps via FluxCD is setup
   environment:
     K8S_AUTH_KUBECONFIG: "{{ kubeconfig }}"
@@ -644,6 +523,117 @@
                         number: 443
                   path: /
                   pathType: ImplementationSpecific
+
+- name: Ensure OIDC kubeconfig file is available on local machine
+  block:
+    - name: Get cluster-oidc secret
+      environment:
+        KUBECONFIG: "{{ kubeconfig }}"
+      kubernetes.core.k8s_info:
+        kind: Secret
+        namespace: sso-system
+        name: cluster-oidc
+      register: cluster_oidc_secret
+      retries: 10 # Velero may need time to load the backup from s3.
+      delay: 20
+      until: "cluster_oidc_secret.resources | length > 0"
+
+    - name: Template out public kubeconfig
+      vars:
+        api_url: "https://{{ k8s_api_host }}"
+        issuer_url: "https://{{ cluster.subdomains.keycloak }}.{{ cluster.domain }}/realms/master"
+        client_secret: "{{ cluster_oidc_secret.resources[0].data.secret | b64decode }}"
+      ansible.builtin.template:
+        src: public-kubeconfig.yaml
+        dest: /tmp/public-kubeconfig.yaml
+        mode: '0644'
+
+    - name: Check for local kubeconfig
+      delegate_to: localhost
+      become: false
+      ansible.builtin.stat:
+        path: "{{ playbook_dir }}/{{ local_kubeconfig }}"
+      register: local_kubeconfig_file
+
+    - name: Copy and merge local config file
+      when: "local_kubeconfig_file.stat.exists"
+      block:
+        - name: Copy local kubeconfig to remote
+          ansible.builtin.copy:
+            src: "{{ playbook_dir }}/{{ local_kubeconfig }}"
+            dest: /tmp/local-kubeconfig.yaml
+            mode: '0644'
+
+        - name: Delete existing context in local config
+          environment:
+            KUBECONFIG: /tmp/local-kubeconfig.yaml
+          ansible.builtin.command: "kubectl config delete-context {{ cluster_name }}"
+          changed_when: true
+          failed_when: false
+
+        - name: Delete existing cluster in local config
+          environment:
+            KUBECONFIG: /tmp/local-kubeconfig.yaml
+          ansible.builtin.command: "kubectl config delete-cluster {{ cluster_name }}"
+          changed_when: true
+          failed_when: false
+
+        - name: Delete existing user in local config
+          environment:
+            KUBECONFIG: /tmp/local-kubeconfig.yaml
+          ansible.builtin.command: "kubectl config delete-user {{ cluster_name }}"
+          changed_when: true
+          failed_when: false
+
+        - name: Merge local kubeconfig with remote
+          environment:
+            KUBECONFIG: "/tmp/public-kubeconfig.yaml:/tmp/local-kubeconfig.yaml"
+          ansible.builtin.command:
+            argv:
+              - kubectl
+              - config
+              - view
+              - --flatten
+          register: merged_kubeconfig
+          changed_when: false
+
+        - name: Save merged kubeconfig to file
+          ansible.builtin.copy:
+            content: "{{ merged_kubeconfig.stdout }}"
+            dest: /tmp/public-kubeconfig.yaml
+            mode: '0644'
+
+    - name: Download kubeconfig file
+      ansible.builtin.fetch:
+        src: /tmp/public-kubeconfig.yaml
+        dest: "{{ playbook_dir }}/kubeconfig.yaml"
+        flat: true
+
+- name: Ensure idp admin password is available on local machine
+  block:
+    - name: Get idp-admin secret
+      environment:
+        KUBECONFIG: "{{ kubeconfig }}"
+      kubernetes.core.k8s_info:
+        kind: Secret
+        namespace: sso-system
+        name: idp-admin
+      register: idp_admin_secret
+      retries: 10 # Velero may need time to load the backup from s3.
+      delay: 20
+      until: "idp_admin_secret.resources | length > 0"
+
+    - name: Save idp admin password to file
+      ansible.builtin.copy:
+        content: "{{ idp_admin_secret.resources[0].data['admin-password'] | b64decode }}"
+        dest: /tmp/admin-password
+        mode: '0644'
+
+    - name: Download idp admin password
+      ansible.builtin.fetch:
+        src: /tmp/admin-password
+        dest: "{{ playbook_dir }}/admin-password"
+        flat: true
 
 - name: Reset kubectl context
   when: "host_cluster_name and default_ctx is defined"

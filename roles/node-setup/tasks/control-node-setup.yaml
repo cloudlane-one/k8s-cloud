@@ -123,3 +123,51 @@
         src: "/tmp/velero/velero-v{{ velero_version }}-linux-{{ velero_arch }}/velero"
         dest: /usr/local/bin/velero
         mode: '0755'
+
+- name: Check if Kubelogin is installed
+  ansible.builtin.command: "which kubectl-oidc-login"
+  register: which_kubelogin
+  changed_when: false
+  failed_when: false
+  ignore_errors: true
+
+- name: Install Kubelogin
+  when: "which_kubelogin.rc != 0"
+  vars:
+    kubelogin_repo: https://github.com/int128/kubelogin
+    kubelogin_version: "1.27.0"
+    arch: "{{ ansible_architecture | lower }}"
+  block:
+    - name: Pick amd64 architecture for Kubelogin
+      when: "arch | regex_search('(x86_64|amd64)')"
+      ansible.builtin.set_fact:
+        kubelogin_arch: amd64
+
+    - name: Pick arm64 architecture for Kubelogin
+      when: "arch | regex_search('arm64')"
+      ansible.builtin.set_fact:
+        kubelogin_arch: arm64
+
+    - name: Pick arm architecture for Kubelogin
+      when: "not kubelogin_arch and (arch | regex_search('arm'))"
+      ansible.builtin.set_fact:
+        kubelogin_arch: arm
+
+    - name: Ensure kubelogin tmp dir exists
+      ansible.builtin.file:
+        path: /tmp/kubelogin
+        state: directory
+        mode: '0755'
+
+    - name: Download and extract Kubelogin
+      ansible.builtin.unarchive:
+        src: "{{ kubelogin_repo }}/releases/download/v{{ kubelogin_version }}/kubelogin_linux_{{ kubelogin_arch }}.zip"
+        dest: /tmp/kubelogin
+        remote_src: true
+
+    - name: Copy Kubelogin to bin dir
+      ansible.builtin.copy:
+        remote_src: true
+        src: "/tmp/kubelogin/kubelogin"
+        dest: /usr/local/bin/kubectl-oidc-login
+        mode: '0755'

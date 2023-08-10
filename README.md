@@ -67,6 +67,7 @@ These system dependencies are to be installed on your local machine.
 
 - [Python](https://www.python.org/downloads/)
 - [Poetry](https://python-poetry.org)
+- [Kubelogin](https://github.com/int128/kubelogin)
 
 Clone the repo, `cd` to the cloned folder, and run following bash code to install all Python deps into a virtual environment:
 
@@ -143,7 +144,7 @@ Then copy the default cluster config file `./roles/cluster-config/configmap.yaml
 To setup all you provided hosts as kubernetes nodes and join them into a single cluster, run:
 
 ```bash
-ansible-playbook setup.yaml -i $CLUSTER_NAME
+ansible-playbook setup.yaml -i clusters/$CLUSTER_NAME
 ```
 
 > If you recently rebuilt the OS on any of the hosts and thereby lost its public key, make sure to also update (or at least delete) its `known_hosts` entry, otherwise Ansible will throw an error. You can also append `-e clear_known_hosts=true` to above command to delete the `known_hosts` entries for all hosts in the inventory before executing the setup.
@@ -185,7 +186,7 @@ Simply add new node hosts to your cluster's `hosts.yaml` and re-run the setup pl
 Create a copy of your `./clusters/$CLUSTER_NAME` directory named `./clusters/$CLUSTER_NAME-unprovision` and only keep hosts in `hosts.yaml`, **that you want to be removed**. Then run:
 
 ```bash
-ansible-playbook destroy.yaml -i $CLUSTER_NAME-unprovision
+ansible-playbook destroy.yaml -i clusters/$CLUSTER_NAME-unprovision
 ```
 
 ## Troubleshooting

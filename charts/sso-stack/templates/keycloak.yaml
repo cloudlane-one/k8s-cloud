@@ -293,7 +293,8 @@ spec:
               secret: "$(env:CLUSTER_OIDC_SECRET)"
               redirectUris:
                 - "https://{{ .Values.hosts.authproxy }}/oauth2/callback"
-                - "http://localhost:8000/"
+                - "http://localhost:8000"
+                - "http://localhost:18000"
               {{- range $uri := .Values.cluster_client.redirect_uris }}
                 - {{ $uri }}
               {{- end }}
