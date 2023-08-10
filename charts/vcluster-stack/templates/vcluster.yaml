@@ -101,7 +101,7 @@ spec:
     kind: Deployment
     name: vcluster
   minReplicas: 2
-  maxReplicas: 4
+  maxReplicas: {{ .Values.max_replicas }}
   metrics:
     - type: Resource
       resource:

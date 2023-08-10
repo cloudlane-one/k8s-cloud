@@ -2,9 +2,9 @@ cluster_name: ""
 
 host: "" # for k8s api
 
-vcluster: false
-
 oidc_client:
   # Only works with keycloak currently.
   idp_url: ""
   id: cluster-oidc
+
+max_replicas: 3
