@@ -6,7 +6,7 @@ s3:
   access_key_id: "" # Your S3 access key id
   access_key_secret:
     # Your S3 access key secret
-    namespace: "kube-system"
-    name: "s3"
-    key: "access_key_secret"
+    namespace: kube-system
+    name: backup-s3
+    key: access_key_secret
   bucket: "" # Name of bucket
