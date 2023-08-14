@@ -149,6 +149,9 @@ spec:
           secretKeyRef:
             name: loki-basicauth
             key: password
+      sidecar:
+        alerts:
+          enabled: true
       admin:
         existingSecret: grafana-admin
         userKey: username
