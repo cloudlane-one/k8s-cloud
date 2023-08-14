@@ -212,7 +212,7 @@ spec:
                     - refId: A
                       queryType: ''
                       relativeTimeRange:
-                        from: 600
+                        from: 120
                         to: 0
                       datasourceUid: prometheus
                       model:
@@ -289,7 +289,7 @@ spec:
                   dashboardUid: flux-cluster
                   panelId: 28
                   noDataState: NoData
-                  for: 600s
+                  for: "1h"
                   annotations:
                     runbook_url: "https://fluxcd.io/flux/cheatsheets/troubleshooting/"
                   labels:
