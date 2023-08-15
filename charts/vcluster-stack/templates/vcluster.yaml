@@ -92,8 +92,6 @@ spec:
           enabled: true
         pods:
           enabled: true
-    hostpathMapper:
-      enabled: true
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
