@@ -23,3 +23,7 @@ require_ptr: true
 use_mailu_proxy_auth: true
 
 ingress: true
+
+snapshots:
+  enabled: true
+  class_name: snap

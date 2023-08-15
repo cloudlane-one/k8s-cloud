@@ -39,4 +39,8 @@ smtp: # For admin notifications
 
 ingress: true
 
+snapshots:
+  enabled: true
+  class_name: snap
+
 debug: false

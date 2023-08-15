@@ -285,6 +285,7 @@ spec:
         persistence:
           enabled: true
           size: 4Gi
+{{- if .Values.snapshots.enabled }}
 ---
 apiVersion: snapshot.storage.k8s.io/v1
 kind: VolumeSnapshot
@@ -295,6 +296,9 @@ metadata:
 spec:
   source:
     persistentVolumeClaimName: nextcloud-nextcloud
+  {{- if .Values.snapshots.class_name }}
+  volumeSnapshotClassName: {{ .Values.snapshots.class_name }}
+  {{- end }}
 ---
 apiVersion: snapshot.storage.k8s.io/v1
 kind: VolumeSnapshot
@@ -305,3 +309,7 @@ metadata:
 spec:
   source:
     persistentVolumeClaimName: data-nextcloud-mariadb-0
+  {{- if .Values.snapshots.class_name }}
+  volumeSnapshotClassName: {{ .Values.snapshots.class_name }}
+  {{- end }}
+{{- end }}

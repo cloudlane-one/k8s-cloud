@@ -43,4 +43,8 @@ org:
 admin_group: ""
 admin_email: ""
 
+snapshots:
+  enabled: true
+  class_name: snap
+
 letsencrypt_staging: false

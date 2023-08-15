@@ -375,3 +375,31 @@ data:
   secret: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
 ---
 {{- end }}
+{{- if .Values.snapshots.enabled }}
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "kube-prometheus-stack-prometheus-db-prometheus-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: prometheus-kube-prometheus-stack-prometheus-db-prometheus-kube-prometheus-stack-prometheus-0
+  {{- if .Values.snapshots.class_name }}
+  volumeSnapshotClassName: {{ .Values.snapshots.class_name }}
+  {{- end }}
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "kube-prometheus-stack-prometheus-grafana-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: kube-prometheus-stack-grafana
+  {{- if .Values.snapshots.class_name }}
+  volumeSnapshotClassName: {{ .Values.snapshots.class_name }}
+  {{- end }}
+{{- end }}

@@ -180,6 +180,7 @@ spec:
         nginx.ingress.kubernetes.io/proxy-body-size: 4G
       {{- end -}}
       {{- end }}
+{{- if .Values.snapshots.enabled }}
 ---
 apiVersion: snapshot.storage.k8s.io/v1
 kind: VolumeSnapshot
@@ -190,6 +191,9 @@ metadata:
 spec:
   source:
     persistentVolumeClaimName: wordpress
+  {{- if .Values.snapshots.class_name }}
+  volumeSnapshotClassName: {{ .Values.snapshots.class_name }}
+  {{- end }}
 ---
 apiVersion: snapshot.storage.k8s.io/v1
 kind: VolumeSnapshot
@@ -200,3 +204,7 @@ metadata:
 spec:
   source:
     persistentVolumeClaimName: data-wordpress-mariadb-0
+  {{- if .Values.snapshots.class_name }}
+  volumeSnapshotClassName: {{ .Values.snapshots.class_name }}
+  {{- end }}
+{{- end }}

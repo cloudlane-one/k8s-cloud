@@ -214,6 +214,7 @@ spec:
 
       - name: UI_Use_Real_Name
         value: "true"
+{{- if .Values.snapshots.enabled }}
 ---
 apiVersion: snapshot.storage.k8s.io/v1
 kind: VolumeSnapshot
@@ -224,6 +225,9 @@ metadata:
 spec:
   source:
     persistentVolumeClaimName: rocketchat-rocketchat
+  {{- if .Values.snapshots.class_name }}
+  volumeSnapshotClassName: {{ .Values.snapshots.class_name }}
+  {{- end }}
 ---
 apiVersion: snapshot.storage.k8s.io/v1
 kind: VolumeSnapshot
@@ -234,3 +238,7 @@ metadata:
 spec:
   source:
     persistentVolumeClaimName: datadir-rocketchat-mongodb-0
+  {{- if .Values.snapshots.class_name }}
+  volumeSnapshotClassName: {{ .Values.snapshots.class_name }}
+  {{- end }}
+{{- end }}

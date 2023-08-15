@@ -15,3 +15,7 @@ custom_image:
   enable_apps: []
   # - payments
   # - non_profit
+
+snapshots:
+  enabled: true
+  class_name: snap

@@ -8,6 +8,7 @@ spec:
   resources:
     requests:
       storage: 4Gi
+{{- if .Values.snapshots.enabled }}
 ---
 apiVersion: snapshot.storage.k8s.io/v1
 kind: VolumeSnapshot
@@ -18,3 +19,7 @@ metadata:
 spec:
   source:
     persistentVolumeClaimName: mailman-core-data
+  {{- if .Values.snapshots.class_name }}
+  volumeSnapshotClassName: {{ .Values.snapshots.class_name }}
+  {{- end }}
+{{- end }}
