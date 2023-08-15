@@ -60,6 +60,7 @@ spec:
       extraArgs:
         - "--tls-san={{ .Values.host }}"
         - "--sync-labels=svccontroller.k3s.cattle.io/lbpool"
+        - "--mount-physical-host-paths=true"
       resources:
         requests:
           cpu: 20m
