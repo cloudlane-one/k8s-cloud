@@ -22,3 +22,5 @@ spec:
         name: vcluster-hpm
   values:
     VclusterReleaseName: vcluster
+    hostpathMapper:
+      image: ghcr.io/loft-sh/vcluster-hostpath-mapper
