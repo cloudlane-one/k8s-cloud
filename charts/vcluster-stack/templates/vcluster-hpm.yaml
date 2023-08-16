@@ -24,3 +24,5 @@ spec:
     VclusterReleaseName: vcluster
     hostpathMapper:
       image: ghcr.io/loft-sh/vcluster-hostpath-mapper
+    nodeSelector:
+      {{ .Values.cluster_name }}: "1"
