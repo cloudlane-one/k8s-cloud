@@ -182,6 +182,16 @@
                 dest: "{{ playbook_dir }}/join-token"
                 flat: true
 
+            - name: Wait for Kubernetes API to become available
+              environment:
+                KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+              ansible.builtin.command: kubectl cluster-info
+              register: kubectl_info_result
+              retries: 6
+              delay: 20
+              until: "kubectl_info_result is not failed"
+              changed_when: false
+
         - name: Upload config and join additional node
           when: "inventory_hostname != main_control_node"
           block:
@@ -208,6 +218,12 @@
                 K3S_TOKEN_FILE: /etc/k8s-cloud/k3s-join-token
                 K3S_URL: "https://{{ hostvars[main_control_node]['ansible_host'] }}:6443"
               changed_when: true
+              register: k3s_install_res
+              failed_when: false
+
+            - name: DEBUG
+              ansible.builtin.debug:
+                var: k3s_install_res
 
 - name: Configure cgroups for k3s service
   ansible.builtin.include_tasks:
