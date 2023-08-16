@@ -93,4 +93,6 @@ cluster:
   letsencrypt_staging: false
 
   # Force k3s agent and server daemons to not exceed their reserved resources.
+  # Warning: This feature is experimental, as its impact on k3s upgrades hasn't been sufficiently tested! 
+  # Use at own risk!
   enforce_kube_reserved: false

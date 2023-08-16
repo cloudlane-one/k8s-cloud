@@ -122,7 +122,7 @@
       ansible.builtin.command: /tmp/tailscale-install.sh
       changed_when: true
 
-- name: Install k3s via official setup script # TODO: remove third-party ansible role and use k3s setup script
+- name: Configure and install k3s
   block:
     - name: Ensure k3s config dir exists
       ansible.builtin.file:
@@ -159,52 +159,61 @@
         dest: /tmp/k3s-install.sh
         mode: "0700"
 
-    - name: Install k3s on first node and download config
-      when: "inventory_hostname == main_control_node"
+    - name: Install k3s via official script
+      vars:
+        k3s_service: "{{ control | ternary('k3s', 'k3s-agent') }}.service"
+      when: "k3s_service not in ansible_facts.services.keys()"
       block:
-        - name: Run k3s install script for first control node
-          ansible.builtin.command:
-            argv:
-              - /tmp/k3s-install.sh
-              - server
-          environment:
-            K3S_CLUSTER_INIT: "true"
-          changed_when: true
-          notify: Run k3s under kubesystem.slice cgroup
+        - name: Install k3s on first node and download config
+          when: "inventory_hostname == main_control_node"
+          block:
+            - name: Run k3s install script for first control node
+              ansible.builtin.command:
+                argv:
+                  - /tmp/k3s-install.sh
+                  - server
+              environment:
+                K3S_CLUSTER_INIT: "true"
+              changed_when: true
+              notify: Run k3s under kubesystem.slice cgroup
 
-        - name: Download join token file
-          ansible.builtin.fetch:
-            src: /var/lib/rancher/k3s/server/token
-            dest: "{{ playbook_dir }}/join-token"
-            flat: true
+            - name: Download join token file
+              ansible.builtin.fetch:
+                src: /var/lib/rancher/k3s/server/token
+                dest: "{{ playbook_dir }}/join-token"
+                flat: true
 
-    - name: Upload config and join additional node
-      when: "inventory_hostname != main_control_node"
-      block:
-        - name: Ensure permanent config dir exists
-          ansible.builtin.file:
-            path: /etc/k8s-cloud
-            state: directory
-            mode: '0755'
+        - name: Upload config and join additional node
+          when: "inventory_hostname != main_control_node"
+          block:
+            - name: Ensure permanent config dir exists
+              ansible.builtin.file:
+                path: /etc/k8s-cloud
+                state: directory
+                mode: '0755'
 
-        - name: Upload join token file
-          ansible.builtin.copy:
-            src: "{{ playbook_dir }}/join-token"
-            dest: /etc/k8s-cloud/k3s-join-token
-            mode: '0644'
+            - name: Upload join token file
+              ansible.builtin.copy:
+                src: "{{ playbook_dir }}/join-token"
+                dest: /etc/k8s-cloud/k3s-join-token
+                mode: '0644'
 
-        - name: Run k3s install script for additional node
-          throttle: 1
-          any_errors_fatal: true
-          ansible.builtin.command:
-            argv:
-              - /tmp/k3s-install.sh
-              - "{{ control | ternary('server', 'agent') }}"
-          environment:
-            K3S_TOKEN_FILE: /etc/k8s-cloud/k3s-join-token
-            K3S_URL: "https://{{ hostvars[main_control_node]['ansible_host'] }}:6443"
-          changed_when: true
-          notify: Run k3s under kubesystem.slice cgroup
+            - name: Run k3s install script for additional node
+              throttle: 1
+              any_errors_fatal: true
+              ansible.builtin.command:
+                argv:
+                  - /tmp/k3s-install.sh
+                  - "{{ control | ternary('server', 'agent') }}"
+              environment:
+                K3S_TOKEN_FILE: /etc/k8s-cloud/k3s-join-token
+                K3S_URL: "https://{{ hostvars[main_control_node]['ansible_host'] }}:6443"
+              changed_when: true
+              notify: Run k3s under kubesystem.slice cgroup
+
+- name: Configure cgroups for k3s service
+  ansible.builtin.include_tasks:
+    file: k3s-cgroup-config.yaml
 
 - name: Run control-node-specific setup steps
   when: "control"
