@@ -175,7 +175,6 @@
               environment:
                 K3S_CLUSTER_INIT: "true"
               changed_when: true
-              notify: Run k3s under kubesystem.slice cgroup
 
             - name: Download join token file
               ansible.builtin.fetch:
@@ -209,7 +208,6 @@
                 K3S_TOKEN_FILE: /etc/k8s-cloud/k3s-join-token
                 K3S_URL: "https://{{ hostvars[main_control_node]['ansible_host'] }}:6443"
               changed_when: true
-              notify: Run k3s under kubesystem.slice cgroup
 
 - name: Configure cgroups for k3s service
   ansible.builtin.include_tasks:
