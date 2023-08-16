@@ -5,7 +5,7 @@
 
 - name: Set dynamic facts
   ansible.builtin.set_fact:
-    control: "{{ inventory_hostname in groups['control_hosts'] }}"
+    control: "{{ inventory_hostname in groups['control'] }}"
 
 - name: Uninstall k3s server
   when: "control"
