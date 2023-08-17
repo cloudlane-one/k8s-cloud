@@ -55,7 +55,7 @@ spec:
       resources:
         requests:
           cpu: 30m
-          memory: 64Mi
+          memory: 128Mi
       autoscaling:
         enabled: true
         minReplicas: 1
@@ -98,7 +98,7 @@ spec:
       replicas: 1
       resources:
         requests:
-          cpu: 150m
+          cpu: 250m
           memory: 32Mi
       autoscaling:
         enabled: true
