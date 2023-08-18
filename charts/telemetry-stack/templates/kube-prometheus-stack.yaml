@@ -123,6 +123,7 @@ spec:
               resources:
                 requests:
                   storage: 16Gi
+              storageClassName: local
         retention: 2d
         resources:
           requests:

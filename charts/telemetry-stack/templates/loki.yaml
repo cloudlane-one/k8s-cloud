@@ -74,6 +74,9 @@ spec:
         maxReplicas: 3
         targetCPUUtilizationPercentage: 65
         targetMemoryUtilizationPercentage: 65
+      persistence:
+        size: 2Gi
+        storageClass: local
     tableManager:
       resources:
         cpu: 50m
@@ -90,6 +93,9 @@ spec:
         maxReplicas: 3
         targetCPUUtilizationPercentage: 65
         targetMemoryUtilizationPercentage: 65
+      persistence:
+        size: 1Gi
+        storageClass: local
     gateway:
       basicAuth:
         enabled: true
