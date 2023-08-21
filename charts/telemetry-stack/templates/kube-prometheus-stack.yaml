@@ -197,7 +197,7 @@ spec:
             secretName: grafana-cert
       persistence:
         enabled: true
-        size: 5Gi
+        size: 2Gi
         accessModes:
           - ReadWriteMany
       alerting:
