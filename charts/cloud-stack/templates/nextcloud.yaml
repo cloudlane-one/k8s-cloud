@@ -278,7 +278,7 @@ spec:
         persistence:
           size: 2Gi
           storageClass: local
-      architecture: standalaone
+      architecture: standalone
     mariadb:
       enabled: true
       auth:
