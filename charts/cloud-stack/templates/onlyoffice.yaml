@@ -136,7 +136,7 @@ spec:
       amqpSecretKeyName: rabbitmq-password
       amqpExistingSecret: onlyoffice-rabbitmq
     persistence:
-      storageClass: null
+      storageClass: backbone
       size: 4Gi
     ingress:
       enabled: {{ .Values.ingress }}
