@@ -105,7 +105,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: onlyoffice
-  timeout: 20m0s # Onlyoffice needs a while with all the install jobs.
+  timeout: 30m0s # Onlyoffice needs a while with all the install/upgrade jobs.
   dependsOn:
     - name: onlyoffice-rabbitmq
     - name: onlyoffice-redis
