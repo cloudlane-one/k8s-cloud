@@ -78,7 +78,7 @@ spec:
         enabled: false
       externalService:
         enabled: true
-        type: LoadBalancer
+        type: NodePort
         externalTrafficPolicy: Local
       {{- if .Values.use_mailu_proxy_auth }}
       extraEnvVars:
