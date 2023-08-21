@@ -74,12 +74,6 @@ spec:
           size: 2Gi
     front:
       kind: DaemonSet
-      hostPort:
-        enabled: false
-      externalService:
-        enabled: true
-        type: NodePort
-        externalTrafficPolicy: Local
       {{- if .Values.use_mailu_proxy_auth }}
       extraEnvVars:
         - name: PROXY_AUTH_WHITELIST
