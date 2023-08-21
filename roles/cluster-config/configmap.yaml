@@ -41,7 +41,7 @@ cluster:
     # Required. S3 config for logs and backups storage.
     s3:
       endpoint: "" # Full URL of your S3 endpoint (minus credentials)
-      region: "eu-central-1" # Required by Longhorn, just leave the default if you don't have zones
+      region: "de"
       bucket: "" # Required.
       access_key_id: "" # Your S3 access key id
       # Put the access key secret in ./secrets.yaml

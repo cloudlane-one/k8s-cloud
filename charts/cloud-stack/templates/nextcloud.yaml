@@ -81,7 +81,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: nextcloud
-  timeout: 15m0s # Increase timeout to be sure.
+  timeout: 20m0s
   values:
     # TODO: #55 Deploy multiple nextcloud replicas with RollingUpdate and RWX volume once upstream NFS issue is solved
     # Upstream issue: <https://github.com/nextcloud/helm/issues/399>

@@ -27,7 +27,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: bitnami
-  timeout: 10m0s # Increase timeout to be sure.
+  timeout: 10m0s
   values:
     fullnameOverride: onlyoffice-rabbitmq
     auth:
@@ -52,7 +52,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: bitnami
-  timeout: 10m0s # Increase timeout to be sure.
+  timeout: 10m0s
   values:
     fullnameOverride: onlyoffice-redis
     architecture: standalone
@@ -77,7 +77,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: bitnami
-  timeout: 10m0s # Increase timeout to be sure.
+  timeout: 10m0s
   values:
     fullnameOverride: onlyoffice-postgres
     auth:

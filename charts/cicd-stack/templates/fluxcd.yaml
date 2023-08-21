@@ -19,7 +19,7 @@ spec:
         kind: HelmRepository
         name: flux-community
   interval: 1h
-  timeout: 15m0s # Increase timeout to be sure.
+  timeout: 15m0s
   values:
     policies:
       create: false
