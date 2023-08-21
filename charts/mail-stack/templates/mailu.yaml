@@ -75,6 +75,8 @@ spec:
     front:
       kind: DaemonSet
       {{- if .Values.use_mailu_proxy_auth }}
+      nodeSelector:
+        PTR: {{ .Values.hosts.mailu }}
       extraEnvVars:
         - name: PROXY_AUTH_WHITELIST
           value: "10.0.0.0/8"
