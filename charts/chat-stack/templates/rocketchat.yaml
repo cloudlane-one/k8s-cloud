@@ -113,7 +113,7 @@ spec:
         kind: HelmRepository
         name: rocketchat
   dependsOn:
-    - name: rc-mongodb-urls
+    - name: rocketchat-mongodb-urls
     - name: rocketchat-mongodb
   values:
     replicaCount: 2
