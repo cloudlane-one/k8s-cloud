@@ -276,7 +276,9 @@ spec:
         existingSecretPasswordKey: password
       master:
         persistence:
-          size: 4Gi
+          size: 2Gi
+          storageClass: local
+      architecture: standalaone
     mariadb:
       enabled: true
       auth:

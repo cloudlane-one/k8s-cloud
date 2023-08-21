@@ -72,6 +72,7 @@ spec:
       master:
         persistence:
           size: 2Gi
+          storageClass: local
     front:
       kind: DaemonSet
       {{- if .Values.use_mailu_proxy_auth }}
