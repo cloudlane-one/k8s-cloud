@@ -89,7 +89,7 @@ spec:
           cpu: 50m
       {{- if .Values.use_mailu_proxy_auth }}
       nodeSelector:
-        PTR: {{ .Values.hosts.mailu }}
+        {{ .Values.front_node_selector.label }}: {{ .Values.front_node_selector.value }}
       extraEnvVars:
         - name: PROXY_AUTH_WHITELIST
           value: "10.0.0.0/8"
