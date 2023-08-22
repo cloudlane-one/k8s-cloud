@@ -86,6 +86,10 @@ spec:
     # TODO: #55 Deploy multiple nextcloud replicas with RollingUpdate and RWX volume once upstream NFS issue is solved
     # Upstream issue: <https://github.com/nextcloud/helm/issues/399>
     # replicaCount: 2
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
     ingress:
       enabled: {{ .Values.ingress }}
       tls:
@@ -125,10 +129,6 @@ spec:
       #   rollingUpdate:
       #     maxSurge: 1
       #     maxUnavailable: 1
-      resources:
-        requests:
-          cpu: 200m
-          memory: 512Mi
       host: {{ .Values.hosts.nextcloud }}
       existingSecret:
         enabled: true
