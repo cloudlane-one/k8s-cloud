@@ -109,6 +109,10 @@ spec:
     primary:
       persistence:
         size: 4Gi
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
 ---
 apiVersion: v1
 kind: Service
@@ -200,8 +204,8 @@ spec:
             failureThreshold: 1
           resources:
             requests:
-              memory: "200Mi"
-              cpu: "200m"
+              memory: 1Gi
+              cpu: 200m
           volumeMounts:
             - mountPath: "/opt/mailman/"
               name: data
@@ -471,8 +475,8 @@ spec:
             failureThreshold: 1
           resources:
             requests:
-              memory: "200Mi"
-              cpu: "200m"
+              memory: 512Mi
+              cpu: 100m
           volumeMounts:
             - mountPath: "/opt/mailman-web-data"
               name: data

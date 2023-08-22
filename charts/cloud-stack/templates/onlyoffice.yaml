@@ -41,6 +41,10 @@ spec:
     persistence:
       size: 2Gi
       storageClass: local
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 100m
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
@@ -70,6 +74,10 @@ spec:
       persistence:
         size: 2Gi
         storageClass: local
+      resources:
+        requests:
+          memory: 128Mi
+          cpu: 100m
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
@@ -94,6 +102,10 @@ spec:
     primary:
       persistence:
         size: 4Gi
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
     metrics:
       enabled: true
       serviceMonitor:
@@ -119,12 +131,38 @@ spec:
     - name: onlyoffice-postgres
   values:
     docservice:
-      replicas: 2
+      replicas: 1
       updateStrategy:
         type: RollingUpdate
         rollingUpdate:
           maxSurge: 1
           maxUnavailable: 1
+      resources:
+        requests:
+          memory: 128Mi
+          cpu: 50m
+      autoscaling:
+        enabled: true
+        minReplicas: 1
+        maxReplicas: 8
+        targetCPU:
+          utilizationPercentage: 65
+        targetMemory:
+          utilizationPercentage: 65
+    converter:
+      replicas: 1
+      resources:
+        requests:
+          memory: 128Mi
+          cpu: 50m
+      autoscaling:
+        enabled: true
+        minReplicas: 1
+        maxReplicas: 8
+        targetCPU:
+          utilizationPercentage: 65
+        targetMemory:
+          utilizationPercentage: 65
     jwt:
       existingSecret: onlyofficejwt
     connections:
