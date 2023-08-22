@@ -193,9 +193,9 @@ spec:
             ),
             'oidc_login_use_external_storage' => false,
             'oidc_login_scope' => 'openid profile groups email is_admin',
-            'oidc_login_proxy_ldap' => true,
+            'oidc_login_proxy_ldap' => false,
             'oidc_login_disable_registration' => false,
-            'oidc_login_redir_fallback' => false,
+            'oidc_login_redir_fallback' => true,
             'oidc_login_tls_verify' => true,
             'oidc_create_groups' => true
           );
