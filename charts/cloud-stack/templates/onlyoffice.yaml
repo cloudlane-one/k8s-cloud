@@ -191,3 +191,5 @@ spec:
       ssl:
         enabled: true
         secret: onlyoffice-tls
+    example:
+      enabled: true
