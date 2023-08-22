@@ -105,7 +105,7 @@ spec:
         enabled: true
     resources:
       requests:
-        cpu: 200m
+        cpu: 100m
         memory: 1Gi
     autoscaling:
       enabled: true

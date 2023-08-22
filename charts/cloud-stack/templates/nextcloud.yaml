@@ -127,7 +127,7 @@ spec:
       #     maxUnavailable: 1
       resources:
         requests:
-          cpu: 300m
+          cpu: 200m
           memory: 512Mi
       host: {{ .Values.hosts.nextcloud }}
       existingSecret:
@@ -301,7 +301,7 @@ spec:
           size: 4Gi
         resources:
           requests:
-            cpu: 200m
+            cpu: 100m
             memory: 256Mi
 {{- if .Values.snapshots.enabled }}
 ---

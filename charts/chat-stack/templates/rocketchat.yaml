@@ -101,7 +101,7 @@ spec:
     resources:
       requests:
         memory: 384Mi
-        cpu: 300m
+        cpu: 200m
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
@@ -146,7 +146,7 @@ spec:
     resources:
       requests:
         memory: 768Mi
-        cpu: 300m
+        cpu: 200m
     extraEnv:
       - name: Site_Name
         value: {{ printf "%s Chat" .Values.org.name }}

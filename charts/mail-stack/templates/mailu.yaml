@@ -191,12 +191,12 @@ spec:
       resources:
         requests:
           memory: 256Mi
-          cpu: 100m
+          cpu: 50m
     clamav:
       resources:
         requests:
           memory: 2Gi
-          cpu: 200m
+          cpu: 100m
     oletools:
       resources:
         requests:

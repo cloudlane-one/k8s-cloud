@@ -205,7 +205,7 @@ spec:
           resources:
             requests:
               memory: 1Gi
-              cpu: 200m
+              cpu: 100m
           volumeMounts:
             - mountPath: "/opt/mailman/"
               name: data
@@ -476,7 +476,7 @@ spec:
           resources:
             requests:
               memory: 512Mi
-              cpu: 100m
+              cpu: 50m
           volumeMounts:
             - mountPath: "/opt/mailman-web-data"
               name: data
