@@ -464,15 +464,15 @@ spec:
           livenessProbe:
             tcpSocket:
               port: ui
-            initialDelaySeconds: 20
+            initialDelaySeconds: 180
             periodSeconds: 20
             failureThreshold: 15
           readinessProbe:
             tcpSocket:
               port: ui
-            initialDelaySeconds: 20
+            initialDelaySeconds: 180
             periodSeconds: 20
-            failureThreshold: 1
+            failureThreshold: 3
           resources:
             requests:
               memory: 512Mi
