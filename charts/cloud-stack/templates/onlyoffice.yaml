@@ -18,16 +18,16 @@ apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
   name: onlyoffice-rabbitmq
-  version: "^12"
 spec:
   interval: 1h
   chart:
     spec:
       chart: rabbitmq
+      version: "12.0.13"
       sourceRef:
         kind: HelmRepository
         name: bitnami
-  timeout: 10m0s # Increase timeout to be sure.
+  timeout: 10m0s
   values:
     fullnameOverride: onlyoffice-rabbitmq
     auth:
@@ -38,6 +38,13 @@ spec:
       enabled: true
       serviceMonitor:
         enabled: true
+    persistence:
+      size: 2Gi
+      storageClass: local
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 100m
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
@@ -52,7 +59,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: bitnami
-  timeout: 10m0s # Increase timeout to be sure.
+  timeout: 10m0s
   values:
     fullnameOverride: onlyoffice-redis
     architecture: standalone
@@ -63,6 +70,14 @@ spec:
       enabled: true
       serviceMonitor:
         enabled: true
+    master:
+      persistence:
+        size: 2Gi
+        storageClass: local
+      resources:
+        requests:
+          memory: 128Mi
+          cpu: 100m
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
@@ -77,7 +92,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: bitnami
-  timeout: 10m0s # Increase timeout to be sure.
+  timeout: 10m0s
   values:
     fullnameOverride: onlyoffice-postgres
     auth:
@@ -87,6 +102,10 @@ spec:
     primary:
       persistence:
         size: 4Gi
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
     metrics:
       enabled: true
       serviceMonitor:
@@ -105,19 +124,45 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: onlyoffice
-  timeout: 20m0s # Onlyoffice needs a while with all the install jobs.
+  timeout: 30m0s # Onlyoffice needs a while with all the install/upgrade jobs.
   dependsOn:
     - name: onlyoffice-rabbitmq
     - name: onlyoffice-redis
     - name: onlyoffice-postgres
   values:
     docservice:
-      replicas: 2
+      replicas: 1
       updateStrategy:
         type: RollingUpdate
         rollingUpdate:
           maxSurge: 1
           maxUnavailable: 1
+      resources:
+        requests:
+          memory: 128Mi
+          cpu: 50m
+      autoscaling:
+        enabled: true
+        minReplicas: 1
+        maxReplicas: 8
+        targetCPU:
+          utilizationPercentage: 65
+        targetMemory:
+          utilizationPercentage: 65
+    converter:
+      replicas: 1
+      resources:
+        requests:
+          memory: 128Mi
+          cpu: 50m
+      autoscaling:
+        enabled: true
+        minReplicas: 1
+        maxReplicas: 8
+        targetCPU:
+          utilizationPercentage: 65
+        targetMemory:
+          utilizationPercentage: 65
     jwt:
       existingSecret: onlyofficejwt
     connections:
@@ -136,7 +181,7 @@ spec:
       amqpSecretKeyName: rabbitmq-password
       amqpExistingSecret: onlyoffice-rabbitmq
     persistence:
-      storageClass: null
+      storageClass: backbone
       size: 4Gi
     ingress:
       enabled: {{ .Values.ingress }}

@@ -68,19 +68,28 @@ spec:
         persistence:
           enabled: true
           size: 4Gi
+        resources:
+          requests:
+            memory: 128Mi
+            cpu: 100m
     redis:
       master:
         persistence:
           size: 2Gi
+          storageClass: local
+        resources:
+          requests:
+            memory: 128Mi
+            cpu: 100m
     front:
       kind: DaemonSet
-      hostPort:
-        enabled: false
-      externalService:
-        enabled: true
-        type: LoadBalancer
-        externalTrafficPolicy: Local
+      resources:
+        requests:
+          memory: 64Mi
+          cpu: 50m
       {{- if .Values.use_mailu_proxy_auth }}
+      nodeSelector:
+        {{ .Values.front_node_selector.label }}: {{ .Values.front_node_selector.value }}
       extraEnvVars:
         - name: PROXY_AUTH_WHITELIST
           value: "10.0.0.0/8"
@@ -104,6 +113,10 @@ spec:
       extraVolumeMounts:
         - name: mailman
           mountPath: /mailman
+      resources:
+        requests:
+          memory: 128Mi
+          cpu: 150m
       overrides:
         postfix.cf: |
           # Support the default VERP delimiter.
@@ -118,6 +131,10 @@ spec:
       persistence:
         size: 2Gi
         claimNameOverride: mailu-admin
+      resources:
+        requests:
+          memory: 256Mi
+          cpu: 50m
       {{- if .Values.use_mailu_proxy_auth }}
       extraEnvVars:
         - name: PROXY_AUTH_WHITELIST
@@ -131,10 +148,18 @@ spec:
       persistence:
         size: 4Gi
         claimNameOverride: mailu-dovecot
+      resources:
+        requests:
+          memory: 128Mi
+          cpu: 50m
     webmail:
       persistence:
         size: 2Gi
         claimNameOverride: mailu-webmail
+      resources:
+        requests:
+          memory: 128Mi
+          cpu: 100m
       {{- if .Values.use_mailu_proxy_auth }}
       extraEnvVars:
         - name: PROXY_AUTH_WHITELIST
@@ -149,11 +174,34 @@ spec:
       persistence:
         size: 2Gi
         claimNameOverride: mailu-fetchmail
+      resources:
+        requests:
+          memory: 32Mi
+          cpu: 50m
     webdav:
       enabled: true
       persistence:
         size: 2Gi
         claimNameOverride: mailu-webdav
+      resources:
+        requests:
+          memory: 64Mi
+          cpu: 50m
+    rspamd:
+      resources:
+        requests:
+          memory: 256Mi
+          cpu: 50m
+    clamav:
+      resources:
+        requests:
+          memory: 2Gi
+          cpu: 100m
+    oletools:
+      resources:
+        requests:
+          memory: 32Mi
+          cpu: 30m
 {{- if .Values.snapshots.enabled }}
 ---
 apiVersion: snapshot.storage.k8s.io/v1

@@ -109,6 +109,10 @@ spec:
     primary:
       persistence:
         size: 4Gi
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
 ---
 apiVersion: v1
 kind: Service
@@ -200,8 +204,8 @@ spec:
             failureThreshold: 1
           resources:
             requests:
-              memory: "200Mi"
-              cpu: "200m"
+              memory: 1Gi
+              cpu: 100m
           volumeMounts:
             - mountPath: "/opt/mailman/"
               name: data
@@ -460,19 +464,19 @@ spec:
           livenessProbe:
             tcpSocket:
               port: ui
-            initialDelaySeconds: 20
+            initialDelaySeconds: 180
             periodSeconds: 20
             failureThreshold: 15
           readinessProbe:
             tcpSocket:
               port: ui
-            initialDelaySeconds: 20
+            initialDelaySeconds: 180
             periodSeconds: 20
-            failureThreshold: 1
+            failureThreshold: 3
           resources:
             requests:
-              memory: "200Mi"
-              cpu: "200m"
+              memory: 512Mi
+              cpu: 50m
           volumeMounts:
             - mountPath: "/opt/mailman-web-data"
               name: data

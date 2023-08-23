@@ -63,7 +63,8 @@ spec:
         cpu: 100m
         memory: 256Mi
     persistence:
-      size: 5Gi
+      size: 2Gi
+      storageClass: local
 {{- end }}
 {{- if .Values.snapshots.enabled }}
 ---

@@ -98,6 +98,10 @@ spec:
     persistence:
       enabled: true
       size: 4Gi
+    resources:
+      requests:
+        memory: 384Mi
+        cpu: 200m
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
@@ -108,12 +112,12 @@ spec:
   chart:
     spec:
       chart: rocketchat
-      version: '^6'
+      version: '^6.3.1'
       sourceRef:
         kind: HelmRepository
         name: rocketchat
   dependsOn:
-    - name: rc-mongodb-urls
+    - name: rocketchat-mongodb-urls
     - name: rocketchat-mongodb
   values:
     replicaCount: 2
@@ -139,6 +143,10 @@ spec:
       enabled: true
     serviceMonitor:
       enabled: true
+    resources:
+      requests:
+        memory: 768Mi
+        cpu: 200m
     extraEnv:
       - name: Site_Name
         value: {{ printf "%s Chat" .Values.org.name }}
@@ -214,6 +222,31 @@ spec:
 
       - name: UI_Use_Real_Name
         value: "true"
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: rocketchat
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: rocketchat-rocketchat
+  minReplicas: 2
+  maxReplicas: {{ .Values.max_replicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 65
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 65
 {{- if .Values.snapshots.enabled }}
 ---
 apiVersion: snapshot.storage.k8s.io/v1

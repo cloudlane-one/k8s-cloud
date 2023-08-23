@@ -24,6 +24,10 @@ use_mailu_proxy_auth: true
 
 ingress: true
 
+front_node_selector:
+  label: svccontroller.k3s.cattle.io/lbpool
+  value: ""
+
 snapshots:
   enabled: true
   class_name: snap

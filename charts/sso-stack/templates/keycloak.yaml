@@ -52,7 +52,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: bitnami
-  timeout: 15m0s # Increase timeout to be sure.
+  timeout: 15m0s
   values:
     replicaCount: 2
     production: true
@@ -105,7 +105,7 @@ spec:
         enabled: true
     resources:
       requests:
-        cpu: 200m
+        cpu: 100m
         memory: 1Gi
     autoscaling:
       enabled: true

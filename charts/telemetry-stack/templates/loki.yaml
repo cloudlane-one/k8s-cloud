@@ -55,7 +55,7 @@ spec:
       resources:
         requests:
           cpu: 30m
-          memory: 64Mi
+          memory: 128Mi
       autoscaling:
         enabled: true
         minReplicas: 1
@@ -74,6 +74,9 @@ spec:
         maxReplicas: 3
         targetCPUUtilizationPercentage: 65
         targetMemoryUtilizationPercentage: 65
+      persistence:
+        size: 2Gi
+        storageClass: local
     tableManager:
       resources:
         cpu: 50m
@@ -90,6 +93,9 @@ spec:
         maxReplicas: 3
         targetCPUUtilizationPercentage: 65
         targetMemoryUtilizationPercentage: 65
+      persistence:
+        size: 1Gi
+        storageClass: local
     gateway:
       basicAuth:
         enabled: true
@@ -98,7 +104,7 @@ spec:
       replicas: 1
       resources:
         requests:
-          cpu: 150m
+          cpu: 250m
           memory: 32Mi
       autoscaling:
         enabled: true

@@ -77,15 +77,19 @@ spec:
   chart:
     spec:
       chart: nextcloud
-      version: '3.5.19'
+      version: '4.0.0'
       sourceRef:
         kind: HelmRepository
         name: nextcloud
-  timeout: 15m0s # Increase timeout to be sure.
+  timeout: 20m0s
   values:
     # TODO: #55 Deploy multiple nextcloud replicas with RollingUpdate and RWX volume once upstream NFS issue is solved
     # Upstream issue: <https://github.com/nextcloud/helm/issues/399>
     # replicaCount: 2
+    resources:
+      requests:
+        cpu: 200m
+        memory: 1Gi
     ingress:
       enabled: {{ .Values.ingress }}
       tls:
@@ -189,9 +193,9 @@ spec:
             ),
             'oidc_login_use_external_storage' => false,
             'oidc_login_scope' => 'openid profile groups email is_admin',
-            'oidc_login_proxy_ldap' => true,
+            'oidc_login_proxy_ldap' => false,
             'oidc_login_disable_registration' => false,
-            'oidc_login_redir_fallback' => false,
+            'oidc_login_redir_fallback' => true,
             'oidc_login_tls_verify' => true,
             'oidc_create_groups' => true
           );
@@ -268,6 +272,10 @@ spec:
       enabled: true
       serviceMonitor:
         enabled: true
+      resources:
+        requests:
+          cpu: 30m
+          memory: 32Mi
     redis:
       enabled: true
       auth:
@@ -276,7 +284,13 @@ spec:
         existingSecretPasswordKey: password
       master:
         persistence:
-          size: 4Gi
+          size: 2Gi
+          storageClass: local
+        resources:
+          requests:
+            memory: 128Mi
+            cpu: 100m
+      architecture: standalone
     mariadb:
       enabled: true
       auth:
@@ -285,6 +299,10 @@ spec:
         persistence:
           enabled: true
           size: 4Gi
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
 {{- if .Values.snapshots.enabled }}
 ---
 apiVersion: snapshot.storage.k8s.io/v1

@@ -110,6 +110,14 @@ spec:
         requests:
           cpu: 50m
           memory: 64Mi
+      prometheusConfigReloader:
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
     prometheus:
       prometheusSpec:
         serviceMonitorSelectorNilUsesHelmValues: false
@@ -123,6 +131,7 @@ spec:
               resources:
                 requests:
                   storage: 16Gi
+              storageClassName: local
         retention: 2d
         resources:
           requests:
@@ -135,7 +144,7 @@ spec:
       resources:
         requests:
           cpu: 50m
-          memory: 256Mi
+          memory: 384Mi
       envValueFrom:
         SMTP_PASSWORD:
           secretKeyRef:
@@ -196,7 +205,7 @@ spec:
             secretName: grafana-cert
       persistence:
         enabled: true
-        size: 5Gi
+        size: 2Gi
         accessModes:
           - ReadWriteMany
       alerting:

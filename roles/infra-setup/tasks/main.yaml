@@ -633,7 +633,7 @@
     - name: Download idp admin password
       ansible.builtin.fetch:
         src: /tmp/admin-password
-        dest: "{{ playbook_dir }}/admin-password"
+        dest: "{{ playbook_dir }}/admin-pw.{{ cluster_name }}.txt"
         flat: true
 
 - name: Reset kubectl context
