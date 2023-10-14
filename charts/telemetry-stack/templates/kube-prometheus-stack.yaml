@@ -229,8 +229,7 @@ spec:
                       datasourceUid: prometheus
                       model:
                         editorMode: builder
-                        expr: max by(exported_namespace, name, kind) (gotk_reconcile_condition{type="Ready",
-                          status="False"})
+                        expr: max by(exported_namespace, name, kind) (gotk_reconcile_condition{type="Ready", status!="True"}) - max by(exported_namespace, name, kind) (gotk_suspend_status)
                         hide: false
                         intervalMs: 1000
                         legendFormat: __auto
