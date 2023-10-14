@@ -330,28 +330,35 @@
     label: "{{ item.key }}"
 
 - name: Ensure pre-restore infrastructure is fully set up
-  ansible.builtin.include_tasks:
-    file: deploy-chart.yaml
-    apply:
-      vars:
-        chart: "{{ item }}"
-        kubeconfig: "{{ kubeconfig }}"
-  loop_control:
-    label: "{{ item.name }} in {{ item.namespace }}"
-  loop:
-    - name: storage-stack
-      namespace: longhorn-system
-      chart_values:
-        host: "{{ cluster.subdomains.longhorn }}.{{ cluster.domain }}"
-        cluster_name: "{{ cluster_name }}"
-        oauth2_proxy_host: "{{ cluster.subdomains.oauth2_proxy }}.{{ cluster.domain }}"
-        admin_group: "cluster-admins"
-        s3: "{{ cluster.backup.s3 }}"
+  block:
+    - name: Deploy storage-stack
+      ansible.builtin.include_tasks:
+        file: deploy-chart.yaml
+        apply:
+          vars:
+            chart:
+              name: storage-stack
+              namespace: longhorn-system
+              chart_values:
+                host: "{{ cluster.subdomains.longhorn }}.{{ cluster.domain }}"
+                cluster_name: "{{ cluster_name }}"
+                oauth2_proxy_host: "{{ cluster.subdomains.oauth2_proxy }}.{{ cluster.domain }}"
+                admin_group: "cluster-admins"
+                s3: "{{ cluster.backup.s3 }}"
+            kubeconfig: "{{ kubeconfig }}"
 
-    - name: backup-stack
-      namespace: backup-system
-      chart_values:
-        s3: "{{ cluster.backup.s3 }}"
+    - name: Deploy backup-stack
+      when: "cluster.backup.enabled"
+      ansible.builtin.include_tasks:
+        file: deploy-chart.yaml
+        apply:
+          vars:
+            chart:
+              name: backup-stack
+              namespace: backup-system
+              chart_values:
+                s3: "{{ cluster.backup.s3 }}"
+            kubeconfig: "{{ kubeconfig }}"
 
 - name: Restore cluster from backup
   when: "cluster.backup.restore.enabled"
