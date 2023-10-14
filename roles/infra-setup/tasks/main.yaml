@@ -260,11 +260,6 @@
         kind: Node
         namespace: longhorn-system
         name: "{{ item }}"
-        wait: true
-        wait_timeout: 180
-        wait_condition:
-          type: Ready
-          status: "True"
       register: lhn_info
 
     - name: Ensure tags are set on all Longhorn nodes in inventory
