@@ -120,7 +120,7 @@ spec:
   chart:
     spec:
       chart: docs
-      version: "^3"
+      version: "^3.3.0"
       sourceRef:
         kind: HelmRepository
         name: onlyoffice
@@ -131,6 +131,8 @@ spec:
     - name: onlyoffice-postgres
   values:
     docservice:
+      image:
+        repository: onlyoffice/docs-docservice
       replicas: 1
       updateStrategy:
         type: RollingUpdate
@@ -149,7 +151,12 @@ spec:
           utilizationPercentage: 65
         targetMemory:
           utilizationPercentage: 65
+    proxy:
+      image:
+        repository: onlyoffice/docs-proxy
     converter:
+      image:
+        repository: onlyoffice/docs-converter
       replicas: 1
       resources:
         requests:
