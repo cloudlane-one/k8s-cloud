@@ -48,6 +48,7 @@ smtp: # For admin notifications
 ingress: true
 
 storage:
+  size: 6Gi
   zone: null
   encrypted: false
   auto_backup: true

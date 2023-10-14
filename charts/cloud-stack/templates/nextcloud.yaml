@@ -82,7 +82,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 4Gi
+      storage: {{ .Values.storage.size }}
   storageClassName: {{ ternary .Values.storage.zone | (printf "zone-%s" .Values.storage.zone) "backbone" }}{{ ternary .Values.storage.encrypted | "-enc" "" }}
   volumeMode: Filesystem
 ---

@@ -175,9 +175,9 @@ spec:
               accessModes: ["ReadWriteOnce"]
               resources:
                 requests:
-                  storage: 10Gi
+                  storage: 12Gi
               storageClassName: local
-        retention: 2d
+        retention: 3d
         resources:
           requests:
             cpu: 200m
@@ -250,7 +250,7 @@ spec:
             secretName: grafana-cert
       persistence:
         enabled: true
-        size: 2Gi
+        size: 4Gi
         accessModes:
           - ReadWriteMany
       alerting:
