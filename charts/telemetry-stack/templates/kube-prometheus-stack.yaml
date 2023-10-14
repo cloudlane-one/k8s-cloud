@@ -166,11 +166,16 @@ spec:
         ruleSelectorNilUsesHelmValues: false
         storageSpec:
           volumeClaimTemplate:
+            metadata:
+              labels:
+                recurring-job.longhorn.io/source: enabled
+                recurring-job.longhorn.io/snap-delete-after-2: enabled
+                velero.io/exclude-from-backup: "true"
             spec:
               accessModes: ["ReadWriteOnce"]
               resources:
                 requests:
-                  storage: 16Gi
+                  storage: 10Gi
               storageClassName: local
         retention: 2d
         resources:
