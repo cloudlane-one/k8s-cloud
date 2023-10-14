@@ -433,6 +433,8 @@
 
     - name: k3s-auto-upgrade
       namespace: upgrade-system
+      chart_values:
+        k3s_version: "{{ k3s_version }}"
 
     - name: cert-stack
       namespace: cert-system
