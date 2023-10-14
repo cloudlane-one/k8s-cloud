@@ -121,6 +121,7 @@ spec:
             labels:
               severity: critical
         - name: failing-flux-resources
+          rules:
           - alert: FluxReleaseNotReady30m
             annotations:
               description: Flux {{`{{`}} $labels.kind {{`}}`}} {{`{{`}} $labels.exported_namespace {{`}}`}}/{{`{{`}} $labels.name {{`}}`}} has been in a non-ready state for longer than 30 minutes.
