@@ -100,8 +100,16 @@ spec:
       size: 4Gi
     resources:
       requests:
-        memory: 384Mi
+        memory: 1.5Gi
         cpu: 200m
+    configuration: |-
+      storage:
+        wiredTiger:
+          engineConfig:
+            cacheSizeGB: 1
+        inMemory:
+          engineConfig:
+            inMemorySizeGB: 1
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
