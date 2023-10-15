@@ -77,6 +77,18 @@ cluster:
     headscale_url: null
     # Put the auth key in ./secrets.yaml
 
+  # You can optionally designate certain zones or regions as storage zones.
+  # This will create an associated storage class for each given zone
+  # and volumes of that storage class will only be scheduled to nodes of that zone.
+  # Nodes have to be tagged with zones / regions manually via hosts.yaml.
+  storage_zones: {}
+    # region-name-1:
+    #   replicas: 2
+    #   backbone_only: true # Should volume scheduling additionally be limited only to backbone nodes?
+    # zone-name-1:
+    #   replicas: 2
+    #   backbone_only: true
+
   # Subdomains created and managed by this cluster.
   subdomains:
     k8s_api: "k8s"

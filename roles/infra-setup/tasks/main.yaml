@@ -340,6 +340,7 @@
                 oauth2_proxy_host: "{{ cluster.subdomains.oauth2_proxy }}.{{ cluster.domain }}"
                 admin_group: "cluster-admins"
                 s3: "{{ cluster.backup.s3 }}"
+                zones: "{{ cluster.storage_zones }}"
             kubeconfig: "{{ kubeconfig }}"
 
     - name: Deploy backup-stack
