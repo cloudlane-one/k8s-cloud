@@ -74,17 +74,52 @@ spec:
     - port: manager
 ---
 # Snapshot cleanup job to avoid too-many-snapshots errors
-# See docs here: https://longhorn.io/docs/1.4.1/snapshots-and-backups/scheduling-backups-and-snapshots/#set-up-recurring-jobs-using-a-longhorn-recurringjob
 apiVersion: longhorn.io/v1beta1
 kind: RecurringJob
 metadata:
-  name: snap-delete-older-7d
+  name: snap-delete-after-14
 spec:
   concurrency: 1
   cron: '0 0 * * *'
   groups:
     - default
+  retain: 14
+  task: snapshot-delete
+---
+# Filesystem trim job to avoid ever-growing volume sizes
+apiVersion: longhorn.io/v1beta1
+kind: RecurringJob
+metadata:
+  name: fs-trim
+spec:
+  concurrency: 1
+  cron: '0 0 * * *'
+  groups:
+    - default
+  task: filesystem-trim
+---
+# Additional, non-default snapshot cleanup job
+apiVersion: longhorn.io/v1beta1
+kind: RecurringJob
+metadata:
+  name: snap-delete-after-7
+spec:
+  concurrency: 1
+  cron: '0 0 * * *'
+  groups: []
   retain: 7
+  task: snapshot-delete
+---
+# Additional, non-default snapshot cleanup job
+apiVersion: longhorn.io/v1beta1
+kind: RecurringJob
+metadata:
+  name: snap-delete-after-2
+spec:
+  concurrency: 1
+  cron: '0 0 * * *'
+  groups: []
+  retain: 2
   task: snapshot-delete
 ---
 apiVersion: longhorn.io/v1beta1

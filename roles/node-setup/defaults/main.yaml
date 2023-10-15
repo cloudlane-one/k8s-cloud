@@ -6,3 +6,6 @@ control: false
 
 # Name of the main control node (first to join the cluster).
 main_control_node: ""
+
+# Pin k3s to specific version.
+k3s_version: null

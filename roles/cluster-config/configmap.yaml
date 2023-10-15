@@ -38,6 +38,9 @@ cluster:
     admin_address: ""
 
   backup:
+    # Enable automatic backups of cluster state + volume content.
+    enabled: true
+    
     # Required. S3 config for logs and backups storage.
     s3:
       endpoint: "" # Full URL of your S3 endpoint (minus credentials)

@@ -99,6 +99,46 @@ spec:
           requests:
             cpu: 30m
             memory: 32Mi
+    additionalPrometheusRulesMap:
+      deployment-errors:
+        groups:
+        - name: failing-k8s-resources
+          rules:
+          - alert: KubePodNotReady30m
+            annotations:
+              description: Pod {{`{{`}} $labels.namespace {{`}}`}}/{{`{{`}} $labels.pod {{`}}`}} has been in a non-ready state for longer than 30 minutes.
+              runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepodnotready
+              summary: Pod has been in a non-ready state for more than 30 minutes.
+            expr: |-
+              sum by (namespace, pod, cluster) (
+                max by(namespace, pod, cluster) (
+                  kube_pod_status_phase{job="kube-state-metrics", namespace=~"{{ $targetNamespace }}", phase=~"Pending|Unknown|Failed"}
+                ) * on(namespace, pod, cluster) group_left(owner_kind) topk by(namespace, pod, cluster) (
+                  1, max by(namespace, pod, owner_kind, cluster) (kube_pod_owner{owner_kind!="Job"})
+                )
+              ) > 0
+            for: 30m
+            labels:
+              severity: critical
+        - name: failing-flux-resources
+          - alert: FluxReleaseNotReady30m
+            annotations:
+              description: Flux {{`{{`}} $labels.kind {{`}}`}} {{`{{`}} $labels.exported_namespace {{`}}`}}/{{`{{`}} $labels.name {{`}}`}} has been in a non-ready state for longer than 30 minutes.
+              runbook_url: https://fluxcd.io/flux/cheatsheets/troubleshooting/
+              summary: Flux release has been in a non-ready state for more than 30 minutes.
+            expr: |-
+              (
+                max by(exported_namespace, name, kind) (
+                  gotk_reconcile_condition{kind=~"HelmRelease|Kustomization", type="Ready", status!="True"}
+                ) 
+                - 
+                max by(exported_namespace, name, kind) (
+                  gotk_suspend_status{kind=~"HelmRelease|Kustomization"}
+                )
+              ) > 0
+            for: 30m
+            labels:
+              severity: error
     prometheusOperator:
       admissionWebhooks:
         timeoutSeconds: 30 # Prevent timeouts during helm upgrade
@@ -126,11 +166,16 @@ spec:
         ruleSelectorNilUsesHelmValues: false
         storageSpec:
           volumeClaimTemplate:
+            metadata:
+              labels:
+                recurring-job.longhorn.io/source: enabled
+                recurring-job.longhorn.io/snap-delete-after-2: enabled
+                velero.io/exclude-from-backup: "true"
             spec:
               accessModes: ["ReadWriteOnce"]
               resources:
                 requests:
-                  storage: 16Gi
+                  storage: 10Gi
               storageClassName: local
         retention: 2d
         resources:
@@ -209,103 +254,6 @@ spec:
         accessModes:
           - ReadWriteMany
       alerting:
-        rules.yaml:
-          apiVersion: 1
-          groups:
-            - orgId: 1
-              name: default
-              folder: default
-              interval: 60s
-              rules:
-                - uid: flux-reconcile-fail
-                  title: Flux Reconcile Fail
-                  condition: C
-                  data:
-                    - refId: A
-                      queryType: ''
-                      relativeTimeRange:
-                        from: 120
-                        to: 0
-                      datasourceUid: prometheus
-                      model:
-                        editorMode: builder
-                        expr: max by(exported_namespace, name, kind) (gotk_reconcile_condition{type="Ready",
-                          status="False"})
-                        hide: false
-                        intervalMs: 1000
-                        legendFormat: __auto
-                        maxDataPoints: 43200
-                        range: true
-                        refId: A
-                    - refId: B
-                      queryType: ''
-                      relativeTimeRange:
-                        from: 0
-                        to: 0
-                      datasourceUid: __expr__
-                      model:
-                        conditions:
-                        - evaluator:
-                            params:
-                            - 0
-                            - 0
-                            type: gt
-                          operator:
-                            type: and
-                          query:
-                            params: []
-                          reducer:
-                            params: []
-                            type: avg
-                          type: query
-                        datasource:
-                          name: Expression
-                          type: __expr__
-                          uid: __expr__
-                        expression: A
-                        intervalMs: 1000
-                        maxDataPoints: 43200
-                        reducer: max
-                        refId: B
-                        type: reduce
-                    - refId: C
-                      queryType: ''
-                      relativeTimeRange:
-                        from: 0
-                        to: 0
-                      datasourceUid: __expr__
-                      model:
-                        conditions:
-                        - evaluator:
-                            params:
-                            - 0
-                            - 0
-                            type: gt
-                          operator:
-                            type: and
-                          query:
-                            params: []
-                          reducer:
-                            params: []
-                            type: avg
-                          type: query
-                        datasource:
-                          name: Expression
-                          type: __expr__
-                          uid: __expr__
-                        expression: B
-                        intervalMs: 1000
-                        maxDataPoints: 43200
-                        refId: C
-                        type: threshold
-                  dashboardUid: flux-cluster
-                  panelId: 28
-                  noDataState: NoData
-                  for: "1h"
-                  annotations:
-                    runbook_url: "https://fluxcd.io/flux/cheatsheets/troubleshooting/"
-                  labels:
-                    severity: critical
         contactpoints.yaml:
           apiVersion: 1
           contactPoints:

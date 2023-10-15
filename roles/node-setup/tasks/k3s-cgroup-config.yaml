@@ -3,33 +3,33 @@
   vars:
     service: "{{ control | ternary('k3s', 'k3s-agent') }}"
   block:
-  - name: Ensure k3s service override directory exists
-    ansible.builtin.file:
-      owner: root
-      group: root
-      mode: "0755"
-      path: "/etc/systemd/system/{{ service }}.service.d"
-      state: directory
+    - name: Ensure k3s service override directory exists
+      ansible.builtin.file:
+        owner: root
+        group: root
+        mode: "0755"
+        path: "/etc/systemd/system/{{ service }}.service.d"
+        state: directory
 
-  - name: Configure slice override for k3s service
-    community.general.ini_file:
-      dest: "/etc/systemd/system/{{ service }}.service.d/slice_override.conf"
-      owner: root
-      group: root
-      mode: "0644"
-      section: Service
-      option: Slice
-      value: kubesystem.slice
-    notify:
-      - Reboot host
+    - name: Configure slice override for k3s service
+      community.general.ini_file:
+        dest: "/etc/systemd/system/{{ service }}.service.d/slice_override.conf"
+        owner: root
+        group: root
+        mode: "0644"
+        section: Service
+        option: Slice
+        value: kubesystem.slice
+      notify:
+        - Reboot host
 
-  - name: Configure kube-reserve enforcement via k3s settings
-    ansible.builtin.template:
-      src: k3s-config-kube-reserve.yaml
-      dest: /etc/rancher/k3s/config.yaml.d/kube-reserve.yaml
-      mode: '0644'
-    notify:
-      - Restart k3s
+    - name: Configure kube-reserve enforcement via k3s settings
+      ansible.builtin.template:
+        src: k3s-config-kube-reserve.yaml
+        dest: /etc/rancher/k3s/config.yaml.d/kube-reserve.yaml
+        mode: '0644'
+      notify:
+        - Restart k3s
 
 - name: Unconfigure kube-reserve enforcement
   when: "not cluster.enforce_kube_reserved"
