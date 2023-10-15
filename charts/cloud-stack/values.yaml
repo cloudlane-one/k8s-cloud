@@ -26,6 +26,13 @@ s3:
     name: nextcloud-s3
     key: access_key_secret
   bucket: "" # Name of bucket
+  encryption:
+    enabled: false
+    existingSecret:
+      enabled: false # Set to true to use existing key instead of generating one.
+      namespace: null # Set to null to use current namespace
+      name: ""
+      key: key
 
 smtp: # For admin notifications
   host: ""

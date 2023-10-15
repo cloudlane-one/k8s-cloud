@@ -157,6 +157,13 @@ spec:
             secretKeyRef:
               name: s3-access-key
               key: secret
+        {{- if .Values.s3.encryption.enabled }}
+        - name: S3_ENC_KEY
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-s3-enc
+              key: key
+        {{- end }}
       configs:
         logging.config.php: |
           <?php
@@ -224,7 +231,10 @@ spec:
                 'key'        => {{ .Values.s3.access_key_id | quote }},
                 'secret'     => getenv('S3_SECRET'),
                 'region'     => {{ .Values.s3.region | quote }},
-                'use_ssl'    => true
+                'use_ssl'    => true,
+                {{- if .Values.s3.encryption.enabled }}
+                'sse_c_key'  => getenv('S3_ENC_KEY'),
+                {{- end }}
               )
             )
           );

@@ -2,8 +2,8 @@ apiVersion: v2
 name: cloud-stack
 description: Nextcloud with SSO and some useful extras
 type: application
-version: "0.0.2"
-appVersion: "0.0.2"
+version: "0.1.0"
+appVersion: "0.1.0"
 
 dependencies:
   - name: common
