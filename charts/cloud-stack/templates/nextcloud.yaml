@@ -6,68 +6,63 @@ spec:
   interval: 1h
   url: https://nextcloud.github.io/helm/
 ---
-# # TODO: #53 Re-enable nextcloud autoconfig after rigorous testing
-# kind: ConfigMap
-# apiVersion: v1
-# metadata:
-#   name: nextcloud-autoconfig
-# data:
-#   setup.sh: |
-#     #!/bin/bash
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nextcloud-autoconfig
+data:
+  setup.sh: |
+    #!/bin/bash
 
-#     if [ -f ~/autoconf-running ]
-#     then
-#       echo "Autoconfig script is already running. Exiting."
-#       exit 0
-#     fi
+    if [ -f ~/autoconf-running ]
+    then
+      echo "Autoconfig script is already running. Exiting."
+      exit 0
+    fi
 
-#     touch ~/autoconf-running
-#     trap 'rm ~/autoconf-running' EXIT
+    touch ~/autoconf-running
+    trap 'rm ~/autoconf-running' EXIT
 
-#     until $(curl --output /dev/null --silent --head --fail -H "Host: {{ .Values.hosts.nextcloud }}" http://localhost:80/status.php); do
-#       echo 'waiting for nextcloud to start...'
-#       sleep 5
-#     done
-#     echo 'nextcloud is up.'
+    until $(curl --output /dev/null --silent --head --fail -H "Host: {{ .Values.hosts.nextcloud }}" http://localhost:80/status.php); do
+      echo 'waiting for nextcloud to start...'
+      sleep 5
+    done
+    echo 'nextcloud is up.'
 
-#     echo 'installing apps...'
-#     for APP in $(cat apps.txt); do
-#       if ! [[ -d /var/www/html/custom_apps/$APP || -d /var/www/html/apps/$APP ]] ; then
-#         echo "installing $APP"
-#         runuser --user www-data -- /var/www/html/occ app:install $APP
-#       # elif ! [ "$(runuser --user www-data -- /var/www/html/occ config:app:get $APP enabled)" = "yes" ]; then
-#       #   echo "enabling $APP"
-#       #   runuser --user www-data -- /var/www/html/occ app:enable $APP
-#       fi
-#     done
-#     echo 'installing apps... done'
+    echo 'installing apps...'
+    for APP in $(cat apps.txt); do
+      if ! [[ -d /var/www/html/custom_apps/$APP || -d /var/www/html/apps/$APP ]] ; then
+        echo "installing $APP"
+        runuser --user www-data -- /var/www/html/occ app:install $APP
+      fi
+    done
+    echo 'installing apps... done'
 
-#     echo 'loading config.json...'
-#     envsubst < config.json > config.subst.json
-#     cp config.subst.json /var/www/html/config.json
-#     runuser --user www-data -- /var/www/html/occ config:import config.json
-#     rm -f config.subst.json
-#     echo 'loading config.json... done'
+    echo 'loading config.json...'
+    envsubst < config.json > config.subst.json
+    cp config.subst.json /var/www/html/config.json
+    runuser --user www-data -- /var/www/html/occ config:import config.json
+    rm -f config.subst.json
+    echo 'loading config.json... done'
 
-#     echo 'nextcloud all set up.'
-#   apps.txt: | 
-#     oidc_login
-#     onlyoffice
-#   # Use oidc client secret as jwt secret. Is as good as any...
-#   config.json: |
-#     {
-#       "system": {},
-#       "apps": {
-#         "onlyoffice": {
-#           "DocumentServerUrl": {{ printf "https://%s" .Values.hosts.onlyoffice | quote }},
-#           "jwt_secret": $OO_JWT_SECRET
-#         },
-#         "files": {
-#           "default_quota": "1 GB"
-#         }
-#       }
-#     }
-# ---
+    echo 'nextcloud all set up.'
+  apps.txt: | 
+    oidc_login
+    onlyoffice
+  config.json: |
+    {
+      "system": {},
+      "apps": {
+        "onlyoffice": {
+          "DocumentServerUrl": {{ printf "https://%s" .Values.hosts.onlyoffice | quote }},
+          "jwt_secret": $OO_JWT_SECRET
+        },
+        "files": {
+          "default_quota": "1 GB"
+        }
+      }
+    }
+---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
@@ -245,14 +240,18 @@ spec:
             'mail_smtptimeout' => 30,
           );
           ?>
-      # extraVolumes:
-      #   - name: autoconfig
-      #     configMap:
-      #       name: nextcloud-autoconfig
-      # extraVolumeMounts:
-      #   - name: autoconfig
-      #     mountPath: /autoconfig
-      #     readOnly: true
+    {{- if .Values.autoconfig.enabled }}
+      extraVolumes:
+        - name: autoconfig
+          configMap:
+            name: nextcloud-autoconfig
+      extraVolumeMounts:
+        - name: autoconfig
+          mountPath: /autoconfig
+          readOnly: true
+    lifecycle:
+      postStartCommand: ["/bin/bash", "-c", "(cd /autoconfig; bash setup.sh)"]
+    {{- end }}
     internalDatabase:
       enabled: false
     externalDatabase:
@@ -262,8 +261,6 @@ spec:
         secretName: nextcloud-mariadb
         usernameKey: mariadb-username
         passwordKey: mariadb-password
-    # lifecycle:
-    #   postStartCommand: ["/bin/bash", "-c", "(cd /autoconfig; bash setup.sh)"]
     cronjob:
       enabled: true
     persistence:

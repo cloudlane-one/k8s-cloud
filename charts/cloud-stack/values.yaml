@@ -50,4 +50,7 @@ snapshots:
   enabled: true
   class_name: snap
 
+autoconfig:
+  enabled: false
+
 debug: false
