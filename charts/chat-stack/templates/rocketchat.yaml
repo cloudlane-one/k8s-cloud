@@ -107,9 +107,6 @@ spec:
         wiredTiger:
           engineConfig:
             cacheSizeGB: 1
-        inMemory:
-          engineConfig:
-            inMemorySizeGB: 1
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
