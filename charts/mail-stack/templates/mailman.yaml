@@ -465,13 +465,17 @@ spec:
             tcpSocket:
               port: ui
             initialDelaySeconds: 180
+            timeoutSeconds: 10
             periodSeconds: 20
-            failureThreshold: 15
+            successThreshold: 1
+            failureThreshold: 30
           readinessProbe:
             tcpSocket:
               port: ui
             initialDelaySeconds: 180
+            timeoutSeconds: 10
             periodSeconds: 20
+            successThreshold: 1
             failureThreshold: 3
           resources:
             requests:
