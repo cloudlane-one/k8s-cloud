@@ -156,7 +156,6 @@ spec:
         fromAddress: {{ index (.Values.smtp.from_address | splitList "@") 0 }}
         domain: {{ index (.Values.smtp.from_address | splitList "@") 1 }}
         smtp:
-          host: {{ .Values.smtp.host }}
           port: {{ .Values.smtp.port }}
           secure: ssl
       extraEnv:
