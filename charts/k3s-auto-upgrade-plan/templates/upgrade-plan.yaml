@@ -8,14 +8,25 @@ spec:
   cordon: true
   nodeSelector:
     matchExpressions:
-    - key: node-role.kubernetes.io/control-plane
-      operator: In
-      values:
-      - "true"
+      - key: node-role.kubernetes.io/control-plane
+        operator: In
+        values:
+          - "true"
+  prepare:
+    image: alpine
+    command: [sh, -c]
+    args:
+      [
+        'while ! [ "$(date +%H | cut -c 1-2)" -ge 0 -a "$(date +%H | cut -c 1-2)" -lt 2 ]; do sleep 60; done',
+      ]
   serviceAccountName: system-upgrade
   upgrade:
     image: rancher/k3s-upgrade
+  {{ if .Values.k3s_version -}}
+  version: {{ .Values.k3s_version }}
+  {{- else -}}
   channel: https://update.k3s.io/v1-release/channels/stable
+  {{- end }}
 ---
 # Agent plan
 apiVersion: upgrade.cattle.io/v1
@@ -27,14 +38,18 @@ spec:
   cordon: true
   nodeSelector:
     matchExpressions:
-    - key: node-role.kubernetes.io/control-plane
-      operator: DoesNotExist
+      - key: node-role.kubernetes.io/control-plane
+        operator: DoesNotExist
   prepare:
     args:
-    - prepare
-    - server-plan
+      - prepare
+      - server-plan
     image: rancher/k3s-upgrade
   serviceAccountName: system-upgrade
   upgrade:
     image: rancher/k3s-upgrade
+  {{ if .Values.k3s_version -}}
+  version: {{ .Values.k3s_version }}
+  {{- else -}}
   channel: https://update.k3s.io/v1-release/channels/stable
+  {{- end }}
