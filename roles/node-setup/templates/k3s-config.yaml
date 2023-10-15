@@ -10,8 +10,7 @@ node-external-ip: "{{ ansible_host }}"
 {% endif %}
 kubelet-arg:
   - "node-ip=0.0.0.0"
-  - "eviction-hard=memory.available<100Mi,nodefs.available<5%"
-  - "eviction-soft=memory.available<300Mi,nodefs.available<10%"
+  - "eviction-soft=memory.available<400Mi,nodefs.available<10%"
   - "eviction-soft-grace-period=memory.available=1m0s,nodefs.available=10m0s"
-  - "eviction-max-pod-grace-period=120"
+  - "eviction-max-pod-grace-period=300"
   - "system-reserved=cpu=200m,memory=400Mi,ephemeral-storage=8Gi"
