@@ -66,15 +66,6 @@ spec:
           cpu: 20m
           memory: 128Mi
     vcluster:
-      baseArgs:
-        - server
-        - --write-kubeconfig=/data/k3s-config/kube-config.yaml
-        - --data-dir=/data
-        - --disable=traefik,servicelb,local-storage,coredns
-        - --disable-network-policy
-        - --disable-agent
-        - --disable-cloud-controller
-        - --flannel-backend=none
       extraArgs:
         - "--kube-apiserver-arg=oidc-issuer-url={{ .Values.oidc_client.idp_url }}"
         - "--kube-apiserver-arg=oidc-client-id={{ .Values.oidc_client.id }}"
