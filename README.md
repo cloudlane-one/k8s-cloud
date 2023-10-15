@@ -68,12 +68,14 @@ These system dependencies are to be installed on your local machine.
 
 - [Python](https://www.python.org/downloads/)
 - [Poetry](https://python-poetry.org)
+- [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux)
 - [Kubelogin](https://github.com/int128/kubelogin)
 
 Clone the repo, `cd` to the cloned folder, and run following bash code to install all Python deps into a virtual environment:
 
 ```bash
 poetry install
+poetry shell
 ```
 
 Then run this to install Ansible-specific dependencies:
@@ -173,9 +175,9 @@ Simply add new node hosts to your cluster's `hosts.yaml` and re-run the setup pl
 
 #### Manual steps for each node
 
-1. *Via Longhorn Web UI*: [Request eviction](https://longhorn.io/docs/1.5.1/volumes-and-nodes/disks-or-nodes-eviction/#select-disks-or-nodes-for-eviction) of the associated Longhorn storage node.
+1. _Via Longhorn Web UI_: [Request eviction](https://longhorn.io/docs/1.5.1/volumes-and-nodes/disks-or-nodes-eviction/#select-disks-or-nodes-for-eviction) of the associated Longhorn storage node.
 2. Wait for all volumes to be evicted.
-3. *Via terminal on any control node*: [`kubectl drain` the k8s node](https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/#use-kubectl-drain-to-remove-a-node-from-service) to evict all running pods from it and disable scheduling.
+3. _Via terminal on any control node_: [`kubectl drain` the k8s node](https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/#use-kubectl-drain-to-remove-a-node-from-service) to evict all running pods from it and disable scheduling.
 4. Wait for all pods to be evicted.
 5. **For control nodes**:
    - [Install etcdctl](https://docs.k3s.io/advanced#using-etcdctl) on one of the control nodes.
