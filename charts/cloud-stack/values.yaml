@@ -17,6 +17,7 @@ oidc_client:
     key: secret
 
 s3:
+  enabled: true # Use S3 bucket as primary file storage.
   endpoint: "" # Hostname (without URL scheme) of your S3 endpoint
   region: "de"
   access_key_id: "" # Your S3 access key id

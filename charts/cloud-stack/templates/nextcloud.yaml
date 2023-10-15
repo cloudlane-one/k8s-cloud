@@ -147,6 +147,7 @@ spec:
             secretKeyRef:
               name: onlyofficejwt
               key: JWT_SECRET
+        {{- if .Values.s3.enabled }}
         - name: S3_SECRET
           valueFrom:
             secretKeyRef:
@@ -158,6 +159,7 @@ spec:
             secretKeyRef:
               name: nextcloud-s3-enc
               key: key
+        {{- end }}
         {{- end }}
       configs:
         logging.config.php: |
@@ -214,6 +216,7 @@ spec:
             'overwriteprotocol' => 'https',
           );
           ?>
+        {{- if .Values.s3.enabled }}
         s3.config.php: |-
           <?php
           $CONFIG = array (
@@ -234,6 +237,7 @@ spec:
             )
           );
           ?>
+        {{- end }}
         mail.config.php: | 
           <?php
           $CONFIG = array (
