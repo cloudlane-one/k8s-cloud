@@ -49,7 +49,7 @@ ingress: true
 
 storage:
   size: 6Gi
-  zone: null
+  zone: "" # Enter zone name to localize storage to that zone.
   encrypted: false
   auto_backup: true
 
