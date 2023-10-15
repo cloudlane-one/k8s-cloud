@@ -66,6 +66,15 @@ spec:
           cpu: 20m
           memory: 128Mi
     vcluster:
+      baseArgs:
+        - server
+        - --write-kubeconfig=/data/k3s-config/kube-config.yaml
+        - --data-dir=/data
+        - --disable=traefik,servicelb,local-storage,coredns
+        - --disable-network-policy
+        - --disable-agent
+        - --disable-cloud-controller
+        - --flannel-backend=none
       extraArgs:
         - "--kube-apiserver-arg=oidc-issuer-url={{ .Values.oidc_client.idp_url }}"
         - "--kube-apiserver-arg=oidc-client-id={{ .Values.oidc_client.id }}"
@@ -86,12 +95,6 @@ spec:
         requests:
           cpu: 30m
           memory: 32Mi
-    proxy:
-      metricsServer:
-        nodes:
-          enabled: true
-        pods:
-          enabled: true
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
