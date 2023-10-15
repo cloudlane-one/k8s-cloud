@@ -63,6 +63,29 @@ data:
       }
     }
 ---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: nextcloud-nextcloud
+  labels:
+    app.kubernetes.io/component: app
+    app.kubernetes.io/instance: nextcloud
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: nextcloud
+    {{- if not .Values.storage.auto_backup }}
+    velero.io/exclude-from-backup: "true"
+    recurring-job.longhorn.io/source: enabled
+    recurring-job.longhorn.io/snapshot-daily: enabled
+    {{- end }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 4Gi
+  storageClassName: {{ ternary .Values.storage.zone | (printf "zone-%s" .Values.storage.zone) "backbone" }}{{ ternary .Values.storage.encrypted | "-enc" "" }}
+  volumeMode: Filesystem
+---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
@@ -269,8 +292,7 @@ spec:
       enabled: true
     persistence:
       enabled: true
-      size: 4Gi
-      # accessMode: ReadWriteMany
+      existingClaim: nextcloud-nextcloud
     livenessProbe:
       initialDelaySeconds: 300
       periodSeconds: 10

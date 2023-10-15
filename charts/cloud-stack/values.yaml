@@ -47,6 +47,11 @@ smtp: # For admin notifications
 
 ingress: true
 
+storage:
+  zone: null
+  encrypted: false
+  auto_backup: true
+
 snapshots:
   enabled: true
   class_name: snap

@@ -87,6 +87,16 @@ spec:
   retain: 7
   task: snapshot-delete
 ---
+apiVersion: longhorn.io/v1beta1
+kind: RecurringJob
+metadata:
+  name: snapshot-daily
+spec:
+  concurrency: 1
+  cron: '0 0 * * *'
+  groups: []
+  task: snapshot
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
