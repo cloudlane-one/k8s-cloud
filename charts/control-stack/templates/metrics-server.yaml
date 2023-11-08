@@ -21,6 +21,10 @@ spec:
         kind: HelmRepository
         name: metrics-server
   timeout: '15m0s' # Account for slow performance of cluster on first setup.
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
   values:
     replicas: 2
 {{- end }}
