@@ -16,11 +16,9 @@
     name: "{{ inventory_hostname }}"
 
 - name: Increase open file limit to 512
-  ansible.builtin.copy:
-    content: '512'
-    dest: /proc/sys/fs/inotify/max_user_instances
-    mode: '0644'
-  notify: Reboot host
+  ansible.posix.sysctl:
+    name: fs.inotify.max_user_instances
+    value: '512'
 
 - name: Ensure all required system packages are installed
   block:
