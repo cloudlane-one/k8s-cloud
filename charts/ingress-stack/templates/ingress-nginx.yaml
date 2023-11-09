@@ -25,8 +25,8 @@ spec:
     # after syncing with vcluster and klipper-lb.
     fullnameOverride: inginx
     controller:
+      kind: DaemonSet
       name: ctl
-      replicaCount: 2
       ingressClassResource:
         default: true
       watchIngressWithoutClass: true
@@ -39,6 +39,9 @@ spec:
       service:
         labels:
           svccontroller.k3s.cattle.io/lbpool: {{ .Values.cluster_name }}
+        externalTrafficPolicy: Local
+      nodeSelector:
+        svccontroller.k3s.cattle.io/lbpool: {{ .Values.cluster_name }}
       resources:
         requests:
           cpu: 100m
