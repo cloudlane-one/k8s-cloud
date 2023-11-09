@@ -159,6 +159,7 @@ spec:
       containers:
         - name: mailman-core
           image: maxking/mailman-core:0.4
+          imagePullPolicy: Always
           command: ["/bin/sh", "-c"]
           args: 
             - "chown mailman /dev/stdout && docker-entrypoint.sh master --force"
@@ -415,6 +416,7 @@ spec:
       containers:
         - name: mailman-web
           image: maxking/mailman-web:0.4
+          imagePullPolicy: Always
           env:
             - name: SERVE_FROM_DOMAIN
               value: {{ .Values.hosts.mailman }}
