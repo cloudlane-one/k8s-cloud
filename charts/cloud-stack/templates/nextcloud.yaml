@@ -23,7 +23,7 @@ data:
     touch ~/autoconf-running
     trap 'rm ~/autoconf-running' EXIT
 
-    until $(curl --output /dev/null --silent --head --fail -H "Host: {{ .Values.hosts.nextcloud }}" http://localhost:80/status.php); do
+    until [[ $(php occ status 2> /dev/null | grep "installed:") =~ "true" ]]; do
       echo 'waiting for nextcloud to start...'
       sleep 5
     done
@@ -250,6 +250,9 @@ spec:
             ),
             'forwarded_for_headers' => array('HTTP_X_FORWARDED_FOR'),
             'overwriteprotocol' => 'https',
+            {{- if .Values.nginx.enabled }}
+		        'config_is_read_only' => true,
+            {{- end }}
           );
           ?>
         {{- if .Values.s3.enabled }}
