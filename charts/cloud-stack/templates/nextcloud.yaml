@@ -39,10 +39,8 @@ data:
     echo 'installing apps... done'
 
     echo 'loading config.json...'
-    envsubst < config.json > config.subst.json
-    cp config.subst.json /var/www/html/config.json
+    ( echo "cat <<EOF" ; cat config.json ; echo EOF ) | sh > /var/www/html/config.json
     runuser --user www-data -- /var/www/html/occ config:import config.json
-    rm -f config.subst.json
     echo 'loading config.json... done'
 
     echo 'nextcloud all set up.'
@@ -55,7 +53,7 @@ data:
       "apps": {
         "onlyoffice": {
           "DocumentServerUrl": {{ printf "https://%s" .Values.hosts.onlyoffice | quote }},
-          "jwt_secret": $OO_JWT_SECRET
+          "jwt_secret": "$OO_JWT_SECRET"
         },
         "files": {
           "default_quota": "1 GB"
