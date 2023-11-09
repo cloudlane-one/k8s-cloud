@@ -335,6 +335,13 @@ spec:
           requests:
             cpu: 100m
             memory: 256Mi
+    {{- if not eq .Values.storage.zone "" }}
+        nodeSelector:
+          topology.kubernetes.io/zone: {{ .Values.storage.zone }}
+    nodeSelector:
+      topology.kubernetes.io/zone: {{ .Values.storage.zone }}
+    {{- end }}
+
 {{- if .Values.snapshots.enabled }}
 ---
 apiVersion: snapshot.storage.k8s.io/v1
