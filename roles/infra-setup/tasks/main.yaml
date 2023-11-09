@@ -86,7 +86,7 @@
             labels:
               backbone: "1"
 
-    - name: Add cluster ingress label to inventory node
+    - name: Add cluster load-balancer labels to inventory node
       loop: "{{ groups['ingress'] }}"
       kubernetes.core.k8s:
         state: patched
@@ -97,6 +97,18 @@
             labels:
               svccontroller.k3s.cattle.io/enablelb: "true"
               svccontroller.k3s.cattle.io/lbpool: "{{ cluster_name }}"
+
+    - name: Add cluster ingress label to inventory node
+      loop: "{{ groups['ingress'] }}"
+      vars:
+        ingress_key: "{{ cluster_name }}-ingress"
+      kubernetes.core.k8s:
+        state: patched
+        kind: Node
+        name: "{{ item }}"
+        definition:
+          metadata:
+            labels: "{{ {ingress_key: '1'} }}"
 
     - name: Add cluster storage label to inventory node
       loop: "{{ groups['storage'] }}"
@@ -110,7 +122,23 @@
           metadata:
             labels: "{{ {storage_key: '1'} }}"
 
-- name: Ensure vcluster for cluster.domain exists and selected in kubeconfig
+- name: Get list of ingress nodes
+  environment:
+    K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
+  loop: "{{ groups['ingress'] }}"
+  kubernetes.core.k8s_info:
+    kind: Node
+    name: "{{ item }}"
+  register: ingress_nodes
+
+- name: Get list of ingress node ips
+  vars:
+    all_addresses: "{{ ingress_nodes | map(attribute='status.addresses') | flatten }}"
+  ansible.builtin.set_fact:
+    ingress_ips_ext: "{{ all_addresses | selectattr('type', 'equalto', 'ExternalIP') | map(attribute='address') }}"
+    ingress_ips_int: "{{ all_addresses | selectattr('type', 'equalto', 'InternalIP') | map(attribute='address') }}"
+
+- name: Ensure vcluster for cluster.domain exists and is selected in kubeconfig
   when: "cluster.virtual"
   environment:
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
