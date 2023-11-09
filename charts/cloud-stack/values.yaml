@@ -7,6 +7,7 @@ org:
   default_locale: "en_US"
   tagline: ""
   logo_url: ""
+  default_phone_region: "" # ISO2 code: https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements
 
 oidc_client:
   idp_url: ""
