@@ -235,6 +235,10 @@ spec:
         proxy.config.php: | 
           <?php
           $CONFIG = array (
+            'trusted_proxies' => array (
+              '127.0.0.1',
+              '::1',
+            ),
             'overwriteprotocol' => 'https',
           );
           ?>
