@@ -236,7 +236,7 @@ spec:
           <?php
           $CONFIG = array (
             'default_locale' => {{ .Values.org.default_locale | quote }},
-            'default_phone_region' => {{ .Values.org.default_phone_region | ternary .Values.org.default_phone_region (index (.Values.org.default_locale | splitList "_") 1 | upper) | quote }}
+            'default_phone_region' => {{ not (eq .Values.org.default_phone_region "") | ternary .Values.org.default_phone_region (index (.Values.org.default_locale | splitList "_") 1 | upper) | quote }}
           );
           ?>
         proxy.config.php: | 
@@ -251,7 +251,7 @@ spec:
             'forwarded_for_headers' => array('HTTP_X_FORWARDED_FOR'),
             'overwriteprotocol' => 'https',
             {{- if .Values.nginx.enabled }}
-		        'config_is_read_only' => true,
+            'config_is_read_only' => true,
             {{- end }}
           );
           ?>
