@@ -36,12 +36,16 @@ spec:
       config:
         proxy-buffer-size: "16k" # See https://andrewlock.net/fixing-nginx-upstream-sent-too-big-header-error-when-running-an-ingress-controller-in-kubernetes/ for explanation
       allowSnippetAnnotations: true
+      nodeSelector:
+        {{ .Values.cluster_name }}-ingress: "1"
       service:
+        enabled: {{ not .Values.exposeViaHostPort }}
         labels:
           svccontroller.k3s.cattle.io/lbpool: {{ .Values.cluster_name }}
-        externalTrafficPolicy: Local
-      nodeSelector:
-        svccontroller.k3s.cattle.io/lbpool: {{ .Values.cluster_name }}
+      hostPort:
+        enabled: {{ .Values.exposeViaHostPort }}
+      publishService:
+        enabled: {{ not .Values.exposeViaHostPort }}
       resources:
         requests:
           cpu: 100m

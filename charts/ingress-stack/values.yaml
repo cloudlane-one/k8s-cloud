@@ -1,1 +1,4 @@
 cluster_name: ""
+
+# Set to true to use host-port instead of LoadBalancer service to expose ingresses.
+exposeViaHostPort: false
