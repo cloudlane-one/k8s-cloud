@@ -23,7 +23,7 @@ data:
     touch ~/autoconf-running
     trap 'rm ~/autoconf-running' EXIT
 
-    until [[ $(php occ status 2> /dev/null | grep "installed:") =~ "true" ]]; do
+    until [[ $(runuser --user www-data -- /var/www/html/occ status 2> /dev/null | grep "installed:") =~ "true" ]]; do
       echo 'waiting for nextcloud to start...'
       sleep 5
     done

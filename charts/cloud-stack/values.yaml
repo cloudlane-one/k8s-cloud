@@ -63,6 +63,6 @@ autoconfig:
   enabled: false
 
 nginx:
-  enabled: false
+  enabled: false # currently broken.
 
 debug: false
