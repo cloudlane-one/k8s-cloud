@@ -89,7 +89,7 @@ parameters:
   csi.storage.k8s.io/node-stage-secret-namespace: longhorn-system
 ---
 {{- range $zone, $spec := .Values.zones }}
-{{ $selector := printf ($spec.backbone_only | ternary "backbone.%s.%s" "%s.%s") $.Values.cluster_name $zone }}
+{{ $selector := printf ($spec.backbone_only | ternary "backbone.%s.%s" "%s.%s") $zone $.Values.cluster_name }}
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
