@@ -466,7 +466,7 @@ spec:
           livenessProbe:
             tcpSocket:
               port: ui
-            initialDelaySeconds: 180
+            initialDelaySeconds: 300
             timeoutSeconds: 10
             periodSeconds: 20
             successThreshold: 1
@@ -474,7 +474,7 @@ spec:
           readinessProbe:
             tcpSocket:
               port: ui
-            initialDelaySeconds: 180
+            initialDelaySeconds: 300
             timeoutSeconds: 10
             periodSeconds: 20
             successThreshold: 1
