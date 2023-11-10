@@ -31,7 +31,6 @@ spec:
         default: true
       watchIngressWithoutClass: true
       extraArgs:
-        enable-ssl-passthrough: "true"
         update-status-on-shutdown: "false"
       config:
         proxy-buffer-size: "16k" # See https://andrewlock.net/fixing-nginx-upstream-sent-too-big-header-error-when-running-an-ingress-controller-in-kubernetes/ for explanation
@@ -42,6 +41,7 @@ spec:
         enabled: {{ not .Values.exposeViaHostPort }}
         labels:
           svccontroller.k3s.cattle.io/lbpool: {{ .Values.cluster_name }}
+        externalTrafficPolicy: Local
       hostPort:
         enabled: {{ .Values.exposeViaHostPort }}
       publishService:
