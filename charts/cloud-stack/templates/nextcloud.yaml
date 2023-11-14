@@ -102,12 +102,6 @@ spec:
     # TODO: #55 Deploy multiple nextcloud replicas with RollingUpdate and RWX volume once upstream NFS issue is solved
     # Upstream issue: <https://github.com/nextcloud/helm/issues/399>
     # replicaCount: 2
-    {{- if .Values.nginx.enabled }}
-    image:
-      flavor: fpm
-    nginx:
-      enabled: true
-    {{- end }}
     resources:
       requests:
         cpu: 200m

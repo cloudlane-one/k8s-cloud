@@ -62,7 +62,4 @@ snapshots:
 autoconfig:
   enabled: false
 
-nginx:
-  enabled: false # currently broken.
-
 debug: false
