@@ -228,10 +228,6 @@
               register: k3s_install_res
               failed_when: false
 
-            - name: DEBUG
-              ansible.builtin.debug:
-                var: k3s_install_res
-
 - name: Configure cgroups for k3s service
   ansible.builtin.include_tasks:
     file: k3s-cgroup-config.yaml
