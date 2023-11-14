@@ -100,7 +100,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: vcluster
-  minReplicas: 2
+  minReplicas: 1
   maxReplicas: {{ .Values.max_replicas }}
   metrics:
     - type: Resource

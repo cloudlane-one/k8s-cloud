@@ -161,7 +161,6 @@
                 host: "{{ k8s_api_host }}"
                 oidc_client:
                   idp_url: "https://{{ cluster.subdomains.keycloak }}.{{ cluster.domain }}/realms/master"
-                max_replicas: "{{ groups['cluster'] | length }}"
             kubeconfig: "{{ host_kubeconfig }}"
 
     - name: Wait for vcluster deployment to become ready
