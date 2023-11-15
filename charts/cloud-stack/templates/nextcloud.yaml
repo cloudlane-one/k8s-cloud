@@ -73,6 +73,7 @@ metadata:
     {{- if not .Values.storage.auto_backup }}
     velero.io/exclude-from-backup: "true"
     recurring-job.longhorn.io/source: enabled
+    recurring-job-group.longhorn.io/default: enabled
     recurring-job.longhorn.io/snapshot-daily: enabled
     {{- end }}
 spec:
