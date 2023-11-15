@@ -52,7 +52,6 @@ storage:
   size: 6Gi
   encrypted: false
   auto_backup: true
-  local: false # Deploy as local, single-replica volume
 
 zone: "" # Specific zone to localize this release to (pods and volumes)
 

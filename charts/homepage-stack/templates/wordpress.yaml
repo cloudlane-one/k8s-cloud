@@ -97,6 +97,8 @@ spec:
       {{- else }}
       backbone: "1"
       {{- end }}
+    global:
+      storageClass: {{ (eq .Values.zone "") | ternary "backbone" (printf "zone-%s" .Values.zone) }}
     replicaCount: 2
     wordpressUsername: admin
     wordpressEmail: {{ .Values.admin_email }}
@@ -142,6 +144,8 @@ spec:
       enabled: true
       auth:
         existingSecret: wordpress-mariadb
+      global:
+        storageClass: {{ (eq .Values.zone "") | ternary "backbone" (printf "zone-%s" .Values.zone) }}
       primary:
         persistence:
           enabled: true

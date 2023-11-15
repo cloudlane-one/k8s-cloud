@@ -111,6 +111,8 @@ spec:
       database: onlyoffice
       username: onlyoffice
       existingSecret: onlyoffice-postgres
+    global:
+      storageClass: {{ (eq .Values.zone "") | ternary "backbone" (printf "zone-%s" .Values.zone) }}
     primary:
       nodeSelector:
         {{- if not (eq .Values.zone "") }}
@@ -212,7 +214,7 @@ spec:
       amqpSecretKeyName: rabbitmq-password
       amqpExistingSecret: onlyoffice-rabbitmq
     persistence:
-      storageClass: backbone
+      storageClass: {{ (eq .Values.zone "") | ternary "backbone" (printf "zone-%s" .Values.zone) }}
       size: 4Gi
     ingress:
       enabled: {{ .Values.ingress }}
