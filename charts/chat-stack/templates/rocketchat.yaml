@@ -147,6 +147,11 @@ spec:
     replicaCount: 2
     minAvailable: 1
     host: {{ .Values.host }}
+    smtp:
+      enabled: true
+      host: {{ .Values.smtp.host }}
+      username: {{ .Values.smtp.user }}
+      port: {{ .Values.smtp.port | quote }}
     ingress:
       enabled: {{ .Values.ingress }}
       annotations:
@@ -239,6 +244,8 @@ spec:
       - name: OVERWRITE_SETTING_FileUpload_MaxFileSize
         value: "10485760"
 
+      - name: OVERWRITE_SETTING_From_Email
+        value: {{ .Values.smtp.from_address }}
       - name: OVERWRITE_SETTING_SMTP_Password
         valueFrom:
           secretKeyRef:
