@@ -61,6 +61,7 @@ spec:
         - "--tls-san={{ .Values.host }}"
         - "--sync-labels=svccontroller.k3s.cattle.io/lbpool"
         - "--sync-labels=velero.io/exclude-from-backup"
+        - "--sync-labels=recurring-job.longhorn.io/source"
         - "--sync-labels=recurring-job-group.longhorn.io/default"
         - "--sync-labels=recurring-job.longhorn.io/snap-delete-after-2"
         - "--sync-labels=recurring-job.longhorn.io/snap-delete-after-7"
