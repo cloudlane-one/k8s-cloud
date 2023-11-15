@@ -64,7 +64,7 @@
 
 - name: Get list of zones
   ansible.builtin.set_fact:
-    all_addresses: "{{ hostvars | map(attribute='zone', default='default') }}"
+    zones: "{{ hostvars | map(attribute='zone', default='default') }}"
 
 - name: Ensure cluster labels are applied to nodes
   environment:
@@ -103,7 +103,7 @@
         definition:
           metadata:
             labels:
-              topology.kubernetes.io/region: "{{ region }}"
+              topology.kubernetes.io/region: "backbone"
               backbone: "1"
 
     - name: Add cluster load-balancer labels to inventory node
