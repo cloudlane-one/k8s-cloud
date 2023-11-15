@@ -2,16 +2,13 @@ host: ""
 
 cluster_name: ""
 
-backbone_replicas: 2
+default_replicas:
+  backbone: 2
+  zones: 2
+
 encrypt_default: false
 
-zones: {}
-# region-name-1:
-#   replicas: 2
-#   backbone_only: true
-# zone-name-1:
-#   replicas: 2
-#   backbone_only: true
+zones: [] # List of all zones in the cluster
 
 vcluster: false
 

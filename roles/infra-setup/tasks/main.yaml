@@ -62,6 +62,10 @@
     ingress_ips_ext: "{{ all_addresses | selectattr('type', 'equalto', 'ExternalIP') | map(attribute='address') }}"
     ingress_ips_int: "{{ all_addresses | selectattr('type', 'equalto', 'InternalIP') | map(attribute='address') }}"
 
+- name: Get list of zones
+  ansible.builtin.set_fact:
+    all_addresses: "{{ hostvars | map(attribute='zone', default='default') }}"
+
 - name: Ensure cluster labels are applied to nodes
   environment:
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
@@ -76,11 +80,10 @@
           metadata:
             labels: "{{ {cluster_name: '1'} }}"
 
-    - name: Add topology labels to inventory node
+    - name: Add (default) topology labels to inventory node
       loop: "{{ groups['cluster'] }}"
       vars:
-        region: "{{ hostvars[item].region | default('eu') }}"
-        zone: "{{ hostvars[item].zone | default('eu-1') }}"
+        zone: "{{ hostvars[item].zone | default('default') }}"
       kubernetes.core.k8s:
         state: patched
         kind: Node
@@ -88,10 +91,10 @@
         definition:
           metadata:
             labels:
-              topology.kubernetes.io/region: "{{ region }}"
+              topology.kubernetes.io/region: "edge"
               topology.kubernetes.io/zone: "{{ zone }}"
 
-    - name: Add backbone label to inventory node
+    - name: Add backbone labels to inventory node
       loop: "{{ groups['backbone'] }}"
       kubernetes.core.k8s:
         state: patched
@@ -100,6 +103,7 @@
         definition:
           metadata:
             labels:
+              topology.kubernetes.io/region: "{{ region }}"
               backbone: "1"
 
     - name: Add cluster load-balancer labels to inventory node
@@ -367,7 +371,7 @@
                 oauth2_proxy_host: "{{ cluster.subdomains.oauth2_proxy }}.{{ cluster.domain }}"
                 admin_group: "cluster-admins"
                 s3: "{{ cluster.backup.s3 }}"
-                zones: "{{ cluster.storage_zones }}"
+                zones: "{{ zones }}"
             kubeconfig: "{{ kubeconfig }}"
 
     - name: Deploy backup-stack

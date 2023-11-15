@@ -112,13 +112,11 @@ Edit the hosts file `./clusters/$CLUSTER_NAME/hosts.yaml` to add all host machin
 
 #### Backbone hosts
 
-Backbone hosts are node hosts which have a direct and strong connection to the main network of your cluster and thus have low latency and high bandwith over that network. This is important especially for distributed storage.
+Backbone hosts are node hosts which have a direct and strong connection to the internet backbone, e.g. data centers,  and thus have low latency and high bandwith among them. This is important especially for distributed storage. Latency between all backbone nodes should be 100ms or less and bandwidth should be at least 1Gbps (up and down).
 
-This main network could either be the WAN, aka the public internet, or the LAN network, where the majority of your hosts reside. Latency between all backbone nodes should be 100ms or less and bandwidth should be at least 1Gbps (up and down).
+By default, nodes are assigned to the region `backbone` and the zone `default`. You may set `backbone=false` on a node in `hosts.yaml` to assign it to the `edge` region instead (disabling its participation in HA control plane and default distributed storage). You may additionally define a custom `zone` for each node.
 
-> Note that `backbone` does not make any statement about failure domains or availability zones. If you want to build a hierarchy of zones, please add `region` and `zone` labels to your hosts.
-
-By default, all hosts in `hosts.yaml` are taken to be backbone nodes. To exclude hosts with slower connections, set `backbone=false` on them, or to only include a subset of hosts into the backbone, set `backbone=true` on the subset.
+> To only include a subset of hosts into the backbone, set `backbone=true` on the subset, and all other nodes will be assigned `backbone=false` automatically.
 
 #### Control plane hosts
 

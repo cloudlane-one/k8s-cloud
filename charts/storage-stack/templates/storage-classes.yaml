@@ -60,7 +60,7 @@ provisioner: driver.longhorn.io
 allowVolumeExpansion: true
 parameters:
   nodeSelector: {{ printf "backbone.%s" .Values.cluster_name }}
-  numberOfReplicas: {{ .Values.backbone_replicas | quote }}
+  numberOfReplicas: {{ .Values.default_replicas.backbone | quote }}
   dataLocality: best-effort
   staleReplicaTimeout: "2880" # 48 hours in minutes
 ---
@@ -76,7 +76,7 @@ provisioner: driver.longhorn.io
 allowVolumeExpansion: true
 parameters:
   nodeSelector: {{ printf "backbone.%s" .Values.cluster_name }}
-  numberOfReplicas: {{ .Values.backbone_replicas | quote }}
+  numberOfReplicas: {{ .Values.default_replicas.backbone | quote }}
   dataLocality: best-effort
   staleReplicaTimeout: "2880" # 48 hours in minutes
   encrypted: "true"
@@ -88,8 +88,7 @@ parameters:
   csi.storage.k8s.io/node-stage-secret-name: longhorn-encryption
   csi.storage.k8s.io/node-stage-secret-namespace: longhorn-system
 ---
-{{- range $zone, $spec := .Values.zones }}
-{{ $selector := printf ($spec.backbone_only | ternary "backbone.%s.%s" "%s.%s") $zone $.Values.cluster_name }}
+{{- range $zone := .Values.zones }}
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
@@ -97,8 +96,8 @@ metadata:
 provisioner: driver.longhorn.io
 allowVolumeExpansion: true
 parameters:
-  nodeSelector: {{ $selector }}
-  numberOfReplicas: {{ $spec.replicas | default 2 | quote }}
+  nodeSelector: {{ printf "%s.%s" $zone $.Values.cluster_name }}
+  numberOfReplicas: {{ $.Values.default_replicas.zones }}
   dataLocality: best-effort
   staleReplicaTimeout: "2880" # 48 hours in minutes
 ---
@@ -109,8 +108,8 @@ metadata:
 provisioner: driver.longhorn.io
 allowVolumeExpansion: true
 parameters:
-  nodeSelector: {{ $selector }}
-  numberOfReplicas: {{ $spec.replicas | default 2 | quote }}
+  nodeSelector: {{ printf "%s.%s" $zone $.Values.cluster_name }}
+  numberOfReplicas: {{ $.Values.default_replicas.zones }}
   dataLocality: best-effort
   staleReplicaTimeout: "2880" # 48 hours in minutes
   encrypted: "true"
