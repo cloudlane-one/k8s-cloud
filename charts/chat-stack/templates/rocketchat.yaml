@@ -227,7 +227,7 @@ spec:
             name: oidc-client
             key: secret
       - name: Accounts_OAuth_Custom_Keycloak_login_style
-        value: redirect
+        value: popup # TODO: Change back to "redirect" once upstream fix is merged: https://github.com/RocketChat/Rocket.Chat/issues/30545
       - name: Accounts_OAuth_Custom_Keycloak_button_label_text
         value: {{ printf "%s Login / Signup" .Values.org.name | quote }}
       - name: Accounts_OAuth_Custom_Keycloak_key_field
