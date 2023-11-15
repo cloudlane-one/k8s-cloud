@@ -29,6 +29,12 @@ spec:
         name: bitnami
   timeout: 10m0s
   values:
+    nodeSelector:
+      {{- if not (eq .Values.zone "") }}
+      topology.kubernetes.io/zone: {{ .Values.zone }}
+      {{- else }}
+      backbone: "1"
+      {{- end }}
     fullnameOverride: onlyoffice-rabbitmq
     auth:
       username: onlyoffice
@@ -71,6 +77,12 @@ spec:
       serviceMonitor:
         enabled: true
     master:
+      nodeSelector:
+        {{- if not (eq .Values.zone "") }}
+        topology.kubernetes.io/zone: {{ .Values.zone }}
+        {{- else }}
+        backbone: "1"
+        {{- end }}
       persistence:
         size: 2Gi
         storageClass: local
@@ -100,6 +112,12 @@ spec:
       username: onlyoffice
       existingSecret: onlyoffice-postgres
     primary:
+      nodeSelector:
+        {{- if not (eq .Values.zone "") }}
+        topology.kubernetes.io/zone: {{ .Values.zone }}
+        {{- else }}
+        backbone: "1"
+        {{- end }}
       persistence:
         size: 4Gi
       resources:
@@ -130,6 +148,12 @@ spec:
     - name: onlyoffice-redis
     - name: onlyoffice-postgres
   values:
+    nodeSelector:
+      {{- if not (eq .Values.zone "") }}
+      topology.kubernetes.io/zone: {{ .Values.zone }}
+      {{- else }}
+      backbone: "1"
+      {{- end }}
     docservice:
       image:
         repository: onlyoffice/docs-docservice

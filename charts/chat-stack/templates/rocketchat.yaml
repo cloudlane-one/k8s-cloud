@@ -81,6 +81,12 @@ spec:
         kind: HelmRepository
         name: bitnami-1
   values:
+    nodeSelector:
+      {{- if not (eq .Values.zone "") }}
+      topology.kubernetes.io/zone: {{ .Values.zone }}
+      {{- else }}
+      backbone: "1"
+      {{- end }}
     auth:
       usernames:
         - rocketchat
@@ -120,6 +126,22 @@ spec:
     - name: rocketchat-mongodb-urls
     - name: rocketchat-mongodb
   values:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            {{- if not (eq .Values.zone "") }}
+            - key: topology.kubernetes.io/zone
+              operator: In
+              values:
+              - {{ .Values.zone }}
+            {{- else }}
+            - key: backbone
+              operator: In
+              values:
+              - "1"
+            {{- end }}
     replicaCount: 2
     minAvailable: 1
     host: {{ .Values.host }}

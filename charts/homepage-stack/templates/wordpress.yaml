@@ -91,6 +91,12 @@ spec:
         name: bitnami
   timeout: 20m0s
   values:
+    nodeSelector:
+      {{- if not (eq .Values.zone "") }}
+      topology.kubernetes.io/zone: {{ .Values.zone }}
+      {{- else }}
+      backbone: "1"
+      {{- end }}
     replicaCount: 2
     wordpressUsername: admin
     wordpressEmail: {{ .Values.admin_email }}
@@ -140,6 +146,12 @@ spec:
         persistence:
           enabled: true
           size: 4Gi
+        nodeSelector:
+          {{- if not (eq .Values.zone "") }}
+          topology.kubernetes.io/zone: {{ .Values.zone }}
+          {{- else }}
+          backbone: "1"
+          {{- end }}
     memcached:
       enabled: true
       auth:

@@ -50,10 +50,11 @@ ingress: true
 
 storage:
   size: 6Gi
-  zone: "" # Enter zone name to localize storage to that zone.
   encrypted: false
   auto_backup: true
   local: false # Deploy as local, single-replica volume
+
+zone: "" # Specific zone to localize this release to (pods and volumes)
 
 snapshots:
   enabled: true

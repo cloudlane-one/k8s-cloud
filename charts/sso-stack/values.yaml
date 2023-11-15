@@ -48,3 +48,5 @@ snapshots:
   class_name: snap
 
 letsencrypt_staging: false
+
+zone: "" # Specific zone to localize this release to (pods and volumes)

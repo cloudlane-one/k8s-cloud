@@ -34,3 +34,5 @@ snapshots:
   class_name: snap
 
 max_replicas: 4
+
+zone: "" # Specific zone to localize this release to (pods and volumes)

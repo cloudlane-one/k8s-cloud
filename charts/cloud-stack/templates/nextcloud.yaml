@@ -82,7 +82,7 @@ spec:
   resources:
     requests:
       storage: {{ .Values.storage.size }}
-  storageClassName: {{ not (eq .Values.storage.zone "") | ternary (printf "zone-%s" .Values.storage.zone) (.Values.storage.local | ternary "local" "backbone") }}{{ .Values.storage.encrypted | ternary "-enc" "" }}
+  storageClassName: {{ not (eq .Values.zone "") | ternary (printf "zone-%s" .Values.zone) (.Values.storage.local | ternary "local" "backbone") }}{{ .Values.storage.encrypted | ternary "-enc" "" }}
   volumeMode: Filesystem
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
@@ -306,6 +306,12 @@ spec:
           requests:
             memory: 128Mi
             cpu: 100m
+        nodeSelector:
+          {{- if not (eq .Values.zone "") }}
+          topology.kubernetes.io/zone: {{ .Values.zone }}
+          {{- else }}
+          backbone: "1"
+          {{- end }}
       architecture: standalone
     mariadb:
       enabled: true
@@ -319,11 +325,16 @@ spec:
           requests:
             cpu: 100m
             memory: 256Mi
-    {{- if not (eq .Values.storage.zone "") }}
+    {{- if not (eq .Values.zone "") }}
         nodeSelector:
-          topology.kubernetes.io/zone: {{ .Values.storage.zone }}
+          topology.kubernetes.io/zone: {{ .Values.zone }}
     nodeSelector:
-      topology.kubernetes.io/zone: {{ .Values.storage.zone }}
+      topology.kubernetes.io/zone: {{ .Values.zone }}
+    {{- else }}
+        nodeSelector:
+          backbone: "1"
+    nodeSelector:
+      backbone: "1"
     {{- end }}
 
 {{- if .Values.snapshots.enabled }}
