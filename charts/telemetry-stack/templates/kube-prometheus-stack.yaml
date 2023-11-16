@@ -255,6 +255,7 @@ spec:
         size: 4Gi
         accessModes:
           - ReadWriteMany
+        storageClassName: single
       alerting:
         contactpoints.yaml:
           apiVersion: 1
