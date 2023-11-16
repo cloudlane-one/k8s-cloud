@@ -19,6 +19,46 @@ data:
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
+  name: single
+  {{- if not .Values.encrypt_default }}
+  annotations:
+    "storageclass.kubernetes.io/is-default-class": "true"
+  {{- end }}
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+parameters:
+  nodeSelector: {{ .Values.cluster_name }}
+  numberOfReplicas: "1"
+  dataLocality: best-effort
+  staleReplicaTimeout: "2880" # 48 hours in minutes
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: single-enc
+  {{- if .Values.encrypt_default }}
+  annotations:
+    "storageclass.kubernetes.io/is-default-class": "true"
+  {{- end }}
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+parameters:
+  nodeSelector: {{ .Values.cluster_name }}
+  numberOfReplicas: "1"
+  dataLocality: best-effort
+  staleReplicaTimeout: "2880" # 48 hours in minutes
+  encrypted: "true"
+  # global secret that contains the encryption key that will be used for all volumes
+  csi.storage.k8s.io/provisioner-secret-name: longhorn-encryption
+  csi.storage.k8s.io/provisioner-secret-namespace: longhorn-system
+  csi.storage.k8s.io/node-publish-secret-name: longhorn-encryption
+  csi.storage.k8s.io/node-publish-secret-namespace: longhorn-system
+  csi.storage.k8s.io/node-stage-secret-name: longhorn-encryption
+  csi.storage.k8s.io/node-stage-secret-namespace: longhorn-system
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
   name: local
 provisioner: driver.longhorn.io
 allowVolumeExpansion: true
@@ -52,10 +92,6 @@ kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
   name: backbone
-  {{- if not .Values.encrypt_default }}
-  annotations:
-    "storageclass.kubernetes.io/is-default-class": "true"
-  {{- end }}
 provisioner: driver.longhorn.io
 allowVolumeExpansion: true
 parameters:
@@ -68,10 +104,6 @@ kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
   name: backbone-enc
-  {{- if .Values.encrypt_default }}
-  annotations:
-    "storageclass.kubernetes.io/is-default-class": "true"
-  {{- end }}
 provisioner: driver.longhorn.io
 allowVolumeExpansion: true
 parameters:
