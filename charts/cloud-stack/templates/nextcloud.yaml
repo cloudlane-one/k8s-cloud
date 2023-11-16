@@ -84,7 +84,7 @@ spec:
   resources:
     requests:
       storage: {{ .Values.storage.size }}
-  storageClassName: {{ not (eq .Values.zone "") | ternary (printf "zone-%s" .Values.zone) "backbone" }}{{ .Values.storage.encrypted | ternary "-enc" "" }}
+  storageClassName: {{ not (eq .Values.zone "") | ternary (printf "zone-%s" .Values.zone) "ha-backbone" }}{{ .Values.storage.encrypted | ternary "-enc" "" }}
   volumeMode: Filesystem
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
@@ -320,7 +320,7 @@ spec:
       auth:
         existingSecret: nextcloud-mariadb
       global:
-        storageClass: {{ (eq .Values.zone "") | ternary "backbone" (printf "zone-%s" .Values.zone) }}
+        storageClass: {{ (eq .Values.zone "") | ternary "ha-backbone" (printf "zone-%s" .Values.zone) }}
       primary:
         persistence:
           enabled: true

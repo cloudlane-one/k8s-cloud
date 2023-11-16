@@ -88,7 +88,7 @@ spec:
       backbone: "1"
       {{- end }}
     global:
-      storageClass: {{ (eq .Values.zone "") | ternary "backbone" (printf "zone-%s" .Values.zone) }}
+      storageClass: {{ (eq .Values.zone "") | ternary "ha-backbone" (printf "zone-%s" .Values.zone) }}
     auth:
       usernames:
         - rocketchat
@@ -168,7 +168,7 @@ spec:
       enabled: true
       size: 4Gi
       accessMode: ReadWriteMany
-      storageClass: {{ (eq .Values.zone "") | ternary "backbone" (printf "zone-%s" .Values.zone) }}
+      storageClass: {{ (eq .Values.zone "") | ternary "ha-backbone" (printf "zone-%s" .Values.zone) }}
     prometheusScraping:
       enabled: true
     serviceMonitor:

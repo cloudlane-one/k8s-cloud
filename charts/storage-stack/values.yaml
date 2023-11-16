@@ -2,11 +2,11 @@ host: ""
 
 cluster_name: ""
 
-default_replicas:
-  backbone: 2
-  zones: 2
+default_class:
+  ha: false
+  encrypted: false
 
-encrypt_default: false
+default_ha_replicas: 2
 
 zones: [] # List of all zones in the cluster
 

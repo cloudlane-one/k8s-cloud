@@ -30,6 +30,7 @@ spec:
         size: 4Gi
       nodeSelector:
         {{ .Values.cluster_name }}: "1"
+        backbone: "1"
       resources:
         requests:
           cpu: 100m

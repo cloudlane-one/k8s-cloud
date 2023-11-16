@@ -121,7 +121,7 @@ spec:
       targetMemory: 65
     postgresql:
       global:
-        storageClass: {{ (eq .Values.zone "") | ternary "backbone" (printf "zone-%s" .Values.zone) }}
+        storageClass: {{ (eq .Values.zone "") | ternary "ha-backbone" (printf "zone-%s" .Values.zone) }}
       primary:
         persistence:
           size: 4Gi
