@@ -364,6 +364,8 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: mailman-web-data
+  labels:
+    helm.sh/resource-policy: "keep"
 spec:
   accessModes:
     - ReadWriteMany

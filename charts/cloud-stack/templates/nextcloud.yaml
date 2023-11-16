@@ -70,6 +70,7 @@ metadata:
     app.kubernetes.io/instance: nextcloud
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: nextcloud
+    helm.sh/resource-policy: "keep"
     {{- if not .Values.storage.auto_backup }}
     velero.io/exclude-from-backup: "true"
     recurring-job.longhorn.io/source: enabled
