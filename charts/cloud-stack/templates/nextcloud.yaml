@@ -70,13 +70,14 @@ metadata:
     app.kubernetes.io/instance: nextcloud
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: nextcloud
-    helm.sh/resource-policy: "keep"
     {{- if not .Values.storage.auto_backup }}
     velero.io/exclude-from-backup: "true"
     recurring-job.longhorn.io/source: enabled
     recurring-job-group.longhorn.io/default: enabled
     recurring-job.longhorn.io/snapshot-daily: enabled
     {{- end }}
+  annotations:
+    helm.sh/resource-policy: "keep"
 spec:
   accessModes:
     - ReadWriteOnce
