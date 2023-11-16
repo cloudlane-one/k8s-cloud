@@ -158,6 +158,12 @@ spec:
           {{- end }}
     memcached:
       enabled: true
+      nodeSelector:
+        {{- if not (eq .Values.zone "") }}
+        topology.kubernetes.io/zone: {{ .Values.zone }}
+        {{- else }}
+        backbone: "1"
+        {{- end }}
       auth:
         username: wordpress
         existingPasswordSecret: wordpress-memcached
