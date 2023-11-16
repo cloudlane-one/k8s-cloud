@@ -167,11 +167,11 @@ spec:
       auth:
         username: wordpress
         existingPasswordSecret: wordpress-memcached
-    # updateStrategy:
-    #   type: RollingUpdate
-    #   rollingUpdate:
-    #     maxSurge: 1
-    #     maxUnavailable: 1
+    updateStrategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
     persistence:
       enabled: true
       size: 4Gi
