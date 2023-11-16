@@ -85,7 +85,7 @@ spec:
   chart:
     spec:
       chart: wordpress
-      version: "16.1.33"
+      version: "18.1.14"
       sourceRef:
         kind: HelmRepository
         name: bitnami
@@ -128,14 +128,14 @@ spec:
     smtpExistingSecret: smtp
     service:
       type: ClusterIP
-    livenessProbe:
-      initialDelaySeconds: 900
-      periodSeconds: 20
-      failureThreshold: 15
-    readinessProbe:
-      initialDelaySeconds: 900
-      periodSeconds: 10
-      failureThreshold: 3
+    # livenessProbe:
+    #   initialDelaySeconds: 900
+    #   periodSeconds: 20
+    #   failureThreshold: 15
+    # readinessProbe:
+    #   initialDelaySeconds: 900
+    #   periodSeconds: 10
+    #   failureThreshold: 3
     metrics:
       enabled: true
       serviceMonitor:
@@ -167,11 +167,11 @@ spec:
       auth:
         username: wordpress
         existingPasswordSecret: wordpress-memcached
-    updateStrategy:
-      type: RollingUpdate
-      rollingUpdate:
-        maxSurge: 1
-        maxUnavailable: 1
+    # updateStrategy:
+    #   type: RollingUpdate
+    #   rollingUpdate:
+    #     maxSurge: 1
+    #     maxUnavailable: 1
     persistence:
       enabled: true
       size: 4Gi

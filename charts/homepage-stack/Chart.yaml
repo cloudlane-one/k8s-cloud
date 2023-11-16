@@ -2,8 +2,8 @@ apiVersion: v2
 name: homepage-stack
 description: Wordpress with SSO and some useful extras
 type: application
-version: "0.0.2"
-appVersion: "0.0.2"
+version: "0.0.3"
+appVersion: "6.4.1"
 
 dependencies:
   - name: common
