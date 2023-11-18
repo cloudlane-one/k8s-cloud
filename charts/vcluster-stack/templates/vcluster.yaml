@@ -38,9 +38,9 @@ spec:
   dependsOn:
     - name: vcluster-mariadb
   values:
+    enableHA: true
     {{- if .Values.ha_deployment.enabled }}
     replicas: 2
-    enableHA: true
     podDisruptionBudget:
       enabled: true
     {{- else }}
