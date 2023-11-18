@@ -189,6 +189,8 @@ spec:
             memory: 3Gi
     grafana:
       replicas: 1
+      deploymentStrategy:
+        type: Recreate
       resources:
         requests:
           cpu: 50m
