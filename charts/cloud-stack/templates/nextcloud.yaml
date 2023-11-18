@@ -199,7 +199,6 @@ spec:
                 'mail' => 'email',
                 'quota' => 'nextcloudQuota',
                 'home' => 'homeDirectory',
-                'groups' => 'groups',
                 'photoURL' => 'picture',
                 'is_admin' => 'is_admin',
             ),
@@ -209,7 +208,6 @@ spec:
             'oidc_login_disable_registration' => false,
             'oidc_login_redir_fallback' => true,
             'oidc_login_tls_verify' => true,
-            'oidc_create_groups' => true
           );
           ?>
         locale.config.php: | 
