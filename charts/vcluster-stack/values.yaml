@@ -11,4 +11,6 @@ snapshots:
   enabled: true
   class_name: snap
 
-max_replicas: 3
+ha_deployment:
+  enabled: false
+  max_replicas: 4

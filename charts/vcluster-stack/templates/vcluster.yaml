@@ -30,7 +30,7 @@ spec:
   chart:
     spec:
       chart: vcluster
-      version: "^0.16.3"
+      version: "0.16.4"
       sourceRef:
         kind: HelmRepository
         name: loft-sh
@@ -38,10 +38,14 @@ spec:
   dependsOn:
     - name: vcluster-mariadb
   values:
-    enableHA: true
+    {{- if .Values.ha_deployment.enabled }}
     replicas: 2
+    enableHA: true
     podDisruptionBudget:
       enabled: true
+    {{- else }}
+    replicas: 1
+    {{- end }}
     storage:
       persistence: false # use external db.
     sync:
@@ -69,13 +73,19 @@ spec:
         - "--mount-physical-host-paths=true"
       resources:
         requests:
+          {{- if .Values.ha_deployment.enabled }}
           cpu: 20m
           memory: 128Mi
+          {{- else }}
+          cpu: 50m
+          memory: 256Mi
+          {{- end }}
     vcluster:
       extraArgs:
         - "--kube-apiserver-arg=oidc-issuer-url={{ .Values.oidc_client.idp_url }}"
         - "--kube-apiserver-arg=oidc-client-id={{ .Values.oidc_client.id }}"
         - "--kube-apiserver-arg=oidc-groups-claim=groups"
+        - "--kube-controller-manager-arg=horizontal-pod-autoscaler-tolerance=0.3"
       env:
         - name: K3S_DATASTORE_ENDPOINT
           valueFrom:
@@ -84,14 +94,20 @@ spec:
               key: url
       resources:
         requests:
-          cpu: 200m
-          memory: 1.2Gi
+          {{- if .Values.ha_deployment.enabled }}
+          cpu: 300m
+          memory: 1.3Gi
+          {{- else }}
+          cpu: 500m
+          memory: 1.8Gi
+          {{- end }}
     coredns:
       replicas: 2
       resources:
         requests:
           cpu: 30m
           memory: 32Mi
+{{- if .Values.ha_deployment.enabled }}
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -102,8 +118,8 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: vcluster
-  minReplicas: 1
-  maxReplicas: {{ .Values.max_replicas }}
+  minReplicas: 2
+  maxReplicas: {{ .Values.ha_deployment.max_replicas }}
   metrics:
     - type: Resource
       resource:
@@ -117,3 +133,4 @@ spec:
         target:
           type: Utilization
           averageUtilization: 65
+{{- end }}

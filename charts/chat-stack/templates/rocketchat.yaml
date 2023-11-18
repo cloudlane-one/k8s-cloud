@@ -175,8 +175,13 @@ spec:
       enabled: true
     resources:
       requests:
+        {{- if .Values.ha_deployment.enabled }}
         memory: 768Mi
         cpu: 200m
+        {{- else }}
+        memory: 1.5Gi
+        cpu: 500m
+        {{- end }}
     extraEnv:
       - name: Site_Name
         value: {{ printf "%s Chat" .Values.org.name }}
@@ -254,8 +259,8 @@ spec:
 
       - name: UI_Use_Real_Name
         value: "true"
----
 {{- if .Values.ha_deployment.enabled }}
+---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
