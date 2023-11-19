@@ -187,7 +187,7 @@ spec:
             'oidc_login_provider_url' => {{ .Values.oidc_client.idp_url | quote }},
             'oidc_login_client_id' => {{ .Values.oidc_client.id | quote }},
             'oidc_login_client_secret' => getenv('OIDC_CLIENT_SECRET'),
-            'oidc_login_auto_redirect' => true,
+            'oidc_login_auto_redirect' => {{ .Values.oidc_client.auto_redirect }},
             'oidc_login_logout_url' => {{ printf "https://%s" .Values.hosts.nextcloud | quote }},
             'oidc_login_end_session_redirect' => false,
             'oidc_login_button_text' => {{ printf "%s Login / Signup" .Values.org.name | quote }},

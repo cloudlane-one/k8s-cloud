@@ -16,6 +16,7 @@ oidc_client:
     namespace: sso-system
     name: cluster-oidc
     key: secret
+  auto_redirect: true
 
 s3:
   enabled: true # Use S3 bucket as primary file storage.
