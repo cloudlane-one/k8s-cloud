@@ -175,7 +175,7 @@ spec:
           $CONFIG = array (
             "log_type" => "file",
             "logfile" => "/dev/stdout",
-            "loglevel" => {{ .Values.debug | ternary 0 1 }},
+            "loglevel" => {{ .Values.debug | ternary 0 2 }},
           );
           ?>
         oidc.config.php: | 
