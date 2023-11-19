@@ -7,12 +7,12 @@ spec:
   interval: 1h
   chart:
     spec:
-      chart: ./charts/default-snapshot-class
+      chart: default-snapshot-class
+      version: "^0.1.0"
       sourceRef:
-        kind: GitRepository
+        kind: HelmRepository
         name: base-repo
         namespace: flux-system
-      reconcileStrategy: Revision
   dependsOn:
     - name: snapshot-controller
 {{- end }}

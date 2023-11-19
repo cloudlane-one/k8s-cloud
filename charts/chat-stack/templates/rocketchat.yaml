@@ -52,12 +52,12 @@ spec:
   interval: 1h
   chart:
     spec:
-      chart: ./charts/rocketchat-mongodb-urls
+      chart: rocketchat-mongodb-urls
+      version: "^0.1.0"
       sourceRef:
-        kind: GitRepository
+        kind: HelmRepository
         name: base-repo
         namespace: flux-system
-      reconcileStrategy: Revision
 ---
 apiVersion: v1
 kind: Secret

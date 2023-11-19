@@ -9,12 +9,12 @@ spec:
   interval: 1h
   chart:
     spec:
-      chart: ./charts/k3s-auto-upgrade-plan
+      chart: k3s-auto-upgrade-plan
+      version: "^0.1.0"
       sourceRef:
-        kind: GitRepository
+        kind: HelmRepository
         name: base-repo
         namespace: flux-system
-      reconcileStrategy: Revision
   values:
     k3s_version: {{ .Values.k3s_version | default "null" }}
 {{- end }}

@@ -147,8 +147,8 @@
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
     KUBECONFIG: "{{ host_kubeconfig }}"
   block:
-    - name: Reconcile base git repo
-      ansible.builtin.command: "flux reconcile source git base-repo -n flux-system"
+    - name: Reconcile base helm repo
+      ansible.builtin.command: "flux reconcile source helm base-repo -n flux-system"
       changed_when: true
 
     - name: Ensure vcluster HelmRelease exists
@@ -158,6 +158,7 @@
           vars:
             chart:
               name: vcluster-stack
+              version: "^0.1.4"
               namespace: "{{ cluster_name }}"
               chart_values:
                 cluster_name: "{{ cluster_name }}"
@@ -264,6 +265,23 @@
       ansible.builtin.command: "flux reconcile source git base-repo -n flux-system"
       changed_when: true
 
+    - name: Ensure base HelmRepository exists
+      kubernetes.core.k8s:
+        wait: true
+        definition:
+          apiVersion: source.toolkit.fluxcd.io/v1
+          kind: HelmRepository
+          metadata:
+            name: base-repo
+            namespace: flux-system
+          spec:
+            interval: 1h
+            url: "{{ cluster.base_helm_repo }}"
+
+    - name: Reconcile base helm repo
+      ansible.builtin.command: "flux reconcile source helm base-repo -n flux-system"
+      changed_when: true
+
 - name: Ensure components with CRDs and other hard dependecies are bootstrapped
   ansible.builtin.include_tasks:
     file: bootstrap-chart.yaml
@@ -273,10 +291,13 @@
         kubeconfig: "{{ kubeconfig }}"
   loop:
     - name: storage-stack
+      version: "^0.2.0"
       namespace: longhorn-system
     - name: cert-stack
+      version: "^0.1.0"
       namespace: cert-system
     - name: telemetry-stack
+      version: "^0.1.4"
       namespace: telemetry-system
 
 - name: Ensure zoning tags are applied to Longhorn nodes
@@ -458,16 +479,19 @@
     label: "{{ item.name }} in {{ item.namespace }}"
   loop:
     - name: admin-rbac
+      version: "^0.1.0"
       namespace: kube-system
       chart_values:
         admin_group: "cluster-admins"
 
     - name: k3s-auto-upgrade
+      version: "^0.1.0"
       namespace: upgrade-system
       chart_values:
         k3s_version: "{{ k3s_version }}"
 
     - name: cert-stack
+      version: "^0.1.0"
       namespace: cert-system
       chart_values:
         admin_email: "{{ cluster.mail.admin_address }}"
@@ -476,11 +500,13 @@
         letsencrypt_staging: "{{ cluster.letsencrypt_staging }}"
 
     - name: ingress-stack
+      version: "^0.2.0"
       namespace: ingress-system
       chart_values:
         cluster_name: "{{ cluster_name }}"
 
     - name: control-stack
+      version: "^0.1.1"
       namespace: kube-system
       chart_values:
         host: "{{ cluster.subdomains.k8s_dashboard }}.{{ cluster.domain }}"
@@ -488,6 +514,7 @@
         admin_group: "cluster-admins"
 
     - name: sso-stack
+      version: "^0.1.0"
       namespace: sso-system
       chart_values:
         domain: "{{ cluster.domain }}"
@@ -506,6 +533,7 @@
         letsencrypt_staging: "{{ cluster.letsencrypt_staging }}"
 
     - name: telemetry-stack
+      version: "^0.1.4"
       namespace: telemetry-system
       chart_values:
         domain: "{{ cluster.domain }}"
@@ -521,6 +549,7 @@
         k3s: true
 
     - name: cicd-stack
+      version: "^0.1.0"
       namespace: flux-system
       chart_values:
         host: "{{ cluster.subdomains.weave_gitops }}.{{ cluster.domain }}"

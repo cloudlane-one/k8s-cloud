@@ -6,11 +6,11 @@ spec:
   interval: 1h
   chart:
     spec:
-      chart: ./charts/letsencrypt-issuer
+      chart: letsencrypt-issuer
+      version: "^0.1.0"
       sourceRef:
-        kind: GitRepository
+        kind: HelmRepository
         name: base-repo
         namespace: flux-system
-      reconcileStrategy: Revision
   values:
     admin_email: {{ .Values.admin_email }}
