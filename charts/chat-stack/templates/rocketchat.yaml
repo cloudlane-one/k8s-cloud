@@ -236,7 +236,7 @@ spec:
       - name: Accounts_OAuth_Custom_Keycloak_button_label_text
         value: {{ printf "%s Login / Signup" .Values.org.name | quote }}
       - name: Accounts_OAuth_Custom_Keycloak_key_field
-        value: sub
+        value: email
       - name: Accounts_OAuth_Custom_Keycloak_username_field
         value: preferred_username
       - name: Accounts_OAuth_Custom_Keycloak_email_field

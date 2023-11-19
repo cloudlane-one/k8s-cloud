@@ -2,7 +2,7 @@ apiVersion: v2
 name: chat-stack
 description: Rocket.Chat with SSO and some useful extras
 type: application
-version: "0.1.8"
+version: "0.1.9"
 appVersion: "6.4.4"
 
 dependencies:
