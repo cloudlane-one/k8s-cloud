@@ -121,10 +121,13 @@ spec:
         nginx.ingress.kubernetes.io/enable-cors: "true"
         nginx.ingress.kubernetes.io/cors-allow-headers: "X-Forwarded-For"
         nginx.ingress.kubernetes.io/server-snippet: |-
-          location = /.well-known/carddav {
+          location = /.well-known/webdav {
             return 301 $scheme://$host/remote.php/dav;
           }
           location = /.well-known/caldav {
+            return 301 $scheme://$host/remote.php/dav;
+          }
+          location = /.well-known/carddav {
             return 301 $scheme://$host/remote.php/dav;
           }
     nextcloud:
