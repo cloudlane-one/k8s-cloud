@@ -1,4 +1,4 @@
-host: ""
+host: www.queerbeet.org
 
 org:
   name: ""
@@ -23,3 +23,5 @@ ingress: true
 snapshots:
   enabled: true
   class_name: snap
+
+zone: "" # Specific zone to localize this release to (pods and volumes)

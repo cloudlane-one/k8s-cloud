@@ -81,6 +81,14 @@ spec:
         kind: HelmRepository
         name: bitnami-1
   values:
+    nodeSelector:
+      {{- if not (eq .Values.zone "") }}
+      topology.kubernetes.io/zone: {{ .Values.zone }}
+      {{- else }}
+      backbone: "1"
+      {{- end }}
+    global:
+      storageClass: {{ (eq .Values.zone "") | ternary "ha-backbone" (printf "ha-zone-%s" .Values.zone) }}
     auth:
       usernames:
         - rocketchat
@@ -97,10 +105,10 @@ spec:
       minAvailable: 0
     persistence:
       enabled: true
-      size: 4Gi
+      size: 8Gi
     resources:
       requests:
-        memory: 384Mi
+        memory: 1.5Gi
         cpu: 200m
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
@@ -112,7 +120,7 @@ spec:
   chart:
     spec:
       chart: rocketchat
-      version: '^6.3.1'
+      version: '6.4.4'
       sourceRef:
         kind: HelmRepository
         name: rocketchat
@@ -120,9 +128,30 @@ spec:
     - name: rocketchat-mongodb-urls
     - name: rocketchat-mongodb
   values:
-    replicaCount: 2
-    minAvailable: 1
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            {{- if not (eq .Values.zone "") }}
+            - key: topology.kubernetes.io/zone
+              operator: In
+              values:
+              - {{ .Values.zone }}
+            {{- else }}
+            - key: backbone
+              operator: In
+              values:
+              - "1"
+            {{- end }}
+    replicaCount: {{ .Values.ha_deployment.enabled | ternary 2 1 }}
+    minAvailable: {{ .Values.ha_deployment.enabled | ternary 1 0 }}
     host: {{ .Values.host }}
+    smtp:
+      enabled: true
+      host: {{ .Values.smtp.host }}
+      username: {{ .Values.smtp.user }}
+      port: {{ .Values.smtp.port | quote }}
     ingress:
       enabled: {{ .Values.ingress }}
       annotations:
@@ -138,15 +167,21 @@ spec:
     persistence:
       enabled: true
       size: 4Gi
-      accessMode: ReadWriteMany
+      accessMode: {{ .Values.ha_deployment.enabled | ternary "ReadWriteMany" "ReadWriteOnce" }}
+      storageClass: {{ (eq .Values.zone "") | ternary "ha-backbone" (printf "ha-zone-%s" .Values.zone) }}
     prometheusScraping:
       enabled: true
     serviceMonitor:
       enabled: true
     resources:
       requests:
+        {{- if .Values.ha_deployment.enabled }}
         memory: 768Mi
         cpu: 200m
+        {{- else }}
+        memory: 1.5Gi
+        cpu: 500m
+        {{- end }}
     extraEnv:
       - name: Site_Name
         value: {{ printf "%s Chat" .Values.org.name }}
@@ -197,7 +232,7 @@ spec:
             name: oidc-client
             key: secret
       - name: Accounts_OAuth_Custom_Keycloak_login_style
-        value: redirect
+        value: popup # TODO: Change back to "redirect" once upstream fix is merged: https://github.com/RocketChat/Rocket.Chat/issues/30545
       - name: Accounts_OAuth_Custom_Keycloak_button_label_text
         value: {{ printf "%s Login / Signup" .Values.org.name | quote }}
       - name: Accounts_OAuth_Custom_Keycloak_key_field
@@ -214,6 +249,8 @@ spec:
       - name: OVERWRITE_SETTING_FileUpload_MaxFileSize
         value: "10485760"
 
+      - name: OVERWRITE_SETTING_From_Email
+        value: {{ .Values.smtp.from_address }}
       - name: OVERWRITE_SETTING_SMTP_Password
         valueFrom:
           secretKeyRef:
@@ -222,6 +259,7 @@ spec:
 
       - name: UI_Use_Real_Name
         value: "true"
+{{- if .Values.ha_deployment.enabled }}
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -233,7 +271,7 @@ spec:
     kind: Deployment
     name: rocketchat-rocketchat
   minReplicas: 2
-  maxReplicas: {{ .Values.max_replicas }}
+  maxReplicas: {{ .Values.ha_deployment.max_replicas }}
   metrics:
     - type: Resource
       resource:
@@ -247,6 +285,7 @@ spec:
         target:
           type: Utilization
           averageUtilization: 65
+{{- end }}
 {{- if .Values.snapshots.enabled }}
 ---
 apiVersion: snapshot.storage.k8s.io/v1

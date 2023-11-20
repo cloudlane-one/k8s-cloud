@@ -31,3 +31,5 @@ front_node_selector:
 snapshots:
   enabled: true
   class_name: snap
+
+zone: "" # Specific zone to localize this release to (pods and volumes)

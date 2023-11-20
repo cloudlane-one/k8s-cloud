@@ -46,36 +46,43 @@
   until: "kubectl_info_result is not failed"
   changed_when: false
 
+- name: Get list of ingress nodes
+  environment:
+    K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
+  loop: "{{ groups['ingress'] }}"
+  kubernetes.core.k8s_info:
+    kind: Node
+    name: "{{ item }}"
+  register: ingress_nodes
+
+- name: Get list of ingress node ips
+  vars:
+    all_addresses: "{{ ingress_nodes.results | map(attribute='resources') | map('first') | map(attribute='status.addresses') | flatten }}"
+  ansible.builtin.set_fact:
+    ingress_ips_ext: "{{ all_addresses | selectattr('type', 'equalto', 'ExternalIP') | map(attribute='address') }}"
+    ingress_ips_int: "{{ all_addresses | selectattr('type', 'equalto', 'InternalIP') | map(attribute='address') }}"
+
+- name: Get list of zones
+  ansible.builtin.set_fact:
+    zones: "{{ lookup('ansible.builtin.dict', hostvars) | map(attribute='value.zone', default='') | unique | select() }}"
+
 - name: Ensure cluster labels are applied to nodes
   environment:
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
   block:
-    - name: Add cluster label to inventory node
-      loop: "{{ groups['cluster'] }}"
-      kubernetes.core.k8s:
-        state: patched
-        kind: Node
-        name: "{{ item }}"
-        definition:
-          metadata:
-            labels: "{{ {cluster_name: '1'} }}"
-
-    - name: Add topology labels to inventory node
+    - name: Add cluster and zone label to inventory node
       loop: "{{ groups['cluster'] }}"
       vars:
-        region: "{{ hostvars[item].region | default('eu') }}"
-        zone: "{{ hostvars[item].zone | default('eu-1') }}"
+        zone: "{{ hostvars[item].zone | default('default') }}"
       kubernetes.core.k8s:
         state: patched
         kind: Node
         name: "{{ item }}"
         definition:
           metadata:
-            labels:
-              topology.kubernetes.io/region: "{{ region }}"
-              topology.kubernetes.io/zone: "{{ zone }}"
+            labels: "{{ {cluster_name: '1', 'topology.kubernetes.io/zone': zone} }}"
 
-    - name: Add backbone label to inventory node
+    - name: Add backbone labels to inventory node
       loop: "{{ groups['backbone'] }}"
       kubernetes.core.k8s:
         state: patched
@@ -84,9 +91,21 @@
         definition:
           metadata:
             labels:
+              topology.kubernetes.io/region: "backbone"
               backbone: "1"
 
-    - name: Add cluster ingress label to inventory node
+    - name: Add edge region label to inventory node
+      loop: "{{ groups['cluster'] | difference(groups['backbone']) }}"
+      kubernetes.core.k8s:
+        state: patched
+        kind: Node
+        name: "{{ item }}"
+        definition:
+          metadata:
+            labels:
+              topology.kubernetes.io/region: "edge"
+
+    - name: Add cluster load-balancer labels to inventory node
       loop: "{{ groups['ingress'] }}"
       kubernetes.core.k8s:
         state: patched
@@ -97,6 +116,18 @@
             labels:
               svccontroller.k3s.cattle.io/enablelb: "true"
               svccontroller.k3s.cattle.io/lbpool: "{{ cluster_name }}"
+
+    - name: Add cluster ingress label to inventory node
+      loop: "{{ groups['ingress'] }}"
+      vars:
+        ingress_key: "{{ cluster_name }}-ingress"
+      kubernetes.core.k8s:
+        state: patched
+        kind: Node
+        name: "{{ item }}"
+        definition:
+          metadata:
+            labels: "{{ {ingress_key: '1'} }}"
 
     - name: Add cluster storage label to inventory node
       loop: "{{ groups['storage'] }}"
@@ -110,7 +141,7 @@
           metadata:
             labels: "{{ {storage_key: '1'} }}"
 
-- name: Ensure vcluster for cluster.domain exists and selected in kubeconfig
+- name: Ensure vcluster for cluster.domain exists and is selected in kubeconfig
   when: "cluster.virtual"
   environment:
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
@@ -133,7 +164,6 @@
                 host: "{{ k8s_api_host }}"
                 oidc_client:
                   idp_url: "https://{{ cluster.subdomains.keycloak }}.{{ cluster.domain }}/realms/master"
-                max_replicas: "{{ groups['cluster'] | length }}"
             kubeconfig: "{{ host_kubeconfig }}"
 
     - name: Wait for vcluster deployment to become ready
@@ -260,11 +290,6 @@
         kind: Node
         namespace: longhorn-system
         name: "{{ item }}"
-        wait: true
-        wait_timeout: 180
-        wait_condition:
-          type: Ready
-          status: "True"
       register: lhn_info
 
     - name: Ensure tags are set on all Longhorn nodes in inventory
@@ -330,28 +355,36 @@
     label: "{{ item.key }}"
 
 - name: Ensure pre-restore infrastructure is fully set up
-  ansible.builtin.include_tasks:
-    file: deploy-chart.yaml
-    apply:
-      vars:
-        chart: "{{ item }}"
-        kubeconfig: "{{ kubeconfig }}"
-  loop_control:
-    label: "{{ item.name }} in {{ item.namespace }}"
-  loop:
-    - name: storage-stack
-      namespace: longhorn-system
-      chart_values:
-        host: "{{ cluster.subdomains.longhorn }}.{{ cluster.domain }}"
-        cluster_name: "{{ cluster_name }}"
-        oauth2_proxy_host: "{{ cluster.subdomains.oauth2_proxy }}.{{ cluster.domain }}"
-        admin_group: "cluster-admins"
-        s3: "{{ cluster.backup.s3 }}"
+  block:
+    - name: Deploy storage-stack
+      ansible.builtin.include_tasks:
+        file: deploy-chart.yaml
+        apply:
+          vars:
+            chart:
+              name: storage-stack
+              namespace: longhorn-system
+              chart_values:
+                host: "{{ cluster.subdomains.longhorn }}.{{ cluster.domain }}"
+                cluster_name: "{{ cluster_name }}"
+                oauth2_proxy_host: "{{ cluster.subdomains.oauth2_proxy }}.{{ cluster.domain }}"
+                admin_group: "cluster-admins"
+                s3: "{{ cluster.backup.s3 }}"
+                zones: "{{ zones }}"
+            kubeconfig: "{{ kubeconfig }}"
 
-    - name: backup-stack
-      namespace: backup-system
-      chart_values:
-        s3: "{{ cluster.backup.s3 }}"
+    - name: Deploy backup-stack
+      when: "cluster.backup.enabled"
+      ansible.builtin.include_tasks:
+        file: deploy-chart.yaml
+        apply:
+          vars:
+            chart:
+              name: backup-stack
+              namespace: backup-system
+              chart_values:
+                s3: "{{ cluster.backup.s3 }}"
+            kubeconfig: "{{ kubeconfig }}"
 
 - name: Restore cluster from backup
   when: "cluster.backup.restore.enabled"
@@ -431,6 +464,8 @@
 
     - name: k3s-auto-upgrade
       namespace: upgrade-system
+      chart_values:
+        k3s_version: "{{ k3s_version }}"
 
     - name: cert-stack
       namespace: cert-system

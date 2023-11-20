@@ -159,6 +159,7 @@ spec:
       containers:
         - name: mailman-core
           image: maxking/mailman-core:0.4
+          imagePullPolicy: Always
           command: ["/bin/sh", "-c"]
           args: 
             - "chown mailman /dev/stdout && docker-entrypoint.sh master --force"
@@ -363,9 +364,11 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: mailman-web-data
+  annotations:
+    helm.sh/resource-policy: "keep"
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
       storage: "2Gi"
@@ -415,6 +418,7 @@ spec:
       containers:
         - name: mailman-web
           image: maxking/mailman-web:0.4
+          imagePullPolicy: Always
           env:
             - name: SERVE_FROM_DOMAIN
               value: {{ .Values.hosts.mailman }}
@@ -464,14 +468,18 @@ spec:
           livenessProbe:
             tcpSocket:
               port: ui
-            initialDelaySeconds: 180
+            initialDelaySeconds: 300
+            timeoutSeconds: 10
             periodSeconds: 20
-            failureThreshold: 15
+            successThreshold: 1
+            failureThreshold: 30
           readinessProbe:
             tcpSocket:
               port: ui
-            initialDelaySeconds: 180
+            initialDelaySeconds: 300
+            timeoutSeconds: 10
             periodSeconds: 20
+            successThreshold: 1
             failureThreshold: 3
           resources:
             requests:

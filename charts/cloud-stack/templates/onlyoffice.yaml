@@ -29,6 +29,12 @@ spec:
         name: bitnami
   timeout: 10m0s
   values:
+    nodeSelector:
+      {{- if not (eq .Values.zone "") }}
+      topology.kubernetes.io/zone: {{ .Values.zone }}
+      {{- else }}
+      backbone: "1"
+      {{- end }}
     fullnameOverride: onlyoffice-rabbitmq
     auth:
       username: onlyoffice
@@ -71,6 +77,12 @@ spec:
       serviceMonitor:
         enabled: true
     master:
+      nodeSelector:
+        {{- if not (eq .Values.zone "") }}
+        topology.kubernetes.io/zone: {{ .Values.zone }}
+        {{- else }}
+        backbone: "1"
+        {{- end }}
       persistence:
         size: 2Gi
         storageClass: local
@@ -99,7 +111,15 @@ spec:
       database: onlyoffice
       username: onlyoffice
       existingSecret: onlyoffice-postgres
+    global:
+      storageClass: {{ (eq .Values.zone "") | ternary "ha-backbone" (printf "ha-zone-%s" .Values.zone) }}
     primary:
+      nodeSelector:
+        {{- if not (eq .Values.zone "") }}
+        topology.kubernetes.io/zone: {{ .Values.zone }}
+        {{- else }}
+        backbone: "1"
+        {{- end }}
       persistence:
         size: 4Gi
       resources:
@@ -120,7 +140,7 @@ spec:
   chart:
     spec:
       chart: docs
-      version: "^3"
+      version: "^3.3.0"
       sourceRef:
         kind: HelmRepository
         name: onlyoffice
@@ -130,7 +150,15 @@ spec:
     - name: onlyoffice-redis
     - name: onlyoffice-postgres
   values:
+    nodeSelector:
+      {{- if not (eq .Values.zone "") }}
+      topology.kubernetes.io/zone: {{ .Values.zone }}
+      {{- else }}
+      backbone: "1"
+      {{- end }}
     docservice:
+      image:
+        repository: onlyoffice/docs-docservice
       replicas: 1
       updateStrategy:
         type: RollingUpdate
@@ -149,7 +177,12 @@ spec:
           utilizationPercentage: 65
         targetMemory:
           utilizationPercentage: 65
+    proxy:
+      image:
+        repository: onlyoffice/docs-proxy
     converter:
+      image:
+        repository: onlyoffice/docs-converter
       replicas: 1
       resources:
         requests:
@@ -181,7 +214,7 @@ spec:
       amqpSecretKeyName: rabbitmq-password
       amqpExistingSecret: onlyoffice-rabbitmq
     persistence:
-      storageClass: backbone
+      storageClass: {{ (eq .Values.zone "") | ternary "ha-backbone" (printf "ha-zone-%s" .Values.zone) }}
       size: 4Gi
     ingress:
       enabled: {{ .Values.ingress }}

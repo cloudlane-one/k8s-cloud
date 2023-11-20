@@ -15,7 +15,7 @@ spec:
   chart:
     spec:
       chart: ingress-nginx
-      version: "^4"
+      version: "^4.8.3"
       sourceRef:
         kind: HelmRepository
         name: ingress-nginx
@@ -25,19 +25,27 @@ spec:
     # after syncing with vcluster and klipper-lb.
     fullnameOverride: inginx
     controller:
+      kind: DaemonSet
       name: ctl
-      replicaCount: 2
       ingressClassResource:
         default: true
       watchIngressWithoutClass: true
       extraArgs:
-        enable-ssl-passthrough: "true"
         update-status-on-shutdown: "false"
       config:
         proxy-buffer-size: "16k" # See https://andrewlock.net/fixing-nginx-upstream-sent-too-big-header-error-when-running-an-ingress-controller-in-kubernetes/ for explanation
+      allowSnippetAnnotations: true
+      nodeSelector:
+        {{ .Values.cluster_name }}-ingress: "1"
       service:
+        enabled: {{ not .Values.exposeViaHostPort }}
         labels:
           svccontroller.k3s.cattle.io/lbpool: {{ .Values.cluster_name }}
+        externalTrafficPolicy: Local
+      hostPort:
+        enabled: {{ .Values.exposeViaHostPort }}
+      publishService:
+        enabled: {{ not .Values.exposeViaHostPort }}
       resources:
         requests:
           cpu: 100m

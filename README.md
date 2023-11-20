@@ -68,12 +68,14 @@ These system dependencies are to be installed on your local machine.
 
 - [Python](https://www.python.org/downloads/)
 - [Poetry](https://python-poetry.org)
+- [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux)
 - [Kubelogin](https://github.com/int128/kubelogin)
 
 Clone the repo, `cd` to the cloned folder, and run following bash code to install all Python deps into a virtual environment:
 
 ```bash
 poetry install
+poetry shell
 ```
 
 Then run this to install Ansible-specific dependencies:
@@ -110,13 +112,11 @@ Edit the hosts file `./clusters/$CLUSTER_NAME/hosts.yaml` to add all host machin
 
 #### Backbone hosts
 
-Backbone hosts are node hosts which have a direct and strong connection to the main network of your cluster and thus have low latency and high bandwith over that network. This is important especially for distributed storage.
+Backbone hosts are node hosts which have a direct and strong connection to the internet backbone, e.g. data centers,  and thus have low latency and high bandwith among them. This is important especially for distributed storage. Latency between all backbone nodes should be 100ms or less and bandwidth should be at least 1Gbps (up and down).
 
-This main network could either be the WAN, aka the public internet, or the LAN network, where the majority of your hosts reside. Latency between all backbone nodes should be 100ms or less and bandwidth should be at least 1Gbps (up and down).
+By default, nodes are assigned to the region `backbone` and the zone `default`. You may set `backbone=false` on a node in `hosts.yaml` to assign it to the `edge` region instead (disabling its participation in HA control plane and default distributed storage). You may additionally define a custom `zone` for each node.
 
-> Note that `backbone` does not make any statement about failure domains or availability zones. If you want to build a hierarchy of zones, please add `region` and `zone` labels to your hosts.
-
-By default, all hosts in `hosts.yaml` are taken to be backbone nodes. To exclude hosts with slower connections, set `backbone=false` on them, or to only include a subset of hosts into the backbone, set `backbone=true` on the subset.
+> To only include a subset of hosts into the backbone, set `backbone=true` on the subset, and all other nodes will be assigned `backbone=false` automatically.
 
 #### Control plane hosts
 
@@ -173,9 +173,9 @@ Simply add new node hosts to your cluster's `hosts.yaml` and re-run the setup pl
 
 #### Manual steps for each node
 
-1. *Via Longhorn Web UI*: [Request eviction](https://longhorn.io/docs/1.5.1/volumes-and-nodes/disks-or-nodes-eviction/#select-disks-or-nodes-for-eviction) of the associated Longhorn storage node.
+1. _Via Longhorn Web UI_: [Request eviction](https://longhorn.io/docs/1.5.1/volumes-and-nodes/disks-or-nodes-eviction/#select-disks-or-nodes-for-eviction) of the associated Longhorn storage node.
 2. Wait for all volumes to be evicted.
-3. *Via terminal on any control node*: [`kubectl drain` the k8s node](https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/#use-kubectl-drain-to-remove-a-node-from-service) to evict all running pods from it and disable scheduling.
+3. _Via terminal on any control node_: [`kubectl drain` the k8s node](https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/#use-kubectl-drain-to-remove-a-node-from-service) to evict all running pods from it and disable scheduling.
 4. Wait for all pods to be evicted.
 5. **For control nodes**:
    - [Install etcdctl](https://docs.k3s.io/advanced#using-etcdctl) on one of the control nodes.

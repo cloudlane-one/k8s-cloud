@@ -6,68 +6,87 @@ spec:
   interval: 1h
   url: https://nextcloud.github.io/helm/
 ---
-# # TODO: #53 Re-enable nextcloud autoconfig after rigorous testing
-# kind: ConfigMap
-# apiVersion: v1
-# metadata:
-#   name: nextcloud-autoconfig
-# data:
-#   setup.sh: |
-#     #!/bin/bash
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nextcloud-autoconfig
+data:
+  setup.sh: |
+    #!/bin/bash
 
-#     if [ -f ~/autoconf-running ]
-#     then
-#       echo "Autoconfig script is already running. Exiting."
-#       exit 0
-#     fi
+    if [ -f ~/autoconf-running ]
+    then
+      echo "Autoconfig script is already running. Exiting."
+      exit 0
+    fi
 
-#     touch ~/autoconf-running
-#     trap 'rm ~/autoconf-running' EXIT
+    touch ~/autoconf-running
+    trap 'rm ~/autoconf-running' EXIT
 
-#     until $(curl --output /dev/null --silent --head --fail -H "Host: {{ .Values.hosts.nextcloud }}" http://localhost:80/status.php); do
-#       echo 'waiting for nextcloud to start...'
-#       sleep 5
-#     done
-#     echo 'nextcloud is up.'
+    until [[ $(runuser --user www-data -- /var/www/html/occ status 2> /dev/null | grep "installed:") =~ "true" ]]; do
+      echo 'waiting for nextcloud to start...'
+      sleep 5
+    done
+    echo 'nextcloud is up.'
 
-#     echo 'installing apps...'
-#     for APP in $(cat apps.txt); do
-#       if ! [[ -d /var/www/html/custom_apps/$APP || -d /var/www/html/apps/$APP ]] ; then
-#         echo "installing $APP"
-#         runuser --user www-data -- /var/www/html/occ app:install $APP
-#       # elif ! [ "$(runuser --user www-data -- /var/www/html/occ config:app:get $APP enabled)" = "yes" ]; then
-#       #   echo "enabling $APP"
-#       #   runuser --user www-data -- /var/www/html/occ app:enable $APP
-#       fi
-#     done
-#     echo 'installing apps... done'
+    echo 'installing apps...'
+    for APP in $(cat apps.txt); do
+      if ! [[ -d /var/www/html/custom_apps/$APP || -d /var/www/html/apps/$APP ]] ; then
+        echo "installing $APP"
+        runuser --user www-data -- /var/www/html/occ app:install $APP
+      fi
+    done
+    echo 'installing apps... done'
 
-#     echo 'loading config.json...'
-#     envsubst < config.json > config.subst.json
-#     cp config.subst.json /var/www/html/config.json
-#     runuser --user www-data -- /var/www/html/occ config:import config.json
-#     rm -f config.subst.json
-#     echo 'loading config.json... done'
+    echo 'loading config.json...'
+    ( echo "cat <<EOF" ; cat config.json ; echo EOF ) | sh > /var/www/html/config.json
+    runuser --user www-data -- /var/www/html/occ config:import config.json
+    echo 'loading config.json... done'
 
-#     echo 'nextcloud all set up.'
-#   apps.txt: | 
-#     oidc_login
-#     onlyoffice
-#   # Use oidc client secret as jwt secret. Is as good as any...
-#   config.json: |
-#     {
-#       "system": {},
-#       "apps": {
-#         "onlyoffice": {
-#           "DocumentServerUrl": {{ printf "https://%s" .Values.hosts.onlyoffice | quote }},
-#           "jwt_secret": $OO_JWT_SECRET
-#         },
-#         "files": {
-#           "default_quota": "1 GB"
-#         }
-#       }
-#     }
-# ---
+    echo 'nextcloud all set up.'
+  apps.txt: | 
+    oidc_login
+    onlyoffice
+  config.json: |
+    {
+      "system": {},
+      "apps": {
+        "onlyoffice": {
+          "DocumentServerUrl": {{ printf "https://%s" .Values.hosts.onlyoffice | quote }},
+          "jwt_secret": "$OO_JWT_SECRET"
+        },
+        "files": {
+          "default_quota": "1 GB"
+        }
+      }
+    }
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: nextcloud-nextcloud
+  labels:
+    app.kubernetes.io/component: app
+    app.kubernetes.io/instance: nextcloud
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: nextcloud
+    {{- if not .Values.storage.auto_backup }}
+    velero.io/exclude-from-backup: "true"
+    recurring-job.longhorn.io/source: enabled
+    recurring-job-group.longhorn.io/default: enabled
+    recurring-job.longhorn.io/snapshot-daily: enabled
+    {{- end }}
+  annotations:
+    helm.sh/resource-policy: "keep"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.storage.size }}
+  storageClassName: {{ not (eq .Values.zone "") | ternary (printf "ha-zone-%s" .Values.zone) "ha-backbone" }}{{ .Values.storage.encrypted | ternary "-enc" "" }}
+  volumeMode: Filesystem
+---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
@@ -77,7 +96,7 @@ spec:
   chart:
     spec:
       chart: nextcloud
-      version: '4.0.0'
+      version: '4.4.0'
       sourceRef:
         kind: HelmRepository
         name: nextcloud
@@ -99,29 +118,14 @@ spec:
       annotations:
         kubernetes.io/tls-acme: "true"
         nginx.ingress.kubernetes.io/proxy-body-size: 4G
+        nginx.ingress.kubernetes.io/enable-cors: "true"
+        nginx.ingress.kubernetes.io/cors-allow-headers: "X-Forwarded-For"
         nginx.ingress.kubernetes.io/server-snippet: |-
-          server_tokens off;
-          proxy_hide_header X-Powered-By;
-
-          rewrite ^/.well-known/webfinger /public.php?service=webfinger last;
-          rewrite ^/.well-known/host-meta /public.php?service=host-meta last;
-          rewrite ^/.well-known/host-meta.json /public.php?service=host-meta-json;
           location = /.well-known/carddav {
             return 301 $scheme://$host/remote.php/dav;
           }
           location = /.well-known/caldav {
             return 301 $scheme://$host/remote.php/dav;
-          }
-          location = /robots.txt {
-            allow all;
-            log_not_found off;
-            access_log off;
-          }
-          location ~ ^/(?:build|tests|config|lib|3rdparty|templates|data)/ {
-            deny all;
-          }
-          location ~ ^/(?:autotest|occ|issue|indie|db_|console) {
-            deny all;
           }
     nextcloud:
       # strategy:
@@ -138,7 +142,6 @@ spec:
         fromAddress: {{ index (.Values.smtp.from_address | splitList "@") 0 }}
         domain: {{ index (.Values.smtp.from_address | splitList "@") 1 }}
         smtp:
-          host: {{ .Values.smtp.host }}
           port: {{ .Values.smtp.port }}
           secure: ssl
       extraEnv:
@@ -152,18 +155,27 @@ spec:
             secretKeyRef:
               name: onlyofficejwt
               key: JWT_SECRET
+        {{- if .Values.s3.enabled }}
         - name: S3_SECRET
           valueFrom:
             secretKeyRef:
               name: s3-access-key
               key: secret
+        {{- if .Values.s3.encryption.enabled }}
+        - name: S3_ENC_KEY
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-s3-enc
+              key: key
+        {{- end }}
+        {{- end }}
       configs:
         logging.config.php: |
           <?php
           $CONFIG = array (
             "log_type" => "file",
             "logfile" => "/dev/stdout",
-            "loglevel" => {{ .Values.debug | ternary 0 1 }},
+            "loglevel" => {{ .Values.debug | ternary 0 2 }},
           );
           ?>
         oidc.config.php: | 
@@ -175,7 +187,7 @@ spec:
             'oidc_login_provider_url' => {{ .Values.oidc_client.idp_url | quote }},
             'oidc_login_client_id' => {{ .Values.oidc_client.id | quote }},
             'oidc_login_client_secret' => getenv('OIDC_CLIENT_SECRET'),
-            'oidc_login_auto_redirect' => true,
+            'oidc_login_auto_redirect' => {{ .Values.oidc_client.auto_redirect }},
             'oidc_login_logout_url' => {{ printf "https://%s" .Values.hosts.nextcloud | quote }},
             'oidc_login_end_session_redirect' => false,
             'oidc_login_button_text' => {{ printf "%s Login / Signup" .Values.org.name | quote }},
@@ -187,7 +199,6 @@ spec:
                 'mail' => 'email',
                 'quota' => 'nextcloudQuota',
                 'home' => 'homeDirectory',
-                'groups' => 'groups',
                 'photoURL' => 'picture',
                 'is_admin' => 'is_admin',
             ),
@@ -197,21 +208,29 @@ spec:
             'oidc_login_disable_registration' => false,
             'oidc_login_redir_fallback' => true,
             'oidc_login_tls_verify' => true,
-            'oidc_create_groups' => true
           );
           ?>
         locale.config.php: | 
           <?php
           $CONFIG = array (
             'default_locale' => {{ .Values.org.default_locale | quote }},
+            'default_phone_region' => {{ not (eq .Values.org.default_phone_region "") | ternary .Values.org.default_phone_region (index (.Values.org.default_locale | splitList "_") 1 | upper) | quote }}
           );
           ?>
         proxy.config.php: | 
           <?php
           $CONFIG = array (
+            'trusted_proxies' => array(
+              0 => '127.0.0.1',
+              1 => '10.42.0.0/16',
+              2 => '::1',
+              3 => '2001:cafe:42:0::/56'
+            ),
+            'forwarded_for_headers' => array('HTTP_X_FORWARDED_FOR'),
             'overwriteprotocol' => 'https',
           );
           ?>
+        {{- if .Values.s3.enabled }}
         s3.config.php: |-
           <?php
           $CONFIG = array (
@@ -224,25 +243,33 @@ spec:
                 'key'        => {{ .Values.s3.access_key_id | quote }},
                 'secret'     => getenv('S3_SECRET'),
                 'region'     => {{ .Values.s3.region | quote }},
-                'use_ssl'    => true
+                'use_ssl'    => true,
+                {{- if .Values.s3.encryption.enabled }}
+                'sse_c_key'  => getenv('S3_ENC_KEY'),
+                {{- end }}
               )
             )
           );
           ?>
+        {{- end }}
         mail.config.php: | 
           <?php
           $CONFIG = array (
             'mail_smtptimeout' => 30,
           );
           ?>
-      # extraVolumes:
-      #   - name: autoconfig
-      #     configMap:
-      #       name: nextcloud-autoconfig
-      # extraVolumeMounts:
-      #   - name: autoconfig
-      #     mountPath: /autoconfig
-      #     readOnly: true
+    {{- if .Values.autoconfig.enabled }}
+      extraVolumes:
+        - name: autoconfig
+          configMap:
+            name: nextcloud-autoconfig
+      extraVolumeMounts:
+        - name: autoconfig
+          mountPath: /autoconfig
+          readOnly: true
+    lifecycle:
+      postStartCommand: ["/bin/bash", "-c", "(cd /autoconfig; bash setup.sh)"]
+    {{- end }}
     internalDatabase:
       enabled: false
     externalDatabase:
@@ -252,22 +279,11 @@ spec:
         secretName: nextcloud-mariadb
         usernameKey: mariadb-username
         passwordKey: mariadb-password
-    # lifecycle:
-    #   postStartCommand: ["/bin/bash", "-c", "(cd /autoconfig; bash setup.sh)"]
     cronjob:
       enabled: true
     persistence:
       enabled: true
-      size: 4Gi
-      # accessMode: ReadWriteMany
-    livenessProbe:
-      initialDelaySeconds: 300
-      periodSeconds: 10
-      failureThreshold: 12
-    readinessProbe:
-      initialDelaySeconds: 300
-      periodSeconds: 10
-      failureThreshold: 3
+      existingClaim: nextcloud-nextcloud
     metrics:
       enabled: true
       serviceMonitor:
@@ -290,11 +306,19 @@ spec:
           requests:
             memory: 128Mi
             cpu: 100m
+        nodeSelector:
+          {{- if not (eq .Values.zone "") }}
+          topology.kubernetes.io/zone: {{ .Values.zone }}
+          {{- else }}
+          backbone: "1"
+          {{- end }}
       architecture: standalone
     mariadb:
       enabled: true
       auth:
         existingSecret: nextcloud-mariadb
+      global:
+        storageClass: {{ (eq .Values.zone "") | ternary "ha-backbone" (printf "ha-zone-%s" .Values.zone) }}
       primary:
         persistence:
           enabled: true
@@ -303,6 +327,18 @@ spec:
           requests:
             cpu: 100m
             memory: 256Mi
+    {{- if not (eq .Values.zone "") }}
+        nodeSelector:
+          topology.kubernetes.io/zone: {{ .Values.zone }}
+    nodeSelector:
+      topology.kubernetes.io/zone: {{ .Values.zone }}
+    {{- else }}
+        nodeSelector:
+          backbone: "1"
+    nodeSelector:
+      backbone: "1"
+    {{- end }}
+
 {{- if .Values.snapshots.enabled }}
 ---
 apiVersion: snapshot.storage.k8s.io/v1

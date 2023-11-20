@@ -30,7 +30,7 @@ spec:
   chart:
     spec:
       chart: mailu
-      version: "1.2.0"
+      version: "^1.5.0"
       sourceRef:
         kind: HelmRepository
         name: mailu
@@ -195,7 +195,7 @@ spec:
     clamav:
       resources:
         requests:
-          memory: 2Gi
+          memory: 4Gi
           cpu: 100m
     oletools:
       resources:

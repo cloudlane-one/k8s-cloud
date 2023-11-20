@@ -40,6 +40,12 @@ spec:
       valuesKey: secret
       targetPath: config.cookieSecret
   values:
+    nodeSelector:
+      {{- if not (eq .Values.zone "") }}
+      topology.kubernetes.io/zone: {{ .Values.zone }}
+      {{- else }}
+      backbone: "1"
+      {{- end }}
     replicaCount: 2
     metrics:
       enabled: true
