@@ -300,11 +300,11 @@ spec:
                     - severity =~ "error|critical"
                   mute_time_intervals:
                     - default
-                  continue: false
+                  continue: true
                 - receiver: default
                   mute_time_intervals:
                     - always
-                  continue: false
+                  continue: true
       additionalDataSources:
         - name: Loki
           type: loki
