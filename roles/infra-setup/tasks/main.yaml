@@ -512,6 +512,7 @@
         host: "{{ cluster.subdomains.k8s_dashboard }}.{{ cluster.domain }}"
         oauth2_proxy_host: "{{ cluster.subdomains.oauth2_proxy }}.{{ cluster.domain }}"
         admin_group: "cluster-admins"
+        cluster_name: "{{ cluster_name }}"
 
     - name: sso-stack
       version: "^0.1.0"

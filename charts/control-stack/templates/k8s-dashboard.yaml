@@ -21,6 +21,52 @@ spec:
         name: k8s-dashboard
   timeout: '15m0s' # Account for slow performance of cluster on first setup.
   values:
+    settings:
+      clusterName: {{ .Values.cluster_name }}
+      itemsPerPage: 30
+    pinnedCRDs:
+      - kind: customresourcedefinition
+        name:  gitrepositories.source.toolkit.fluxcd.io
+        displayName: Flux Git Repo
+        namespaced: true
+      - kind: customresourcedefinition
+        name:  helmrepositories.source.toolkit.fluxcd.io
+        displayName: Flux Helm Repo
+        namespaced: true
+      - kind: customresourcedefinition
+        name: helmreleases.helm.toolkit.fluxcd.io
+        displayName: Flux Helm Release
+        namespaced: true
+      - kind: customresourcedefinition
+        name:  kustomizations.kustomize.toolkit.fluxcd.io
+        displayName: Flux Kustomization
+        namespaced: true
+      - kind: customresourcedefinition
+        name:  certificates.cert-manager.io
+        displayName: Certificate
+        namespaced: true
+      - kind: customresourcedefinition
+        name: backups.velero.io
+        displayName: Velero Backup
+        namespaced: true
+      - kind: customresourcedefinition
+        name:  volumesnapshots.snapshot.storage.k8s.io
+        displayName: Volume Snapshot
+        namespaced: true
+      {{- if not .Values.vcluster }}
+      - kind: customresourcedefinition
+        name:  volumes.longhorn.io
+        displayName: Longhorn Volume
+        namespaced: true
+      - kind: customresourcedefinition
+        name:  backups.longhorn.io
+        displayName: Longhorn Backup
+        namespaced: true
+      - kind: customresourcedefinition
+        name:  nodes.longhorn.io
+        displayName: Longhorn Node
+        namespaced: true
+      {{- end }}
     app:
       scaling:
         replicas: 2
