@@ -60,7 +60,7 @@ spec:
       {{- else }}
       backbone: "1"
       {{- end }}
-    replicaCount: 2
+    replicaCount: {{ .Values.ha_deployment.enabled | ternary 2 1 }}
     production: true
     proxy: edge
     auth:
@@ -113,12 +113,14 @@ spec:
       requests:
         cpu: 100m
         memory: 1Gi
+    {{- if .Values.ha_deployment.enabled }}
     autoscaling:
       enabled: true
       minReplicas: 2
-      maxReplicas: 4
+      maxReplicas: {{ .Values.ha_deployment.max_replicas }}
       targetCPU: 65
       targetMemory: 65
+    {{- end }}
     postgresql:
       global:
         storageClass: {{ (eq .Values.zone "") | ternary "ha-backbone" (printf "ha-zone-%s" .Values.zone) }}
