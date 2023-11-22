@@ -202,6 +202,8 @@ spec:
         value: ""
       - name: OVERWRITE_SETTING_Accounts_TwoFactorAuthentication_Enabled
         value: "false"
+      - name: OVERWRITE_SETTING_Accounts_AllowRealNameChange
+        value: "false"
       - name: OVERWRITE_SETTING_Accounts_AllowPasswordChange
         value: "false"
       
