@@ -202,6 +202,9 @@ spec:
                 'mail' => 'email',
                 'quota' => 'nextcloudQuota',
                 'home' => 'homeDirectory',
+                {{- if .Values.oidc_client.map_groups }}
+                'groups' => 'groups',
+                {{- end }}
                 'photoURL' => 'picture',
                 'is_admin' => 'is_admin',
             ),

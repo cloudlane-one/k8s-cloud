@@ -17,6 +17,7 @@ oidc_client:
     name: cluster-oidc
     key: secret
   auto_redirect: true
+  map_groups: true
 
 s3:
   enabled: true # Use S3 bucket as primary file storage.
