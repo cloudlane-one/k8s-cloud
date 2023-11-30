@@ -244,6 +244,20 @@ entries:
     version: 0.0.1
   sso-stack:
   - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2023-11-30T11:19:24.327993275Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Keycloak-based Signle-Sign-On and some useful extras
+    digest: 4609be973e2509261461c482d7b023ccf1e432418aef871064dba2b65642bd07
+    name: sso-stack
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/sso-stack-0.1.0/sso-stack-0.1.0.tgz
+    version: 0.1.0
+  - apiVersion: v2
     appVersion: 0.0.1
     created: "2023-11-20T07:34:48.197602607Z"
     dependencies:
@@ -313,4 +327,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-stack-0.1.4/vcluster-stack-0.1.4.tgz
     version: 0.1.4
-generated: "2023-11-20T07:34:48.835871681Z"
+generated: "2023-11-30T11:19:24.328010387Z"
