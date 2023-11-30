@@ -107,6 +107,17 @@ spec:
         requests:
           cpu: 30m
           memory: 32Mi
+    init:
+      helm:
+        - chart:
+            name: metrics-server
+            repo: https://kubernetes-sigs.github.io/metrics-server/
+            version: "^3.11.0"
+          values: |-
+            replicas: 2
+          release:
+            name: metrics-server
+            namespace: kube-system
 {{- if .Values.ha_deployment.enabled }}
 ---
 apiVersion: autoscaling/v2
