@@ -97,7 +97,7 @@ spec:
   chart:
     spec:
       chart: postgresql
-      version: '^12'
+      version: '^13.2.21'
       sourceRef:
         kind: HelmRepository
         name: bitnami
@@ -109,6 +109,7 @@ spec:
     primary:
       persistence:
         size: 4Gi
+        storageClass: ha
       resources:
         requests:
           cpu: 100m # measured on 2023-11-30
@@ -372,6 +373,7 @@ spec:
   resources:
     requests:
       storage: "2Gi"
+  storageClassName: ha
 ---
 apiVersion: v1
 kind: Service

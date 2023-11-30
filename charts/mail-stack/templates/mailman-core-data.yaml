@@ -10,6 +10,7 @@ spec:
   resources:
     requests:
       storage: 4Gi
+  storageClassName: ha
 {{- if .Values.snapshots.enabled }}
 ---
 apiVersion: snapshot.storage.k8s.io/v1

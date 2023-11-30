@@ -64,6 +64,8 @@ spec:
         kubernetes.io/tls-acme: "true"
     mariadb:
       enabled: true
+      global:
+        storageClass: ha
       primary:
         persistence:
           enabled: true
@@ -105,6 +107,7 @@ spec:
       {{ end -}}
       persistence:
         size: 2Gi
+        storageClass: ha
         claimNameOverride: mailu-postfix
       extraVolumes:
         - name: mailman
@@ -130,6 +133,7 @@ spec:
     admin:
       persistence:
         size: 2Gi
+        storageClass: ha
         claimNameOverride: mailu-admin
       resources:
         requests:
@@ -147,6 +151,7 @@ spec:
     dovecot:
       persistence:
         size: 4Gi
+        storageClass: ha
         claimNameOverride: mailu-dovecot
       resources:
         requests:
@@ -155,6 +160,7 @@ spec:
     webmail:
       persistence:
         size: 2Gi
+        storageClass: ha
         claimNameOverride: mailu-webmail
       resources:
         requests:
@@ -173,6 +179,7 @@ spec:
       enabled: true
       persistence:
         size: 2Gi
+        storageClass: single
         claimNameOverride: mailu-fetchmail
       resources:
         requests:
@@ -182,17 +189,22 @@ spec:
       enabled: true
       persistence:
         size: 2Gi
+        storageClass: ha
         claimNameOverride: mailu-webdav
       resources:
         requests:
           memory: 64Mi # measured on 2023-11-30
           cpu: 50m # measured on 2023-11-30
     rspamd:
+      persistence:
+        storageClass: single
       resources:
         requests:
           memory: 256Mi # measured on 2023-11-30
           cpu: 50m # measured on 2023-11-30
     clamav:
+      persistence:
+        storageClass: single
       resources:
         requests:
           memory: 2Gi # measured on 2023-11-30
