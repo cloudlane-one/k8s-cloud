@@ -42,7 +42,7 @@
             version: "{{ chart.version }}"
             sourceRef:
               kind: HelmRepository
-              name: base-repo
+              name: base-system-repo
               namespace: flux-system
         values: "{{ chart.chart_values | default({}) | combine(default_vars) }}"
   register: k8s_result

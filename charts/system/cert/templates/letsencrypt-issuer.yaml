@@ -1,0 +1,16 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: letsencrypt-issuer
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: letsencrypt-issuer
+      version: "^0.1.0"
+      sourceRef:
+        kind: HelmRepository
+        name: base-config-repo
+        namespace: flux-system
+  values:
+    admin_email: {{ .Values.admin_email }}

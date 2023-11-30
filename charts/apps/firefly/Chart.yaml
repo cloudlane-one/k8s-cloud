@@ -1,0 +1,11 @@
+apiVersion: v2
+name: firefly
+description: Firefly III with SSO and other components
+type: application
+version: "0.1.1"
+appVersion: "0.1.1"
+
+dependencies:
+  - name: common
+    version: "^1"
+    repository: https://charts.bitnami.com/bitnami

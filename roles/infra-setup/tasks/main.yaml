@@ -147,8 +147,8 @@
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
     KUBECONFIG: "{{ host_kubeconfig }}"
   block:
-    - name: Reconcile base helm repo
-      ansible.builtin.command: "flux reconcile source helm base-repo -n flux-system"
+    - name: Reconcile base system helm repo
+      ansible.builtin.command: "flux reconcile source helm base-system-repo -n flux-system"
       changed_when: true
 
     - name: Ensure vcluster HelmRelease exists
@@ -265,21 +265,55 @@
       ansible.builtin.command: "flux reconcile source git base-repo -n flux-system"
       changed_when: true
 
-    - name: Ensure base HelmRepository exists
+    - name: Ensure base config HelmRepository exists
       kubernetes.core.k8s:
         wait: true
         definition:
           apiVersion: source.toolkit.fluxcd.io/v1
           kind: HelmRepository
           metadata:
-            name: base-repo
+            name: base-config-repo
             namespace: flux-system
           spec:
             interval: 1h
-            url: "{{ cluster.base_helm_repo }}"
+            url: "{{ cluster.base_config_repo }}"
 
-    - name: Reconcile base helm repo
-      ansible.builtin.command: "flux reconcile source helm base-repo -n flux-system"
+    - name: Reconcile base config helm repo
+      ansible.builtin.command: "flux reconcile source helm base-config-repo -n flux-system"
+      changed_when: true
+
+    - name: Ensure base system HelmRepository exists
+      kubernetes.core.k8s:
+        wait: true
+        definition:
+          apiVersion: source.toolkit.fluxcd.io/v1
+          kind: HelmRepository
+          metadata:
+            name: base-system-repo
+            namespace: flux-system
+          spec:
+            interval: 1h
+            url: "{{ cluster.base_system_repo }}"
+
+    - name: Reconcile base system helm repo
+      ansible.builtin.command: "flux reconcile source helm base-system-repo -n flux-system"
+      changed_when: true
+
+    - name: Ensure base app HelmRepository exists
+      kubernetes.core.k8s:
+        wait: true
+        definition:
+          apiVersion: source.toolkit.fluxcd.io/v1
+          kind: HelmRepository
+          metadata:
+            name: base-app-repo
+            namespace: flux-system
+          spec:
+            interval: 1h
+            url: "{{ cluster.base_app_repo }}"
+
+    - name: Reconcile base app helm repo
+      ansible.builtin.command: "flux reconcile source helm base-app-repo -n flux-system"
       changed_when: true
 
 - name: Ensure components with CRDs and other hard dependecies are bootstrapped

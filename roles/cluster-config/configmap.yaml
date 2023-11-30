@@ -90,9 +90,14 @@ cluster:
   # Git repo to connect to for cluster & app updates via gitops.
   base_repo: https://github.com/cloudlane-one/k8s-cloud
   # Branch of repo to poll for updates.
-  base_branch: 
-  # Helm repo to connect to for cluster & app updates.
-  base_helm_repo: https://cloudlane-one.github.io/k8s-cloud
+  base_branch: main
+  
+  # Helm repo to connect to for app updates.
+  base_app_repo: https://cloudlane-one.github.io/k8s-cloud/charts/apps
+  # Helm repo to connect to for config updates.
+  base_config_repo: https://cloudlane-one.github.io/k8s-cloud/charts/config
+  # Helm repo to connect to for system updates.
+  base_system_repo: https://cloudlane-one.github.io/k8s-cloud/charts/system
 
   # Provision SSL certificates from letsencrypt-staging instead of production (to avoid API rate-limiting)
   letsencrypt_staging: false

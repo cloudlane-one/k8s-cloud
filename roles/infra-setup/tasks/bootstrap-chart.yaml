@@ -42,7 +42,7 @@
             version: "{{ chart.version }}"
             sourceRef:
               kind: HelmRepository
-              name: base-repo
+              name: base-system-repo
               namespace: flux-system
         values:
           bootstrap: true
