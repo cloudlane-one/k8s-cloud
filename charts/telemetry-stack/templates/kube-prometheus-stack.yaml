@@ -145,17 +145,17 @@ spec:
         timeoutSeconds: 30 # Prevent timeouts during helm upgrade
         patch:
           resources:
-            cpu: 30m
-            memory: 32Mi
+            cpu: 30m # measured on 2023-11-30
+            memory: 32Mi # measured on 2023-11-30
       resources:
         requests:
-          cpu: 50m
-          memory: 64Mi
+          cpu: 30m # measured on 2023-11-30
+          memory: 64Mi # measured on 2023-11-30
       prometheusConfigReloader:
         resources:
           requests:
-            cpu: 50m
-            memory: 64Mi
+            cpu: 30m # measured on 2023-11-30
+            memory: 64Mi # measured on 2023-11-30
           limits:
             cpu: 200m
             memory: 128Mi
@@ -177,24 +177,24 @@ spec:
               accessModes: ["ReadWriteOnce"]
               resources:
                 requests:
-                  storage: 12Gi
+                  storage: 20Gi
               storageClassName: local
         retention: 3d
         resources:
           requests:
-            cpu: 200m
-            memory: 2.5Gi
+            cpu: 150m # measured on 2023-11-30
+            memory: 2.5Gi # measured on 2023-11-30
           limits:
-            cpu: 300m
-            memory: 3Gi
+            cpu: 300m # measured on 2023-11-30
+            memory: 3Gi # measured on 2023-11-30
     grafana:
       replicas: 1
       deploymentStrategy:
         type: Recreate
       resources:
         requests:
-          cpu: 50m
-          memory: 384Mi
+          cpu: 50m # measured on 2023-11-30
+          memory: 384Mi # measured on 2023-11-30
       envValueFrom:
         SMTP_PASSWORD:
           secretKeyRef:

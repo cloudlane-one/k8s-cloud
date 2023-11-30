@@ -75,7 +75,7 @@ spec:
       tls: true
     extraEnvVars:
       - name: KC_FEATURES
-        value: 'declarative-user-profile,recovery-codes'
+        value: 'declarative-user-profile,recovery-codes,account3'
     extraVolumes:
       - name: theme-login
         configMap:
@@ -111,8 +111,8 @@ spec:
         enabled: true
     resources:
       requests:
-        cpu: 100m
-        memory: 1Gi
+        cpu: 100m # measured on 2023-11-30
+        memory: 1Gi # measured on 2023-11-30
     {{- if .Values.ha_deployment.enabled }}
     autoscaling:
       enabled: true
@@ -129,8 +129,8 @@ spec:
           size: 4Gi
         resources:
           requests:
-            cpu: 100m
-            memory: 128Mi
+            cpu: 100m # measured on 2023-11-30
+            memory: 128Mi # measured on 2023-11-30
         nodeSelector:
           {{- if not (eq .Values.zone "") }}
           topology.kubernetes.io/zone: {{ .Values.zone }}

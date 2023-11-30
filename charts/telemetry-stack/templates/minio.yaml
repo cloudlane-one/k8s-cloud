@@ -60,10 +60,10 @@ spec:
         purge: false
     resources:
       requests:
-        cpu: 100m
-        memory: 256Mi
+        cpu: 100m # measured on 2023-11-30
+        memory: 1Gi # measured on 2023-11-30
     persistence:
-      size: 5Gi
+      size: 10Gi
       storageClass: local
 {{- end }}
 {{- if .Values.snapshots.enabled }}

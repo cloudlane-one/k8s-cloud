@@ -97,7 +97,7 @@ spec:
   chart:
     spec:
       chart: postgresql
-      version: '^12'
+      version: '^13.2.21'
       sourceRef:
         kind: HelmRepository
         name: bitnami
@@ -109,10 +109,11 @@ spec:
     primary:
       persistence:
         size: 4Gi
+        storageClass: ha
       resources:
         requests:
-          cpu: 100m
-          memory: 128Mi
+          cpu: 100m # measured on 2023-11-30
+          memory: 128Mi # measured on 2023-11-30
 ---
 apiVersion: v1
 kind: Service
@@ -205,8 +206,8 @@ spec:
             failureThreshold: 1
           resources:
             requests:
-              memory: 1Gi
-              cpu: 100m
+              memory: 1Gi # measured on 2023-11-30
+              cpu: 50m # measured on 2023-11-30
           volumeMounts:
             - mountPath: "/opt/mailman/"
               name: data
@@ -372,6 +373,7 @@ spec:
   resources:
     requests:
       storage: "2Gi"
+  storageClassName: ha
 ---
 apiVersion: v1
 kind: Service
@@ -483,8 +485,8 @@ spec:
             failureThreshold: 3
           resources:
             requests:
-              memory: 512Mi
-              cpu: 50m
+              memory: 512Mi # measured on 2023-11-30
+              cpu: 50m # measured on 2023-11-30
           volumeMounts:
             - mountPath: "/opt/mailman-web-data"
               name: data

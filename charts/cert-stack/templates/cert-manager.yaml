@@ -15,7 +15,7 @@ spec:
   chart:
     spec:
       chart: cert-manager
-      version: "^1"
+      version: "^1.13.2"
       sourceRef:
         kind: HelmRepository
         name: jetstack
@@ -33,18 +33,18 @@ spec:
         enabled: true
     resources:
       requests:
-        cpu: 50m
-        memory: 64Mi
+        cpu: 50m # measured on 2023-11-30
+        memory: 64Mi # measured on 2023-11-30
     webhook:
       resources:
         requests:
-          cpu: 30m
-          memory: 32Mi
+          cpu: 30m # measured on 2023-11-30
+          memory: 32Mi # measured on 2023-11-30
     cainjector:
       resources:
         requests:
-          cpu: 30m
-          memory: 64Mi
+          cpu: 30m # measured on 2023-11-30
+          memory: 128Mi # measured on 2023-11-30
     ingressShim:
       defaultIssuerKind: ClusterIssuer
       defaultIssuerGroup: cert-manager.io
