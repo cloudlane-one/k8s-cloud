@@ -1,0 +1,166 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sso-keycloak
+data:
+  sso-clients.yaml: |
+    realm: {{ .Values.keycloak.realm }}
+    clients: 
+      {{- if .Values.oidc.enabled }}
+      - clientId: {{ .Values.oidc.id }}
+        name: {{ .Values.oidc.id }}
+        description: "Internal OIDC client"
+        enabled: true
+        clientAuthenticatorType: client-secret
+        secret: "$(env:OIDC_SECRET.{{ .Values.oidc.id }})"
+        redirectUris: 
+        {{- range $uri := .Values.oidc.redirect_uris }}
+          - {{ $uri }}
+        {{- end }}
+        webOrigins: 
+          - "*"
+        defaultClientScopes:
+          - email
+          - profile
+        optionalClientScopes:
+          - groups
+          - roles
+          - is_admin
+          - offline_access
+      {{- end }}
+      {{- if .Values.saml.enabled }}
+      - clientId: {{ .Values.saml.id }}
+        protocol: saml
+        name: {{ .Values.saml.id }}
+        description: "Internal SAML client"
+        enabled: true
+        rootUrl: {{ .Values.saml.root_url }}
+        redirectUris: 
+          - "*"
+        webOrigins: 
+          - "*"
+        frontchannelLogout: true
+        attributes:
+          saml.signing.certificate: "$(env:SAML_CERT.{{ .Values.saml.id }})"
+          saml.client.signature: "true"
+          saml.force.post.binding: "false"
+          saml.signature.algorithm: RSA_SHA256
+          saml.assertion.signature: "true"
+          saml_name_id_format: email
+          {{ if eq .Values.saml.assertion_consumer.method "post" -}}
+          saml_assertion_consumer_url_post: {{ .Values.saml.assertion_consumer.url }}
+          {{ end -}}
+          {{ if eq .Values.saml.assertion_consumer.method "redirect" -}}
+          saml_assertion_consumer_url_redirect: {{ .Values.saml.assertion_consumer.url }}
+          {{ end -}}
+          {{ if .Values.saml.logout_service -}}
+          {{ if eq .Values.saml.logout_service.method "post" -}}
+          saml_single_logout_service_url_post: {{ .Values.saml.logout_service.url }}
+          {{ end -}}
+          {{ if eq .Values.saml.logout_service.method "redirect" -}}
+          saml_single_logout_service_url_redirect: {{ .Values.saml.logout_service.url }}
+          {{- end }}
+          {{- end }}
+        protocolMappers:
+          - name: name-id
+            protocol: saml
+            protocolMapper: saml-user-attribute-nameid-mapper
+            consentRequired: false
+            config:
+              mapper.nameid.format: urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified
+              user.attribute: email
+          - name: firstName
+            protocol: saml
+            protocolMapper: saml-user-attribute-mapper
+            config:
+              attribute.nameformat: Basic
+              user.attribute: firstName
+              attribute.name: cn
+          - name: "X500 email"
+            protocol: saml
+            protocolMapper: saml-user-property-mapper
+            config:
+              attribute.name: urn:oid:1.2.840.113549.1.9.1
+              attribute.nameformat: urn:oasis:names:tc:SAML:2.0:attrname-format:uri
+              friendly.name: email
+              user.attribute: email
+          - name: "X500 givenName"
+            protocol: saml
+            protocolMapper: saml-user-property-mapper
+            config:
+              attribute.name: urn:oid:2.5.4.42
+              attribute.nameformat: urn:oasis:names:tc:SAML:2.0:attrname-format:uri
+              friendly.name: givenName
+              user.attribute: firstName
+          - name: "X500 surname"
+            protocol: saml
+            protocolMapper: saml-user-property-mapper
+            config:
+              attribute.name: urn:oid:2.5.4.4
+              attribute.nameformat: urn:oasis:names:tc:SAML:2.0:attrname-format:uri
+              friendly.name: surname
+              user.attribute: lastName
+      {{- end }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sso-keycloak-config-cli
+  labels:
+    app.kubernetes.io/component: sso-keycloak-config-cli
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: sso-keycloak-config-cli
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: keycloak-config-cli
+          image: bitnami/keycloak-config-cli:5.9.0-debian-11-r1
+          command:
+            - java
+            - -jar
+            - /opt/bitnami/keycloak-config-cli/keycloak-config-cli.jar
+          env:
+            - name: KEYCLOAK_URL
+              value: {{ .Values.keycloak.url }}
+            - name: KEYCLOAK_USER
+              value: {{ .Values.keycloak.user | quote }}
+            - name: KEYCLOAK_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sso-keycloak
+                  key: password
+            - name: IMPORT_FILES_LOCATIONS
+              value: /config/*
+            - name: KEYCLOAK_AVAILABILITYCHECK_ENABLED
+              value: "true"
+            - name: IMPORT_MANAGED_CLIENT
+              value: "no-delete" # Do not delete existing clients, just add new ones
+            - name: IMPORT_VARSUBSTITUTION_ENABLED
+              value: "true"
+            - name: LOGGING_LEVEL_HTTP
+              value: "debug"
+            {{- if .Values.oidc.enabled }}
+            - name: OIDC_SECRET.{{ .Values.oidc.id }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ printf "oidc-client.%s" .Values.oidc.id }}
+                  key: secret
+            {{- end }}
+            {{- if .Values.saml.enabled }}
+            - name: SAML_CERT.{{ .Values.saml.id }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ printf "saml-cert.%s" .Values.saml.id }}
+                  key: tls.crt
+            {{- end }}
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: sso-keycloak

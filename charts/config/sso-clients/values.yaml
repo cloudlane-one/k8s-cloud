@@ -1,0 +1,26 @@
+oidc:
+  enabled: true
+  id: ""
+  redirect_uris: []
+    # - https://example.com/path
+
+saml:
+  enabled: false
+  id: ""
+  root_url: ""
+  cert_domain: ""
+  assertion_consumer:
+    method: "post" # "redirect" or "post"
+    url: "" # may be relative
+  logout_service:
+    method: "post" # "redirect" or "post"
+    url: "" # may be relative
+
+keycloak:
+  url: http://keycloak.sso-system.svc.cluster.local
+  realm: master
+  user: admin
+  password_secret:
+    name: idp-admin
+    namespace: sso-system
+    key: admin-password
