@@ -75,7 +75,7 @@ spec:
       tls: true
     extraEnvVars:
       - name: KC_FEATURES
-        value: 'declarative-user-profile,recovery-codes'
+        value: 'declarative-user-profile,recovery-codes,account3'
     extraVolumes:
       - name: theme-login
         configMap:

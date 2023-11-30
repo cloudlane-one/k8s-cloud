@@ -22,6 +22,7 @@ domain: ""
 hosts:
   keycloak: ""
   authproxy: ""
+  account_console: ""
 
 smtp:
   host: ""
