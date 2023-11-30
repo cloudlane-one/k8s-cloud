@@ -85,7 +85,7 @@ spec:
       kind: DaemonSet
       resources:
         requests:
-          memory: 64Mi
+          memory: 128Mi
           cpu: 50m
       {{- if .Values.use_mailu_proxy_auth }}
       nodeSelector:
@@ -116,7 +116,7 @@ spec:
       resources:
         requests:
           memory: 128Mi
-          cpu: 150m
+          cpu: 100m
       overrides:
         postfix.cf: |
           # Support the default VERP delimiter.
@@ -150,16 +150,16 @@ spec:
         claimNameOverride: mailu-dovecot
       resources:
         requests:
-          memory: 128Mi
-          cpu: 50m
+          memory: 128Mi # measured on 2023-11-30
+          cpu: 50m # measured on 2023-11-30
     webmail:
       persistence:
         size: 2Gi
         claimNameOverride: mailu-webmail
       resources:
         requests:
-          memory: 128Mi
-          cpu: 100m
+          memory: 128Mi # measured on 2023-11-30
+          cpu: 50m # measured on 2023-11-30
       {{- if .Values.use_mailu_proxy_auth }}
       extraEnvVars:
         - name: PROXY_AUTH_WHITELIST
@@ -176,8 +176,8 @@ spec:
         claimNameOverride: mailu-fetchmail
       resources:
         requests:
-          memory: 32Mi
-          cpu: 50m
+          memory: 32Mi # measured on 2023-11-30
+          cpu: 50m # measured on 2023-11-30
     webdav:
       enabled: true
       persistence:
@@ -185,23 +185,23 @@ spec:
         claimNameOverride: mailu-webdav
       resources:
         requests:
-          memory: 64Mi
-          cpu: 50m
+          memory: 64Mi # measured on 2023-11-30
+          cpu: 50m # measured on 2023-11-30
     rspamd:
       resources:
         requests:
-          memory: 256Mi
-          cpu: 50m
+          memory: 256Mi # measured on 2023-11-30
+          cpu: 50m # measured on 2023-11-30
     clamav:
       resources:
         requests:
-          memory: 4Gi
-          cpu: 100m
+          memory: 2Gi # measured on 2023-11-30
+          cpu: 50m # measured on 2023-11-30
     oletools:
       resources:
         requests:
-          memory: 32Mi
-          cpu: 30m
+          memory: 32Mi # measured on 2023-11-30
+          cpu: 30m # measured on 2023-11-30
 {{- if .Values.snapshots.enabled }}
 ---
 apiVersion: snapshot.storage.k8s.io/v1

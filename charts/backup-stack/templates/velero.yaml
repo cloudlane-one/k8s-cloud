@@ -51,6 +51,9 @@ spec:
     crds: CreateReplace
   timeout: '15m0s' # Account for slow performance of cluster on first setup.
   values:
+    resources:
+      requests:
+        memory: 256Mi # measured on 2023-11-30
     metrics:
       enabled: true
       serviceMonitor:

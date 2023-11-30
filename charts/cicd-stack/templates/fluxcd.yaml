@@ -23,6 +23,30 @@ spec:
   values:
     policies:
       create: false
+    imageAutomationController:
+      resources:
+        requests:
+          cpu: 50m # measured on 2023-11-30
+    imageReflectionController:
+      resources:
+        requests:
+          cpu: 50m # measured on 2023-11-30
+    kustomizeController:
+      resources:
+        requests:
+          cpu: 50m # measured on 2023-11-30
+    notificationController:
+      resources:
+        requests:
+          cpu: 50m # measured on 2023-11-30
+    helmController:
+      resources:
+        requests:
+          memory: 128Mi # measured on 2023-11-30
+    sourceController:
+      resources:
+        requests:
+          memory: 384Mi # measured on 2023-11-30
 {{- if not .Values.bootstrap }}
     prometheus:
       podMonitor:
