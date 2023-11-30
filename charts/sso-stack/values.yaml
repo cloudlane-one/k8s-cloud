@@ -51,3 +51,7 @@ snapshots:
 letsencrypt_staging: false
 
 zone: "" # Specific zone to localize this release to (pods and volumes)
+
+ha_deployment:
+  enabled: false
+  max_replicas: 4
