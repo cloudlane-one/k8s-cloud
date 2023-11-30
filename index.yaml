@@ -207,6 +207,20 @@ entries:
     version: 0.0.1
   mail-stack:
   - apiVersion: v2
+    appVersion: 0.4.2
+    created: "2023-11-30T17:01:24.627818833Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Mail server + mailing list service + Web UIs
+    digest: 69af7cc1f50f2e54088948800c7d6a9ac474e8bc00139b7fc3de958e24db4efd
+    name: mail-stack
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/mail-stack-0.4.2/mail-stack-0.4.2.tgz
+    version: 0.4.2
+  - apiVersion: v2
     appVersion: 0.4.1
     created: "2023-11-20T07:34:47.775072697Z"
     dependencies:
@@ -327,4 +341,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-stack-0.1.4/vcluster-stack-0.1.4.tgz
     version: 0.1.4
-generated: "2023-11-30T11:19:24.328010387Z"
+generated: "2023-11-30T17:01:24.627838169Z"
