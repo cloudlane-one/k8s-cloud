@@ -11,4 +11,7 @@
   "terminal.integrated.env.linux": {
     "KUBECONFIG": "${workspaceFolder}/kubeconfig.yaml"
   },
+  "githubPullRequests.ignoredPullRequestBranches": [
+    "main"
+  ],
 }
