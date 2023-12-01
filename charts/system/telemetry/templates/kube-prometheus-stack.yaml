@@ -271,40 +271,40 @@ spec:
                   settings:
                     addresses: {{ .Values.admin_email }}
                     singleEmail: true
-        mute-times.yaml:
-          apiVersion: 1
-          muteTimes:
-            - orgId: 1
-              name: default
-              # refer to https://prometheus.io/docs/alerting/latest/configuration/#time_interval-0
-              time_intervals:
-                - times:
-                    - start_time: '00:00'
-                      end_time: '07:00'
-            - orgId: 1
-              name: always
-              # refer to https://prometheus.io/docs/alerting/latest/configuration/#time_interval-0
-              time_intervals:
-                - times:
-                    - start_time: '00:00'
-                      end_time: '24:00'
-        policies.yaml:
-          apiVersion: 1
-          policies:
-            - orgId: 1
-              receiver: default
-              group_by: ['...']
-              routes:
-                - receiver: default
-                  matchers:
-                    - severity =~ "error|critical"
-                  mute_time_intervals:
-                    - default
-                  continue: true
-                - receiver: default
-                  mute_time_intervals:
-                    - always
-                  continue: true
+        # mute-times.yaml:
+        #   apiVersion: 1
+        #   muteTimes:
+        #     - orgId: 1
+        #       name: default
+        #       # refer to https://prometheus.io/docs/alerting/latest/configuration/#time_interval-0
+        #       time_intervals:
+        #         - times:
+        #             - start_time: '00:00'
+        #               end_time: '07:00'
+        #     - orgId: 1
+        #       name: always
+        #       # refer to https://prometheus.io/docs/alerting/latest/configuration/#time_interval-0
+        #       time_intervals:
+        #         - times:
+        #             - start_time: '00:00'
+        #               end_time: '24:00'
+        # policies.yaml:
+        #   apiVersion: 1
+        #   policies:
+        #     - orgId: 1
+        #       receiver: default
+        #       group_by: ['...']
+        #       routes:
+        #         - receiver: default
+        #           matchers:
+        #             - severity =~ "error|critical"
+        #           mute_time_intervals:
+        #             - default
+        #           continue: true
+        #         - receiver: default
+        #           mute_time_intervals:
+        #             - always
+        #           continue: true
       additionalDataSources:
         - name: Loki
           type: loki
