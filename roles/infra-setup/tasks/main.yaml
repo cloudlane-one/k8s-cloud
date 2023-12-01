@@ -417,7 +417,9 @@
         apply:
           vars:
             chart:
-              name: storage-stack
+              release_name: storage-stack
+              chart_name: storage
+              version: "^0.2.1"
               namespace: longhorn-system
               chart_values:
                 host: "{{ cluster.subdomains.longhorn }}.{{ cluster.domain }}"
@@ -435,7 +437,9 @@
         apply:
           vars:
             chart:
-              name: backup-stack
+              release_name: backup-stack
+              chart_name: backup
+              version: "^0.1.1"
               namespace: backup-system
               chart_values:
                 s3: "{{ cluster.backup.s3 }}"
@@ -493,6 +497,9 @@
     apply:
       vars:
         chart:
+          release_name: dns-stack
+          chart_name: dns
+          version: "^0.1.0"
           name: dns-stack
           namespace: dns-system
           chart_values:
@@ -512,20 +519,16 @@
   loop_control:
     label: "{{ item.name }} in {{ item.namespace }}"
   loop:
-    - name: admin-rbac
-      version: "^0.1.0"
-      namespace: kube-system
-      chart_values:
-        admin_group: "cluster-admins"
-
-    - name: k3s-auto-upgrade
-      version: "^0.1.0"
+    - release_name: k3s-auto-upgrade
+      chart_name: upgrade
+      version: "^0.1.1"
       namespace: upgrade-system
       chart_values:
         k3s_version: "{{ k3s_version }}"
 
-    - name: cert-stack
-      version: "^0.1.0"
+    - release_name: cert-stack
+      chart_name: cert
+      version: "^0.1.1"
       namespace: cert-system
       chart_values:
         admin_email: "{{ cluster.mail.admin_address }}"
@@ -533,14 +536,17 @@
         base_branch: "{{ cluster.base_branch }}"
         letsencrypt_staging: "{{ cluster.letsencrypt_staging }}"
 
-    - name: ingress-stack
-      version: "^0.2.0"
+    - release_name: ingress-stack
+      chart_name: ingress
+      version: "^0.2.1"
       namespace: ingress-system
       chart_values:
         cluster_name: "{{ cluster_name }}"
 
-    - name: control-stack
-      version: "^0.1.1"
+    - release_name: control-stack
+      chart_name: control
+      name: control-stack
+      version: "^0.1.4"
       namespace: kube-system
       chart_values:
         host: "{{ cluster.subdomains.k8s_dashboard }}.{{ cluster.domain }}"
@@ -548,8 +554,9 @@
         admin_group: "cluster-admins"
         cluster_name: "{{ cluster_name }}"
 
-    - name: sso-stack
-      version: "^0.1.0"
+    - release_name: sso-stack
+      chart_name: sso
+      version: "^0.1.2"
       namespace: sso-system
       chart_values:
         domain: "{{ cluster.domain }}"
@@ -567,8 +574,9 @@
         admin_email: "{{ cluster.mail.admin_address }}"
         letsencrypt_staging: "{{ cluster.letsencrypt_staging }}"
 
-    - name: telemetry-stack
-      version: "^0.1.4"
+    - release_name: telemetry-stack
+      chart_name: telemetry
+      version: "^0.1.5"
       namespace: telemetry-system
       chart_values:
         domain: "{{ cluster.domain }}"
@@ -583,8 +591,9 @@
         letsencrypt_staging: "{{ cluster.letsencrypt_staging }}"
         k3s: true
 
-    - name: cicd-stack
-      version: "^0.1.0"
+    - release_name: cicd-stack
+      chart_name: gitops
+      version: "^0.1.1"
       namespace: flux-system
       chart_values:
         host: "{{ cluster.subdomains.weave_gitops }}.{{ cluster.domain }}"
