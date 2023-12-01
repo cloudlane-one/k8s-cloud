@@ -14,7 +14,7 @@ spec:
   interval: 1h
   chart:
     spec:
-      chart: ./charts/vcluster-mariadb-endpoint
+      chart: vcluster-mariadb-endpoint
       version: "^0.1.0"
       sourceRef:
         kind: HelmRepository
