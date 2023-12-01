@@ -15,6 +15,21 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/admin-rbac-0.0.1/admin-rbac-0.0.1.tgz
     version: 0.0.1
+  backup:
+  - apiVersion: v2
+    appVersion: 0.1.1
+    created: "2023-12-01T13:56:53.951204542Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Velero + extras
+    digest: de4277ab68e1e1d24b5f9d0a4710ba3b94eeb2bb562d94ba89d0481569bf9db6
+    name: backup
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/backup-0.1.1/backup-0.1.1.tgz
+    version: 0.1.1
   backup-stack:
   - apiVersion: v2
     appVersion: 0.0.1
@@ -30,6 +45,17 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/backup-stack-0.0.1/backup-stack-0.0.1.tgz
     version: 0.0.1
+  cert:
+  - apiVersion: v2
+    appVersion: 0.1.1
+    created: "2023-12-01T13:56:54.150361646Z"
+    description: cert-manager with proper config
+    digest: 96623fdb8106df1e05b93822a8f24ba46cf0f6f73ffbeee0f3abc99f776950e1
+    name: cert
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/cert-0.1.1/cert-0.1.1.tgz
+    version: 0.1.1
   cert-stack:
   - apiVersion: v2
     appVersion: 0.0.1
@@ -86,6 +112,21 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/cloud-stack-0.8.1/cloud-stack-0.8.1.tgz
     version: 0.8.1
+  control:
+  - apiVersion: v2
+    appVersion: 0.1.3
+    created: "2023-12-01T13:56:54.402167686Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: k8s-dashboard with proper config and extras
+    digest: 4e010b1be6a9f065270b4393721a74395a1cbc007252117f2b4ff0013c3780d6
+    name: control
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/control-0.1.3/control-0.1.3.tgz
+    version: 0.1.3
   control-stack:
   - apiVersion: v2
     appVersion: 0.1.1
@@ -112,6 +153,21 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/default-snapshot-class-0.0.1/default-snapshot-class-0.0.1.tgz
     version: 0.0.1
+  dns:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2023-12-01T13:56:54.655885633Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: external-dns + extras
+    digest: b75ad266689c9abdcf66f467f5f8fdad67c3b4c955361571266e3ff88d3cc6be
+    name: dns
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/dns-0.1.0/dns-0.1.0.tgz
+    version: 0.1.0
   dns-stack:
   - apiVersion: v2
     appVersion: 0.0.1
@@ -172,6 +228,21 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/firefly-0.1.1/firefly-0.1.1.tgz
     version: 0.1.1
+  gitops:
+  - apiVersion: v2
+    appVersion: 0.1.1
+    created: "2023-12-01T13:56:54.946424906Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: FluxCD + Weave-Gitops Dashboard + extras
+    digest: d82c1a03fca0bcd9d303b2a9d183339b1ce16f1cc1e6325822ce478a0a1a1298
+    name: gitops
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/gitops-0.1.1/gitops-0.1.1.tgz
+    version: 0.1.1
   homepage-stack:
   - apiVersion: v2
     appVersion: 6.4.1
@@ -187,6 +258,21 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/homepage-stack-0.0.3/homepage-stack-0.0.3.tgz
     version: 0.0.3
+  ingress:
+  - apiVersion: v2
+    appVersion: 0.2.1
+    created: "2023-12-01T13:56:55.177143632Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: NGINX ingress controller + extras
+    digest: 4dbb9330efa4adf826d5689a4290287484b2dfca1b8ce2d4672756889337ab6a
+    name: ingress
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/ingress-0.2.1/ingress-0.2.1.tgz
+    version: 0.2.1
   ingress-stack:
   - apiVersion: v2
     appVersion: 0.2.0
@@ -331,6 +417,21 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/rocketchat-mongodb-urls-0.0.1/rocketchat-mongodb-urls-0.0.1.tgz
     version: 0.0.1
+  sso:
+  - apiVersion: v2
+    appVersion: 0.1.2
+    created: "2023-12-01T13:56:55.46121694Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Keycloak-based Signle-Sign-On and some useful extras
+    digest: 7f47d922d74580a50242b47641dde35f60c1c5683e4b2da94b980dbf2931308f
+    name: sso
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/sso-0.1.2/sso-0.1.2.tgz
+    version: 0.1.2
   sso-stack:
   - apiVersion: v2
     appVersion: 0.1.0
@@ -360,6 +461,21 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/sso-stack-0.0.1/sso-stack-0.0.1.tgz
     version: 0.0.1
+  storage:
+  - apiVersion: v2
+    appVersion: 0.2.1
+    created: "2023-12-01T13:56:55.675753039Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Longhorn-based storage system
+    digest: 937cc77b929e8db475fa54a6e554bcf51d800745550674ec2cd9f5958f8a1c88
+    name: storage
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/storage-0.2.1/storage-0.2.1.tgz
+    version: 0.2.1
   storage-stack:
   - apiVersion: v2
     appVersion: 0.2.0
@@ -375,6 +491,21 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/storage-stack-0.2.0/storage-stack-0.2.0.tgz
     version: 0.2.0
+  telemetry:
+  - apiVersion: v2
+    appVersion: 0.1.5
+    created: "2023-12-01T13:56:55.900943066Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Prometheus + Loki + Grafana
+    digest: 07696fabb4330cbc284cdd735a649a0fb6ccc4d8bd8a8190c983a5cc73b323b4
+    name: telemetry
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/telemetry-0.1.5/telemetry-0.1.5.tgz
+    version: 0.1.5
   telemetry-stack:
   - apiVersion: v2
     appVersion: 0.1.4
@@ -390,6 +521,32 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/telemetry-stack-0.1.4/telemetry-stack-0.1.4.tgz
     version: 0.1.4
+  upgrade:
+  - apiVersion: v2
+    appVersion: 0.1.1
+    created: "2023-12-01T13:56:56.293357856Z"
+    description: Rancher system upgrade controller + plans
+    digest: ec11100be7d3df01288c0d074466f023cb8063a11eca258559ea5036ff59c327
+    name: upgrade
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/upgrade-0.1.1/upgrade-0.1.1.tgz
+    version: 0.1.1
+  vcluster:
+  - apiVersion: v2
+    appVersion: 0.16.4
+    created: "2023-12-01T13:56:56.558582976Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: HA vcluster with extras
+    digest: 940253939ae00446a83e0fd4c9ddf8324e1c33764ebd168ee1a96c86ac62c481
+    name: vcluster
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-0.1.6/vcluster-0.1.6.tgz
+    version: 0.1.6
   vcluster-mariadb-endpoint:
   - apiVersion: v2
     appVersion: 0.0.1
@@ -431,4 +588,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.0/wordpress-0.1.0.tgz
     version: 0.1.0
-generated: "2023-12-01T13:56:01.332201099Z"
+generated: "2023-12-01T13:56:56.558602963Z"
