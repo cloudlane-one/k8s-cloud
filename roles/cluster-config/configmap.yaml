@@ -81,6 +81,7 @@ cluster:
   subdomains:
     k8s_api: "k8s"
     keycloak: "id"
+    account_console: "account"
     oauth2_proxy: "oauth"
     k8s_dashboard: "kubectl"
     weave_gitops: "gitops"

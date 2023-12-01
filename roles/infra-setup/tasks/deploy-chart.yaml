@@ -1,6 +1,6 @@
 - name: Chart details
   ansible.builtin.debug:
-    msg: "Deploying chart {{ chart.name }} into namespace {{ chart.namespace }}"
+    msg: "Deploying chart {{ chart.release_name }} into namespace {{ chart.namespace }}"
 
 - name: Ensure chart namespace exists
   kubernetes.core.k8s:
@@ -58,7 +58,7 @@
       - flux
       - reconcile
       - hr
-      - "{{ chart.name }}"
+      - "{{ chart.release_name }}"
       - "-n={{ chart.namespace }}"
   changed_when: true
   register: k8s_result

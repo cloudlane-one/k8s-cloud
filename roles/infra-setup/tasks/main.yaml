@@ -157,8 +157,9 @@
         apply:
           vars:
             chart:
-              name: vcluster-stack
-              version: "^0.1.4"
+              release_name: vcluster-stack
+              chart_name: vcluster
+              version: "^0.1.6"
               namespace: "{{ cluster_name }}"
               chart_values:
                 cluster_name: "{{ cluster_name }}"
@@ -517,7 +518,7 @@
         chart: "{{ item }}"
         kubeconfig: "{{ kubeconfig }}"
   loop_control:
-    label: "{{ item.name }} in {{ item.namespace }}"
+    label: "{{ item.release_name }} in {{ item.namespace }}"
   loop:
     - release_name: k3s-auto-upgrade
       chart_name: upgrade
@@ -564,6 +565,7 @@
         hosts:
           keycloak: "{{ cluster.subdomains.keycloak }}.{{ cluster.domain }}"
           authproxy: "{{ cluster.subdomains.oauth2_proxy }}.{{ cluster.domain }}"
+          account_console: "{{ cluster.subdomains.account_console }}.{{ cluster.domain }}"
         cluster_client:
           id: cluster-oidc
           redirect_uris:
