@@ -1,0 +1,99 @@
+apiVersion: v1
+entries:
+  admin-rbac:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2023-12-01T14:23:03.281895865Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Setup RBAC for an admin group
+    digest: 3bbb53a94eb0876ab09647dcbe26e797cdb1f472bb42daf96809201ff8240a2e
+    name: admin-rbac
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/admin-rbac-0.1.0/admin-rbac-0.1.0.tgz
+    version: 0.1.0
+  default-snapshot-class:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2023-12-01T14:23:03.524989247Z"
+    description: Longhorn-based snapshot class
+    digest: 73e94937e6da6fde91065531d0308d827dbc9ea92db16b3e7266544eadc0fe8f
+    name: default-snapshot-class
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/default-snapshot-class-0.1.0/default-snapshot-class-0.1.0.tgz
+    version: 0.1.0
+  k3s-auto-upgrade-plan:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2023-12-01T14:23:03.739770189Z"
+    description: Plan CR for automatic, non-disruptive k3s upgrades
+    digest: 02f7caa52eea9a19fc4a8d878a8de18b937659f7d7b697e40df8d2c21d4101e0
+    name: k3s-auto-upgrade-plan
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/k3s-auto-upgrade-plan-0.1.0/k3s-auto-upgrade-plan-0.1.0.tgz
+    version: 0.1.0
+  letsencrypt-issuer:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2023-12-01T14:23:03.980062581Z"
+    description: Default ACME cluster issuer
+    digest: 9e7aeb3d49fdeb52250c4834c1f8206e6caa6e56f55518f870f3a26cc9d81330
+    name: letsencrypt-issuer
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/letsencrypt-issuer-0.1.0/letsencrypt-issuer-0.1.0.tgz
+    version: 0.1.0
+  namespace-isolation:
+  - apiVersion: v2
+    appVersion: 0.0.1
+    created: "2023-12-01T14:23:04.210702986Z"
+    description: Isolate target namespace via NetworkPolicy
+    digest: e91e0ce4e9b7f1f73aa5730c7939bb66d73a73cd81c622de5f4a900553a86261
+    name: namespace-isolation
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/namespace-isolation-0.0.1/namespace-isolation-0.0.1.tgz
+    version: 0.0.1
+  rocketchat-mongodb-urls:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2023-12-01T14:23:04.439605468Z"
+    description: Setup mongodb url secret for rocketchat
+    digest: 70fa275f3707cf0ae7442f30f3b46b63a1aef4be3737a7430017459f2297561c
+    name: rocketchat-mongodb-urls
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/rocketchat-mongodb-urls-0.1.0/rocketchat-mongodb-urls-0.1.0.tgz
+    version: 0.1.0
+  sso-clients:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2023-12-01T14:23:04.688531279Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Deploy OIDC or SAML clients via keycloak-config-cli
+    digest: 09cd1620508d7a4dec94cbe80d62b5710089739de7112b59eb2ad0fb4c9a4763
+    name: sso-clients
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/sso-clients-0.1.0/sso-clients-0.1.0.tgz
+    version: 0.1.0
+  vcluster-mariadb-endpoint:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2023-12-01T14:23:04.901358405Z"
+    description: Setup mariadb endpoint url for vcluster
+    digest: 94596aabf66940be5642d333eb15d01f330a6e5e50b61177eb2a110dcc0ab23e
+    name: vcluster-mariadb-endpoint
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-mariadb-endpoint-0.1.0/vcluster-mariadb-endpoint-0.1.0.tgz
+    version: 0.1.0
+generated: "2023-12-01T14:23:04.901365759Z"
