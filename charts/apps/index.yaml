@@ -1,0 +1,93 @@
+apiVersion: v1
+entries:
+  erpnext:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2023-12-01T14:21:45.549924389Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: ERPNext with SSO and some useful extras
+    digest: 68a53bc97c0ff3c1ce831ff73a623d7c9b64a95e08ca46bb184bd0bcc357d13b
+    name: erpnext
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/erpnext-0.1.0/erpnext-0.1.0.tgz
+    version: 0.1.0
+  firefly:
+  - apiVersion: v2
+    appVersion: 0.1.1
+    created: "2023-12-01T14:21:45.840975645Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Firefly III with SSO and other components
+    digest: ab8e619954062cadc34042e8d6ea5ce3fb2893258dc2c3dbb2dc8b2f271c97aa
+    name: firefly
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/firefly-0.1.1/firefly-0.1.1.tgz
+    version: 0.1.1
+  mailuman:
+  - apiVersion: v2
+    appVersion: 0.4.2
+    created: "2023-12-01T14:21:46.055885859Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Mail server + mailing list service + Web UIs
+    digest: 0b52c61213d6e91f7fc2897d4ddeb44c0d5c762eddf524a73d173bfa8b234aaf
+    name: mailuman
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/mailuman-0.4.2/mailuman-0.4.2.tgz
+    version: 0.4.2
+  nextcloud:
+  - apiVersion: v2
+    appVersion: 27.1.3
+    created: "2023-12-01T14:21:46.355533912Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Nextcloud with SSO and some useful extras
+    digest: 58b48d33de9d4c812db93780ca0dcea6ef3f2b87884612c532a41df2398e78ed
+    name: nextcloud
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/nextcloud-0.8.4/nextcloud-0.8.4.tgz
+    version: 0.8.4
+  rocketchat:
+  - apiVersion: v2
+    appVersion: 6.4.4
+    created: "2023-12-01T14:21:46.571389959Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Rocket.Chat with SSO and some useful extras
+    digest: 358a603ade876880148bdf5cb38b4f1478396d0b524cbe9fc765c8b0c1fbc6ab
+    name: rocketchat
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/rocketchat-0.1.12/rocketchat-0.1.12.tgz
+    version: 0.1.12
+  wordpress:
+  - apiVersion: v2
+    appVersion: 6.4.1
+    created: "2023-12-01T14:21:46.804884236Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Wordpress with SSO and some useful extras
+    digest: 9cb6d4364b6cde6a674ea9e3be47ec89d88db5d6bb91341829db19b7f4a88502
+    name: wordpress
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.0/wordpress-0.1.0.tgz
+    version: 0.1.0
+generated: "2023-12-01T14:21:46.804895367Z"
