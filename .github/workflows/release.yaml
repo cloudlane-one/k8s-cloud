@@ -31,7 +31,7 @@ jobs:
           skip_existing: true
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          CR_INDEX_PATH: charts/apps/index.yaml
+          CR_PAGES_INDEX_PATH: charts/apps/index.yaml
 
       - name: Release system charts
         uses: helm/chart-releaser-action@v1.6.0
@@ -40,7 +40,7 @@ jobs:
           skip_existing: true
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          CR_INDEX_PATH: charts/system/index.yaml
+          CR_PAGES_INDEX_PATH: charts/system/index.yaml
 
       - name: Release config charts
         uses: helm/chart-releaser-action@v1.6.0
@@ -49,4 +49,4 @@ jobs:
           skip_existing: true
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          CR_INDEX_PATH: charts/config/index.yaml
+          CR_PAGES_INDEX_PATH: charts/config/index.yaml
