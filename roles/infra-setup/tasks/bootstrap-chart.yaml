@@ -38,12 +38,12 @@
         interval: 1h
         chart:
           spec:
-            chart: "./charts/{{ chart['name'] }}"
+            chart: "{{ chart['name'] }}"
+            version: "{{ chart.version }}"
             sourceRef:
-              kind: GitRepository
-              name: base-repo
+              kind: HelmRepository
+              name: base-system-repo
               namespace: flux-system
-            reconcileStrategy: Revision
         values:
           bootstrap: true
           vcluster: "{{ cluster.virtual }}"

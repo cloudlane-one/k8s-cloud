@@ -1,0 +1,23 @@
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: account-console-redir
+  annotations:
+    kubernetes.io/tls-acme: 'true'
+    nginx.ingress.kubernetes.io/permanent-redirect: {{ printf "https://%s/realms/master/account/#/personal-info" .Values.hosts.keycloak }}
+spec:
+  tls:
+    - hosts:
+        - {{ .Values.hosts.account_console }}
+      secretName: account-console-redir-tls
+  rules:
+    - host: {{ .Values.hosts.account_console }}
+      http:
+        paths:
+          - path: /
+            pathType: Exact
+            backend:
+              service:
+                name: keycloak
+                port:
+                  name: http

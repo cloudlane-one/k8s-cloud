@@ -1,0 +1,63 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: flux-community
+spec:
+  interval: 1h
+  url: https://fluxcd-community.github.io/helm-charts
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: fluxcd
+spec:
+  chart:
+    spec:
+      chart: flux2
+      version: "^2"
+      sourceRef:
+        kind: HelmRepository
+        name: flux-community
+  interval: 1h
+  timeout: 15m0s
+  values:
+    policies:
+      create: false
+    imageAutomationController:
+      resources:
+        requests:
+          cpu: 50m # measured on 2023-11-30
+    imageReflectionController:
+      resources:
+        requests:
+          cpu: 50m # measured on 2023-11-30
+    kustomizeController:
+      resources:
+        requests:
+          cpu: 50m # measured on 2023-11-30
+    notificationController:
+      resources:
+        requests:
+          cpu: 50m # measured on 2023-11-30
+    helmController:
+      resources:
+        requests:
+          memory: 128Mi # measured on 2023-11-30
+    sourceController:
+      resources:
+        requests:
+          memory: 384Mi # measured on 2023-11-30
+{{- if not .Values.bootstrap }}
+    prometheus:
+      podMonitor:
+        create: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  labels:
+    grafana_dashboard: "1"
+data:
+{{ (.Files.Glob "config/grafana-dashboards/flux*").AsConfig | indent 2 }}
+{{- end }}

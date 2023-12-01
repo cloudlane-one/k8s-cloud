@@ -87,10 +87,17 @@ cluster:
     grafana: "grafana"
     longhorn: "longhorn" # Only set up for host clusters
 
-  # Git repo to connect to for cluster updates via gitops.
+  # Git repo to connect to for cluster & app updates via gitops.
   base_repo: https://github.com/cloudlane-one/k8s-cloud
   # Branch of repo to poll for updates.
-  base_branch: v0
+  base_branch: main
+  
+  # Helm repo to connect to for app updates.
+  base_app_repo: https://cloudlane-one.github.io/k8s-cloud/charts/apps
+  # Helm repo to connect to for config updates.
+  base_config_repo: https://cloudlane-one.github.io/k8s-cloud/charts/config
+  # Helm repo to connect to for system updates.
+  base_system_repo: https://cloudlane-one.github.io/k8s-cloud/charts/system
 
   # Provision SSL certificates from letsencrypt-staging instead of production (to avoid API rate-limiting)
   letsencrypt_staging: false

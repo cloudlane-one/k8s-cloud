@@ -1,0 +1,65 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: jetstack
+spec:
+  interval: 1h
+  url: https://charts.jetstack.io
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: cert-manager
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: cert-manager
+      version: "^1.13.2"
+      sourceRef:
+        kind: HelmRepository
+        name: jetstack
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+  timeout: '15m0s' # Account for slow performance of cluster on first setup.
+  values:
+    installCRDs: true
+{{- if not .Values.bootstrap }}
+    prometheus:
+      enabled: true
+      servicemonitor:
+        enabled: true
+    resources:
+      requests:
+        cpu: 50m # measured on 2023-11-30
+        memory: 64Mi # measured on 2023-11-30
+    webhook:
+      resources:
+        requests:
+          cpu: 30m # measured on 2023-11-30
+          memory: 32Mi # measured on 2023-11-30
+    cainjector:
+      resources:
+        requests:
+          cpu: 30m # measured on 2023-11-30
+          memory: 128Mi # measured on 2023-11-30
+    ingressShim:
+      defaultIssuerKind: ClusterIssuer
+      defaultIssuerGroup: cert-manager.io
+      {{- if not .Values.letsencrypt_staging }}
+      defaultIssuerName: letsencrypt
+      {{- else }}
+      defaultIssuerName: letsencrypt-staging
+      {{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  labels:
+    grafana_dashboard: "1"
+data:
+{{ (.Files.Glob "config/grafana-dashboard*.json").AsConfig | indent 2 }}
+{{- end }}

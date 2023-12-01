@@ -1,0 +1,10 @@
+apiVersion: v2
+name: control
+description: k8s-dashboard with proper config and extras
+type: application
+version: "0.1.3"
+appVersion: "0.1.3"
+dependencies:
+  - name: common
+    version: "^1"
+    repository: https://charts.bitnami.com/bitnami

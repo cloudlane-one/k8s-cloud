@@ -1,0 +1,9 @@
+host: ""
+
+cluster_name: ""
+
+oauth2_proxy_host: ""
+
+admin_group: ""
+
+vcluster: false

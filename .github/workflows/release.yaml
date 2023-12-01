@@ -1,0 +1,49 @@
+name: Release Charts
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+
+      - name: Release app charts
+        uses: helm/chart-releaser-action@v1.6.0
+        with:
+          charts_dir: charts/apps
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          CR_INDEX_PATH: charts/apps/index.yaml
+
+      - name: Release system charts
+        uses: helm/chart-releaser-action@v1.6.0
+        with:
+          charts_dir: charts/system
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          CR_INDEX_PATH: charts/system/index.yaml
+
+      - name: Release config charts
+        uses: helm/chart-releaser-action@v1.6.0
+        with:
+          charts_dir: charts/config
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          CR_INDEX_PATH: charts/config/index.yaml
