@@ -1,7 +1,0 @@
-host: ""
-
-oauth2_proxy_host: ""
-
-admin_group: ""
-
-vcluster: false

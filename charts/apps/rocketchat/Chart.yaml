@@ -1,0 +1,11 @@
+apiVersion: v2
+name: rocketchat
+description: Rocket.Chat with SSO and some useful extras
+type: application
+version: "0.1.12"
+appVersion: "6.4.4"
+
+dependencies:
+  - name: common
+    version: "^1"
+    repository: https://charts.bitnami.com/bitnami

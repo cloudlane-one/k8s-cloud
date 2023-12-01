@@ -1,0 +1,6 @@
+apiVersion: v2
+name: letsencrypt-issuer
+description: Default ACME cluster issuer
+type: application
+version: "0.1.0"
+appVersion: "0.1.0"

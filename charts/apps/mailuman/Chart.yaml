@@ -1,0 +1,11 @@
+apiVersion: v2
+name: mailuman
+description: Mail server + mailing list service + Web UIs
+type: application
+version: "0.4.2"
+appVersion: "0.4.2"
+
+dependencies:
+  - name: common
+    version: "^1"
+    repository: https://charts.bitnami.com/bitnami

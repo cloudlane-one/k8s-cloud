@@ -24,7 +24,26 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v3
 
-      - name: Run chart-releaser
+      - name: Release app charts
         uses: helm/chart-releaser-action@v1.6.0
+        with:
+          charts_dir: charts/apps
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          CR_INDEX_PATH: charts/apps/index.yaml
+
+      - name: Release system charts
+        uses: helm/chart-releaser-action@v1.6.0
+        with:
+          charts_dir: charts/system
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          CR_INDEX_PATH: charts/system/index.yaml
+
+      - name: Release config charts
+        uses: helm/chart-releaser-action@v1.6.0
+        with:
+          charts_dir: charts/config
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          CR_INDEX_PATH: charts/config/index.yaml
