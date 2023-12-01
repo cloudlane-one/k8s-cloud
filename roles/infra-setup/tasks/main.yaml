@@ -269,7 +269,7 @@
       kubernetes.core.k8s:
         wait: true
         definition:
-          apiVersion: source.toolkit.fluxcd.io/v1
+          apiVersion: source.toolkit.fluxcd.io/v1beta2
           kind: HelmRepository
           metadata:
             name: base-config-repo
@@ -286,7 +286,7 @@
       kubernetes.core.k8s:
         wait: true
         definition:
-          apiVersion: source.toolkit.fluxcd.io/v1
+          apiVersion: source.toolkit.fluxcd.io/v1beta2
           kind: HelmRepository
           metadata:
             name: base-system-repo
@@ -303,7 +303,7 @@
       kubernetes.core.k8s:
         wait: true
         definition:
-          apiVersion: source.toolkit.fluxcd.io/v1
+          apiVersion: source.toolkit.fluxcd.io/v1beta2
           kind: HelmRepository
           metadata:
             name: base-app-repo
