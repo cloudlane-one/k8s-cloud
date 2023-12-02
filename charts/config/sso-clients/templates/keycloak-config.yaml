@@ -2,6 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: sso-keycloak
+  "helm.sh/hook": post-install,post-upgrade
 data:
   sso-clients.yaml: |
     realm: {{ .Values.keycloak.realm }}
