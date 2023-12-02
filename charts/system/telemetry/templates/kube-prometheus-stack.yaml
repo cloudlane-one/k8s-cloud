@@ -110,6 +110,12 @@ spec:
           - name: default-receiver
             email_configs:
               - to: {{ .Values.admin_email }}
+        route:
+          receiver: 'null'
+          routes:
+            - receiver: default-receiver
+              matchers:
+                - severity =~ "error|critical"
       extraVolumes:
         - name: smtp
           secret:
