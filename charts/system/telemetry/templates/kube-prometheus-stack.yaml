@@ -100,7 +100,6 @@ spec:
             cpu: 30m
             memory: 32Mi
       config:
-        enabled: true
         global:
           smtp_from: {{ .Values.smtp.from_address }}
           smtp_smarthost: {{ printf "%s:%s" .Values.smtp.host .Values.smtp.port }}
