@@ -38,6 +38,9 @@ smtp: # For admin notifications
     key: password
   from_address: ""
 
+oidc:
+  auto_redirect: true
+
 ingress: true
 
 storage:

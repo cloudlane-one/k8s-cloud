@@ -241,7 +241,7 @@ spec:
   chart:
     spec:
       chart: sso-clients
-      version: "^0.1.2"
+      version: "^0.1.4"
       sourceRef:
         kind: HelmRepository
         name: base-config-repo
@@ -269,7 +269,7 @@ data:
                 {
                     "id": "local-sso",  # 30 characters or less
                     "name": {{ printf "%s SSO" .Values.org.name | quote }},
-                    "server_url": {{ .Values.oidc_client.idp_url | quote }},
+                    "server_url": os.environ["OIDC_IDP_URL"],
                     "APP": {
                         "client_id": "mailman",
                         "secret": os.environ["OIDC_CLIENT_SECRET"],
@@ -468,6 +468,11 @@ spec:
               value: "/static=/opt/mailman-web-data/static"
             - name: POSTORIUS_TEMPLATE_BASE_URL
               value: "http://mailman-web"
+            - name: OIDC_IDP_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: sso-keycloak
+                  key: url
             - name: OIDC_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
