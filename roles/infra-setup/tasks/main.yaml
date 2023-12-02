@@ -547,7 +547,7 @@
     - release_name: control-stack
       chart_name: control
       name: control-stack
-      version: "^0.1.4"
+      version: "^0.1.5"
       namespace: kube-system
       chart_values:
         host: "{{ cluster.subdomains.k8s_dashboard }}.{{ cluster.domain }}"
@@ -557,7 +557,7 @@
 
     - release_name: sso-stack
       chart_name: sso
-      version: "^0.1.2"
+      version: "^0.1.4"
       namespace: sso-system
       chart_values:
         domain: "{{ cluster.domain }}"
@@ -578,7 +578,7 @@
 
     - release_name: telemetry-stack
       chart_name: telemetry
-      version: "^0.1.5"
+      version: "^0.2.3"
       namespace: telemetry-system
       chart_values:
         domain: "{{ cluster.domain }}"
