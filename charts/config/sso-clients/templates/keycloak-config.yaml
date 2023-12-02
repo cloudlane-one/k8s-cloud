@@ -5,6 +5,7 @@ metadata:
 data:
   sso-clients.yaml: |
     realm: {{ .Values.keycloak.realm }}
+    enabled: true
     clients: 
       {{- if .Values.oidc.enabled }}
       - clientId: {{ .Values.oidc.id }}
