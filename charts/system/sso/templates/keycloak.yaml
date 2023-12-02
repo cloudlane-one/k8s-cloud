@@ -140,8 +140,12 @@ spec:
     keycloakConfigCli:
       enabled: true
       extraEnvVars:
+        - name: IMPORT_MANAGED_CLIENT_SCOPE
+          value: "no-delete" # Do not delete existing client scopes
         - name: IMPORT_MANAGED_CLIENT
-          value: "no-delete" # Do not delete existing clients, just add new ones
+          value: "no-delete" # Do not delete existing clients
+        - name: IMPORT_MANAGED_GROUP
+          value: "no-delete" # Do not delete existing groups
         - name: IMPORT_VARSUBSTITUTION_ENABLED
           value: "true"
         - name: LOGGING_LEVEL_HTTP
