@@ -17,6 +17,20 @@ entries:
     version: 0.1.0
   firefly:
   - apiVersion: v2
+    appVersion: 0.1.3
+    created: "2023-12-02T14:46:51.152838749Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Firefly III with SSO and other components
+    digest: 56b271202622a7fc7a177d1febc5ba09de61cb824548567dc0b651ba6dd9dbd9
+    name: firefly
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/firefly-0.1.3/firefly-0.1.3.tgz
+    version: 0.1.3
+  - apiVersion: v2
     appVersion: 0.1.2
     created: "2023-12-02T14:32:48.765542153Z"
     dependencies:
@@ -230,4 +244,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.0/wordpress-0.1.0.tgz
     version: 0.1.0
-generated: "2023-12-02T14:32:48.765575735Z"
+generated: "2023-12-02T14:46:51.152871901Z"
