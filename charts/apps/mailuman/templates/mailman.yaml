@@ -139,6 +139,8 @@ metadata:
     app: mailman-core
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: mailman-core
@@ -410,6 +412,8 @@ metadata:
     app: mailman-web
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: mailman-web
