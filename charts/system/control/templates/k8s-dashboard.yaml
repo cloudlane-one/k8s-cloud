@@ -24,6 +24,8 @@ spec:
     settings:
       clusterName: {{ .Values.cluster_name }}
       itemsPerPage: 30
+      logsAutoRefreshTimeInterval: 5
+      resourceAutoRefreshTimeInterval: 5
     pinnedCRDs:
       - kind: customresourcedefinition
         name:  gitrepositories.source.toolkit.fluxcd.io
