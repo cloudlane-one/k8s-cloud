@@ -15,14 +15,25 @@ spec:
   interval: 1h
   url: https://rocketchat.github.io/helm-charts
 ---
-apiVersion: v1
-kind: Secret
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
 metadata:
-  name: oidc-client
-type: Opaque
-data:
-  {{- $secretRef1 := .Values.oidc_client.secret }}
-  secret: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef1.namespace) $secretRef1.name).data) $secretRef1.key }}
+  name: sso-clients
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: sso-clients
+      version: "^0.1.2"
+      sourceRef:
+        kind: HelmRepository
+        name: base-config-repo
+        namespace: flux-system
+  values:
+    oidc:
+      id: rocketchat
+      redirect_uris:
+        - {{ printf "https://%s/_oauth/keycloak" .Values.host }}
 ---
 apiVersion: v1
 kind: Secret
@@ -225,11 +236,11 @@ spec:
       - name: Accounts_OAuth_Custom_Keycloak_scope
         value: "openid profile groups email"
       - name: Accounts_OAuth_Custom_Keycloak_id
-        value: cluster-oidc
+        value: rocketchat
       - name: Accounts_OAuth_Custom_Keycloak_secret
         valueFrom:
           secretKeyRef:
-            name: oidc-client
+            name: oidc-client.rocketchat
             key: secret
       - name: Accounts_OAuth_Custom_Keycloak_login_style
         value: popup # TODO: Change back to "redirect" once upstream fix is merged: https://github.com/RocketChat/Rocket.Chat/issues/30545

@@ -6,6 +6,26 @@ spec:
   interval: 1h
   url: https://nextcloud.github.io/helm/
 ---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: sso-clients
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: sso-clients
+      version: "^0.1.2"
+      sourceRef:
+        kind: HelmRepository
+        name: base-config-repo
+        namespace: flux-system
+  values:
+    oidc:
+      id: nextcloud
+      redirect_uris:
+        - {{ printf "https://%s/apps/oidc_login/oidc" .Values.hosts.nextcloud }}
+---
 kind: ConfigMap
 apiVersion: v1
 metadata:
@@ -151,7 +171,7 @@ spec:
         - name: OIDC_CLIENT_SECRET
           valueFrom:
             secretKeyRef:
-              name: oidc-client
+              name: oidc-client.nextcloud
               key: secret
         - name: OO_JWT_SECRET
           valueFrom:
@@ -188,7 +208,7 @@ spec:
             'allow_user_to_change_display_name' => false,
             'lost_password_link' => 'disabled',
             'oidc_login_provider_url' => {{ .Values.oidc_client.idp_url | quote }},
-            'oidc_login_client_id' => {{ .Values.oidc_client.id | quote }},
+            'oidc_login_client_id' => 'nextcloud',
             'oidc_login_client_secret' => getenv('OIDC_CLIENT_SECRET'),
             'oidc_login_auto_redirect' => {{ .Values.oidc_client.auto_redirect }},
             'oidc_login_logout_url' => {{ printf "https://%s" .Values.hosts.nextcloud | quote }},

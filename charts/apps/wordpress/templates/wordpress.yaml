@@ -6,6 +6,31 @@ spec:
   interval: 1h
   url: https://charts.bitnami.com/bitnami
 ---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: sso-clients
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: sso-clients
+      version: "^0.1.2"
+      sourceRef:
+        kind: HelmRepository
+        name: base-config-repo
+        namespace: flux-system
+  values:
+    oidc:
+      id: wordpress
+      redirect_uris:
+        {{- if eq (.Values.host | splitList "." | first) "www" }}
+        {{- $root_domain := . | splitList "." | rest | join "." }}
+        - {{ printf "https://%s/wp-admin/admin-ajax.php?action=openid-connect-authorize" $root_domain }}
+        {{- else }}
+        - {{ printf "https://%s/wp-admin/admin-ajax.php?action=openid-connect-authorize" .Values.host }}
+        {{- end }}
+---
 # # TODO: #52 Re-enable wordpress autoconfig after rigorous testing + include oidc
 # kind: ConfigMap
 # apiVersion: v1
