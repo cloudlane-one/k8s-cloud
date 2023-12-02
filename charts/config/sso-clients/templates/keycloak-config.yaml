@@ -2,7 +2,14 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: sso-keycloak
-  "helm.sh/hook": post-install,post-upgrade
+data:
+  url: {{ .Values.keycloak.url }}
+{{- if .Values.oidc.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sso-keycloak-conf
 data:
   sso-clients.yaml: |
     realm: {{ .Values.keycloak.realm }}
@@ -110,6 +117,8 @@ metadata:
   name: sso-keycloak-config-cli
   labels:
     app.kubernetes.io/component: sso-keycloak-config-cli
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
 spec:
   backoffLimit: 1
   template:
@@ -165,4 +174,4 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: sso-keycloak
+            name: sso-keycloak-conf
