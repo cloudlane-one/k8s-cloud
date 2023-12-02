@@ -62,6 +62,10 @@ spec:
         enabled: true
         spec: {{ .Files.Get "config/alert-rules.yaml" | nindent 10 }}
     upgradeCRDs: true
+    upgradeJobResources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
     credentials:
       useSecret: true
       existingSecret: s3
