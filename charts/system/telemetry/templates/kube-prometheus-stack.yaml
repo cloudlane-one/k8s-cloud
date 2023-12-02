@@ -266,8 +266,10 @@ spec:
           token_url: {{ printf "%s/protocol/openid-connect/token" .Values.oidc_client.idp_url | quote }}
           api_url: {{ printf "%s/protocol/openid-connect/userinfo" .Values.oidc_client.idp_url | quote }}
           allow_sign_up: true
+          groups_attribute_path: groups
           allowed_groups: {{ .Values.admin_group | quote }}
-          role_attribute_path: "contains(groups[*], {{ .Values.admin_group | squote }}) && 'Admin' || 'Viewer'"
+          role_attribute_path: "contains(groups[*], {{ .Values.admin_group | squote }}) && 'GrafanaAdmin' || 'Viewer'"
+          allow_assign_grafana_admin: true
           {{- if .Values.letsencrypt_staging }}
           tls_skip_verify_insecure: true
           {{- end }}
