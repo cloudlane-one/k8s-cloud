@@ -190,7 +190,7 @@ spec:
 
         CACHE_DRIVER: redis
         SESSION_DRIVER: redis
-        REDIS_HOST: firefly-redis
+        REDIS_HOST: firefly-redis-headless
 
         MAIL_MAILER: smtp
         MAIL_HOST: {{ .Values.smtp.host }}
