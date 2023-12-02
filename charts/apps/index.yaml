@@ -176,6 +176,20 @@ entries:
   wordpress:
   - apiVersion: v2
     appVersion: 6.4.1
+    created: "2023-12-02T11:35:12.186308773Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Wordpress with SSO and some useful extras
+    digest: 11e454b01b2e3b72d3834831af5b57c00a6f8423fa3bd1b1c2f28f8c5d807765
+    name: wordpress
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.2/wordpress-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
+    appVersion: 6.4.1
     created: "2023-12-02T10:02:26.623189191Z"
     dependencies:
     - name: common
@@ -202,4 +216,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.0/wordpress-0.1.0.tgz
     version: 0.1.0
-generated: "2023-12-02T11:12:19.743957099Z"
+generated: "2023-12-02T11:35:12.186353128Z"
