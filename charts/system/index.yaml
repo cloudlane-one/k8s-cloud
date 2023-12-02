@@ -174,6 +174,20 @@ entries:
     version: 0.2.1
   telemetry:
   - apiVersion: v2
+    appVersion: 0.2.5
+    created: "2023-12-02T15:53:34.727111101Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Prometheus + Loki + Grafana
+    digest: de239cea259aa9412ac81c29aa465d883e2538cdfa7be578bf5214e9b395149c
+    name: telemetry
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/telemetry-0.2.5/telemetry-0.2.5.tgz
+    version: 0.2.5
+  - apiVersion: v2
     appVersion: 0.2.4
     created: "2023-12-02T15:25:23.485455806Z"
     dependencies:
@@ -353,4 +367,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-0.1.6/vcluster-0.1.6.tgz
     version: 0.1.6
-generated: "2023-12-02T15:25:23.485510258Z"
+generated: "2023-12-02T15:53:34.727173728Z"
