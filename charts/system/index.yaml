@@ -28,6 +28,20 @@ entries:
     version: 0.1.1
   control:
   - apiVersion: v2
+    appVersion: 0.1.5
+    created: "2023-12-02T10:22:25.063185883Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: k8s-dashboard with proper config and extras
+    digest: 964a03cf00bda3124774029a86d602c8d5a9c57ba1a83a993312c65b4ab91693
+    name: control
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/control-0.1.5/control-0.1.5.tgz
+    version: 0.1.5
+  - apiVersion: v2
     appVersion: 0.1.4
     created: "2023-12-01T15:42:26.237783746Z"
     dependencies:
@@ -255,4 +269,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-0.1.6/vcluster-0.1.6.tgz
     version: 0.1.6
-generated: "2023-12-02T09:13:16.411664796Z"
+generated: "2023-12-02T10:22:25.063214035Z"
