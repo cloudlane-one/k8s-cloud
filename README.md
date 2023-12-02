@@ -171,17 +171,25 @@ Simply add new node hosts to your cluster's `hosts.yaml` and re-run the setup pl
 
 ### Removing nodes
 
-#### Manual steps for each node
+#### Recommended: manual removal
 
-1. _Via Longhorn Web UI_: [Request eviction](https://longhorn.io/docs/1.5.1/volumes-and-nodes/disks-or-nodes-eviction/#select-disks-or-nodes-for-eviction) of the associated Longhorn storage node.
+1. _Via Longhorn Web UI_:\
+   [Request eviction](https://longhorn.io/docs/1.5.1/volumes-and-nodes/disks-or-nodes-eviction/#select-disks-or-nodes-for-eviction) of the associated Longhorn storage node.
 2. Wait for all volumes to be evicted.
-3. _Via terminal on any control node_: [`kubectl drain` the k8s node](https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/#use-kubectl-drain-to-remove-a-node-from-service) to evict all running pods from it and disable scheduling.
+3. _Via terminal on any control node_:\
+   [`kubectl drain` the k8s node](https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/#use-kubectl-drain-to-remove-a-node-from-service) to evict all running pods from it and disable scheduling.
+   > You will probably want to run `kubectl drain` with these flags: `--ignore-daemonsets --delete-emptydir-data`
 4. Wait for all pods to be evicted.
-5. **For control nodes**:
-   - [Install etcdctl](https://docs.k3s.io/advanced#using-etcdctl) on one of the control nodes.
-   - [Remove the etcd node](https://etcd.io/docs/v3.5/tutorials/how-to-deal-with-membership/) via `etcdctl member remove`.
+5. _Via terminal on the node to be removed_:\
+   Execute [uninstall script](https://docs.k3s.io/installation/uninstall):
+   - For agents: `/usr/local/bin/k3s-agent-uninstall.sh`
+   - For servers: `/usr/local/bin/k3s-uninstall.sh`
+6. _Via kubectl on control node or k8s-dashboard_:\
+   Delete the `Node` resource object.
 
 #### Batch removal
+
+> ⚠️ This is still experimental and can damage your cluster!
 
 Create a copy of your `./clusters/$CLUSTER_NAME` directory named `./clusters/$CLUSTER_NAME-unprovision` and only keep hosts in `hosts.yaml`, **that you want to be removed**. Then run:
 
