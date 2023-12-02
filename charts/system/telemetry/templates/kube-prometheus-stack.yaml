@@ -107,6 +107,7 @@ spec:
           smtp_auth_username: {{ .Values.smtp.user }}
           smtp_auth_password_file: /etc/alertmanager/smtp-conf/password.txt
         receivers:
+          - name: 'null'
           - name: default-receiver
             email_configs:
               - to: {{ .Values.admin_email }}
