@@ -2,6 +2,20 @@ apiVersion: v1
 entries:
   backup:
   - apiVersion: v2
+    appVersion: 0.1.2
+    created: "2023-12-02T12:19:18.203904482Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Velero + extras
+    digest: eec8156b6786b10c6720b855328310268933af8704303b7087e02b685750cdd4
+    name: backup
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/backup-0.1.2/backup-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
     appVersion: 0.1.1
     created: "2023-12-01T14:22:39.864866575Z"
     dependencies:
@@ -269,4 +283,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-0.1.6/vcluster-0.1.6.tgz
     version: 0.1.6
-generated: "2023-12-02T10:22:25.063214035Z"
+generated: "2023-12-02T12:19:18.203935351Z"
