@@ -48,7 +48,6 @@ metadata:
 type: Opaque
 data:
   APP_PASSWORD: {{ include "common.secrets.passwords.manage" (dict "secret" "firefly" "key" "APP_PASSWORD" "providedValues" (list "") "length" 16 "context" $) }}
-  DB_PASSWORD: {{ include "common.secrets.passwords.manage" (dict "secret" "firefly" "key" "DB_PASSWORD" "providedValues" (list "") "context" $) }}
   APP_KEY: {{ include "common.secrets.passwords.manage" (dict "secret" "firefly" "key" "APP_KEY" "providedValues" (list "") "length" 32 "context" $) }}
   STATIC_CRON_TOKEN: {{ include "common.secrets.passwords.manage" (dict "secret" "firefly" "key" "STATIC_CRON_TOKEN" "providedValues" (list "") "length" 32 "context" $) }}
 ---
@@ -168,6 +167,10 @@ spec:
     config:
       existingSecret: firefly
       envValueFrom:
+        DB_PASSWORD:
+          secretKeyRef:
+            name: firefly-postgres
+            key: password
         REDIS_PASSWORD:
           secretKeyRef:
             name: firefly-redis
