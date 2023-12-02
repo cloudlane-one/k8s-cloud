@@ -3,6 +3,7 @@ oidc:
   id: ""
   redirect_uris: []
     # - https://example.com/path
+  secret_name: "" # name of secret to be created, defaults to 'oidc-client.<CLIENT_ID>'
 
 saml:
   enabled: false
@@ -15,6 +16,7 @@ saml:
   logout_service:
     method: "post" # "redirect" or "post"
     url: "" # may be relative
+  secret_name: "" # name of secret to be created, defaults to 'saml-client.<CLIENT_ID>'
 
 keycloak:
   url: http://keycloak.sso-system.svc.cluster.local
