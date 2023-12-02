@@ -253,7 +253,6 @@ spec:
           password: "${SMTP_PASSWORD}"
           from_address: {{ .Values.smtp.from_address }}
         auth:
-          oauth_auto_login: true
           disable_login_form: true
         auth.generic_oauth:
           # See: https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/configure-authentication/generic-oauth/
@@ -270,6 +269,7 @@ spec:
           allowed_groups: {{ .Values.admin_group | quote }}
           role_attribute_path: "contains(groups[*], {{ .Values.admin_group | squote }}) && 'GrafanaAdmin' || 'Viewer'"
           allow_assign_grafana_admin: true
+          auto_login: true
           {{- if .Values.letsencrypt_staging }}
           tls_skip_verify_insecure: true
           {{- end }}
