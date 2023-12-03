@@ -3,7 +3,9 @@ kind: ConfigMap
 metadata:
   name: sso-keycloak
 data:
-  url: {{ .Values.keycloak.url }}
+  local_url: {{ .Values.keycloak.local_url }}
+  {{- $domain := get (get (lookup "v1" "ConfigMap" "kube-system" "cluster").data "cluster.yaml" | fromYaml) "domain" }}
+  url: {{ printf "https://%s.%s" .Values.keycloak.subdomain $domain }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -135,7 +137,7 @@ spec:
             - /opt/bitnami/keycloak-config-cli/keycloak-config-cli.jar
           env:
             - name: KEYCLOAK_URL
-              value: {{ .Values.keycloak.url }}
+              value: {{ .Values.keycloak.local_url }}
             - name: KEYCLOAK_USER
               value: {{ .Values.keycloak.user | quote }}
             - name: KEYCLOAK_PASSWORD

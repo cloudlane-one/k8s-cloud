@@ -19,7 +19,8 @@ saml:
   secret_name: "" # name of secret to be created, defaults to 'saml-client.<CLIENT_ID>'
 
 keycloak:
-  url: http://keycloak.sso-system.svc.cluster.local
+  local_url: http://keycloak.sso-system.svc.cluster.local
+  subdomain: id
   realm: master
   user: admin
   password_secret:
