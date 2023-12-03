@@ -2,8 +2,8 @@ apiVersion: v2
 name: sso-clients
 description: Deploy OIDC or SAML clients via keycloak-config-cli
 type: application
-version: "0.1.6"
-appVersion: "0.1.6"
+version: "0.1.7"
+appVersion: "0.1.7"
 
 dependencies:
   - name: common

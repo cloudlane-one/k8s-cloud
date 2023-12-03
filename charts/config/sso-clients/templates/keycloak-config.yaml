@@ -5,7 +5,7 @@ metadata:
 data:
   local_url: {{ .Values.keycloak.local_url }}
   {{- $domain := get (get (lookup "v1" "ConfigMap" "kube-system" "cluster").data "cluster.yaml" | fromYaml) "domain" }}
-  url: {{ printf "https://%s.%s" .Values.keycloak.subdomain $domain }}
+  url: {{ printf "https://%s.%s/realms/%s" .Values.keycloak.subdomain $domain .Values.keycloak.realm }}
 ---
 apiVersion: v1
 kind: ConfigMap
