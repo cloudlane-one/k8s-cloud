@@ -99,6 +99,17 @@ spec:
           requests:
             cpu: 30m
             memory: 32Mi
+        volumes:
+          - name: smtp
+            secret:
+              secretName: smtp-creds
+              items:
+              - key: password
+                path: password.txt
+        volumeMounts:
+          - name: smtp
+            mountPath: /etc/alertmanager/smtp-conf
+            readOnly: true
       config:
         global:
           smtp_from: {{ .Values.smtp.from_address }}
@@ -116,17 +127,6 @@ spec:
             - receiver: default-receiver
               matchers:
                 - severity =~ "error|critical"
-      extraVolumes:
-        - name: smtp
-          secret:
-            secretName: smtp-creds
-            items:
-            - key: password
-              path: password.txt
-      extraVolumeMounts:
-        - name: smtp
-          mountPath: /etc/alertmanager/smtp-conf
-          readOnly: true
     additionalPrometheusRulesMap:
       deployment-errors:
         groups:
