@@ -40,9 +40,7 @@ spectre:
 
 access_token:
   enabled: false
-  secret_ref:
-    name: ""
-    key: ""
+  secret_name: "firefly-access-token" # has to have the accessToken in a .spec.data.accessToken
 
 ingress: true
 

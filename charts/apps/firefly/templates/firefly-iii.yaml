@@ -256,6 +256,10 @@ spec:
     fireflyiii:
       url: "http://firefly"
       vanityUrl: {{ printf "https://%s" .Values.hosts.firefly }}
+      {{- if .Values.access_token.enabled }}
+      auth:
+        existingSecret: {{ .Values.access_token.secret_name }}
+      {{- end }}
     config:
       existingSecret: ""
       envValueFrom:
@@ -278,12 +282,6 @@ spec:
           secretKeyRef:
             name: {{ .Values.spectre.secret_ref.name }}
             key: {{ .Values.spectre.secret_ref.key }}
-        {{- end }}
-        {{- if .Values.access_token.enabled }}
-        FIREFLY_III_ACCESS_TOKEN:
-          secretKeyRef:
-            name: {{ .Values.access_token.secret_ref.name }}
-            key: {{ .Values.access_token.secret_ref.key }}
         {{- end }}
       env:
         {{- if .Values.nordigen.enabled }}

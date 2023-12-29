@@ -2,8 +2,8 @@ apiVersion: v2
 name: firefly
 description: Firefly III with SSO and other components
 type: application
-version: "0.2.2"
-appVersion: "0.2.2"
+version: "0.2.3"
+appVersion: "0.2.3"
 
 dependencies:
   - name: common
