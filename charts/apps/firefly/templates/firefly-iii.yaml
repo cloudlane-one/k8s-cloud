@@ -153,6 +153,8 @@ spec:
         name: firefly
   timeout: 15m0s
   values:
+    image:
+      tag: version-6
     fullnameOverride: firefly
     nodeSelector:
       {{- if not (eq .Values.zone "") }}
@@ -240,6 +242,8 @@ spec:
         name: firefly
   timeout: 15m0s
   values:
+    image:
+      tag: version-1
     fullnameOverride: firefly-importer
     nodeSelector:
       {{- if not (eq .Values.zone "") }}
