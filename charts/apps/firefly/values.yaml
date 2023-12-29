@@ -38,6 +38,12 @@ spectre:
     name: ""
     key: ""
 
+access_token:
+  enabled: false
+  secret_ref:
+    name: ""
+    key: ""
+
 ingress: true
 
 snapshots:

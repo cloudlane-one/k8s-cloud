@@ -279,6 +279,12 @@ spec:
             name: {{ .Values.spectre.secret_ref.name }}
             key: {{ .Values.spectre.secret_ref.key }}
         {{- end }}
+        {{- if .Values.access_token.enabled }}
+        FIREFLY_III_ACCESS_TOKEN:
+          secretKeyRef:
+            name: {{ .Values.access_token.secret_ref.name }}
+            key: {{ .Values.access_token.secret_ref.key }}
+        {{- end }}
       env:
         {{- if .Values.nordigen.enabled }}
         NORDIGEN_ID: {{ .Values.nordigen.id }}
