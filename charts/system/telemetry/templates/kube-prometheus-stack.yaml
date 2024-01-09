@@ -132,29 +132,55 @@ spec:
         groups:
         - name: failing-k8s-resources
           rules:
-          - alert: KubePodNotReady30m
+          - alert: KubeDeploymentNotAvailable20m
             annotations:
-              description: Pod {{`{{`}} $labels.namespace {{`}}`}}/{{`{{`}} $labels.pod {{`}}`}} has been in a non-ready state for longer than 30 minutes.
-              runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepodnotready
-              summary: Pod has been in a non-ready state for more than 30 minutes.
+              description: Deployment {{`{{`}} $labels.namespace {{`}}`}}/{{`{{`}} $labels.name {{`}}`}} has been in a non-available state for longer than 20 minutes.
+              summary: Deployment has been in a non-available state for more than 20 minutes.
             expr: |-
-              sum by (namespace, pod, cluster) (
-                max by(namespace, pod, cluster) (
-                  kube_pod_status_phase{job="kube-state-metrics", namespace=~".*", phase=~"Pending|Unknown|Failed"}
-                ) * on(namespace, pod, cluster) group_left(owner_kind) topk by(namespace, pod, cluster) (
-                  1, max by(namespace, pod, owner_kind, cluster) (kube_pod_owner{owner_kind!="Job"})
+              sum by (namespace, deployment) (
+                max by(namespace, deployment) (
+                  kube_deployment_status_condition{job="kube-state-metrics", namespace=~".*", condition="Available", status!="true"}
                 )
               ) > 0
-            for: 30m
+            for: 20m
             labels:
               severity: critical
+          - alert: KubeStatefulsetUnavailableReplicas20m
+            annotations:
+              description: Statefulset {{`{{`}} $labels.namespace {{`}}`}}/{{`{{`}} $labels.name {{`}}`}} has had unavailable replicas for longer than 20 minutes.
+              summary: Deployment has has unavailable replicas for more than 20 minutes.
+            expr: |-
+              sum by (namespace, statefulset) (
+                count by(namespace, statefulset) (kube_statefulset_status_replicas)
+                -
+                count by(namespace, statefulset) (kube_statefulset_status_replicas_available)
+              ) > 0
+            for: 20m
+            labels:
+              severity: error
+          - alert: KubePodNotReady20m
+            annotations:
+              description: Pod {{`{{`}} $labels.namespace {{`}}`}}/{{`{{`}} $labels.pod {{`}}`}} has been in a non-ready state for longer than 20 minutes.
+              runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepodnotready
+              summary: Pod has been in a non-ready state for more than 20 minutes.
+            expr: |-
+              sum by (namespace, pod) (
+                max by(namespace, pod) (
+                  kube_pod_status_phase{job="kube-state-metrics", namespace=~".*", phase=~"Pending|Unknown|Failed"}
+                ) * on(namespace, pod) group_left(owner_kind) topk by(namespace, pod) (
+                  1, max by(namespace, pod, owner_kind) (kube_pod_owner{owner_kind!="Job"})
+                )
+              ) > 0
+            for: 20m
+            labels:
+              severity: error
         - name: failing-flux-resources
           rules:
-          - alert: FluxReleaseNotReady30m
+          - alert: FluxReleaseNotReady20m
             annotations:
-              description: Flux {{`{{`}} $labels.kind {{`}}`}} {{`{{`}} $labels.exported_namespace {{`}}`}}/{{`{{`}} $labels.name {{`}}`}} has been in a non-ready state for longer than 30 minutes.
+              description: Flux {{`{{`}} $labels.kind {{`}}`}} {{`{{`}} $labels.exported_namespace {{`}}`}}/{{`{{`}} $labels.name {{`}}`}} has been in a non-ready state for longer than 20 minutes.
               runbook_url: https://fluxcd.io/flux/cheatsheets/troubleshooting/
-              summary: Flux release has been in a non-ready state for more than 30 minutes.
+              summary: Flux release has been in a non-ready state for more than 20 minutes.
             expr: |-
               (
                 max by(exported_namespace, name, kind) (
@@ -165,7 +191,7 @@ spec:
                   gotk_suspend_status{kind=~"HelmRelease|Kustomization"}
                 )
               ) > 0
-            for: 30m
+            for: 20m
             labels:
               severity: error
     prometheusOperator:
