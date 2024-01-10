@@ -100,6 +100,20 @@ entries:
     version: 0.1.0
   gitops:
   - apiVersion: v2
+    appVersion: 0.1.2
+    created: "2024-01-10T12:43:14.985339064Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: FluxCD + Weave-Gitops Dashboard + extras
+    digest: f25cfb0af5f4e7af77e0e5c2ec37f591d57923bdfe5148a73728529642b672c7
+    name: gitops
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/gitops-0.1.2/gitops-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
     appVersion: 0.1.1
     created: "2023-12-01T14:22:40.770262713Z"
     dependencies:
@@ -409,4 +423,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-0.1.6/vcluster-0.1.6.tgz
     version: 0.1.6
-generated: "2024-01-09T19:48:21.36319504Z"
+generated: "2024-01-10T12:43:14.985438059Z"
