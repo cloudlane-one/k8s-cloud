@@ -182,7 +182,11 @@ spec:
             name: smtp
             key: password
       env:
+        DB_CONNECTION: pgsql
         DB_HOST: firefly-postgres
+        DB_PORT: "5432"
+        DB_DATABASE: firefly
+        DB_USERNAME: firefly
 
         DEFAULT_LANGUAGE: {{ .Values.org.default_locale }}
         DEFAULT_LOCALE: "equal"
