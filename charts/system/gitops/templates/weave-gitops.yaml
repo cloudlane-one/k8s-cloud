@@ -11,6 +11,9 @@ data:
   {{- $secretRef := .Values.oidc_client.secret }}
   clientSecret: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
   redirectURL: {{ printf "https://%s/oauth2/callback" .Values.host | b64enc }}
+  customScopes: email
+  claimGroups: groups
+  claimUsername: sub
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
