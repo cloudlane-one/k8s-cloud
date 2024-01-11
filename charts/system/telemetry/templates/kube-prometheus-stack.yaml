@@ -24,7 +24,7 @@ spec:
   chart:
     spec:
       chart: kube-prometheus-stack
-      version: "^54.2.2"
+      version: "^55.7.0"
       sourceRef:
         kind: HelmRepository
         name: prometheus-community
@@ -280,6 +280,7 @@ spec:
           from_address: {{ .Values.smtp.from_address }}
         auth:
           disable_login_form: true
+          oauth_allow_insecure_email_lookup: false
         auth.generic_oauth:
           # See: https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/configure-authentication/generic-oauth/
           enabled: true
