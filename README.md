@@ -1,5 +1,8 @@
 # k8s-cloud
 
+[![Build](https://github.com/cloudlane-one/k8s-cloud/actions/workflows/release.yaml/badge.svg)](https://github.com/cloudlane-one/k8s-cloud/actions/workflows/release.yaml)
+[![CodeFactor](https://www.codefactor.io/repository/github/cloudlane-one/k8s-cloud/badge)](https://www.codefactor.io/repository/github/cloudlane-one/k8s-cloud)
+
 production-ready, provider-independent & easily manageable k8s cloud setup
 
 ## Purpose and scope
