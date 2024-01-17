@@ -8,7 +8,7 @@ This project is intended to help beginner-to-intermediate **Kubernetes hobbyists
 
 It builds on the idea that today you can find a tool for automating almost any given DevOps task. Therefore, the challenge lies less in learning to do any one of these tasks manually, and more in *finding the correct automation tools for the task at hand, separating the good from the bad, and making them work in unison*. Also, to be a functioning human in this automation loop, you should have a basic understanding of the underlying ideas and technologies at play.
 
-While every DevOps engineer likely needs to put their own, manual learning work into the latter point, the former one can definitely be outsourced into a pre-made toolbox / system config to save all of us a ton of time. This is what this project aims to do.
+While every DevOps engineer likely needs to put their own, manual learning work into the latter point, the former one can definitely be outsourced into a pre-made toolbox / system to save all of us a ton of time. This is what this project aims to do.
 
 > As for the learning part: These docs point to a few, third-party resources to get newcomers started on each of the required basics, but this is by no means the focus of this work.
 
