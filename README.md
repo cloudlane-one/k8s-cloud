@@ -2,62 +2,101 @@
 
 production-ready, provider-independent & easily manageable k8s cloud setup
 
+## Purpose and scope
+
+This project is intended to help beginner-to-intermediate **Kubernetes hobbyists and freelancers** with the mammoth task of **setting up, maintaining and updating a production k8s cloud setup**.
+
+It builds on the idea that today you can find a tool for automating almost any given DevOps task. Therefore, the challenge lies less in learning to do any one of these tasks manually, and more in *finding the correct automation tools for the task at hand, separating the good from the bad, and making them work in unison*. Also, to be a functioning human in this automation loop, you should have a basic understanding of the underlying ideas and technologies at play.
+
+While every DevOps engineer likely needs to put their own, manual learning work into the latter point, the former one can definitely be outsourced into a pre-made toolbox / system config to save all of us a ton of time. This is what this project aims to do.
+
+> As for the learning part: These docs point to a few, third-party resources to get newcomers started on each of the required basics, but this is by no means the focus of this work.
+
 ## Prior knowledge
 
 To make proper use of this repository, you will need basic understanding of multiple IT domains and tools. Please have a look at the [Prior Knowledge Reference](./docs/ref-prior-knowledge.md) for an overview of relevant topics with further links to get you started learning.
 
-## What is included
+## What's in the box
 
-The cluster set up by this repo consists of a multitude of open-source projects, which all work together to make the cluster production-ready:
+This repo contains the following components:
 
-- Kubernetes distribution: [k3s](https://github.com/k3s-io/k3s)
+- `/roles`: Ansible roles for setting up a production-ready Kubernetes cluster.
+- `/charts`: Helm charts, which can be deployed into the cluster.
+  - `/charts/system`: System-level charts (storage, DNS, backup, etc.), which are deployed as part of the cluster setup.
+  - `/charts/apps`: Helm charts for user applications (Nextcloud, Wordpress, etc.), which can be deployed on demand.
+  - `/charts/config`: Supporting charts, which are depended upon by other charts in this repo.
+- `/setup.yaml`: Ansible playbook to set up a cluster on a given inventory of nodes
+- `/clusters`: Configuration for deployed clusters. The repo only contains one sub-directory as a template, which you need to copy to create your own cluster config.
+
+## Cluster infrastructure
+
+The following system / infrastructure components can be deployed via `setup.yaml`:
+
+> Some of these can be disabled via the cluster config.
+
+- Kubernetes:
+  - [k3s](https://github.com/k3s-io/k3s) distribution
   - CNI configured for dual-stack, wireguard-encrypted networking
-  - Alternatively: networking via [Tailscale](https://tailscale.com/) VPN (to support nodes without static public IP)
+  - Alternatively: encrypted networking via [Tailscale](https://tailscale.com/) VPN to support nodes without static public IP
   - HA via embedded [etcd](https://github.com/etcd-io/etcd)
   - [Kubernetes-Dashboard](https://github.com/kubernetes/dashboard)
-- Storage System: [Longhorn](https://github.com/longhorn/longhorn)
-  - Local and distributed volumes
+  - Other production config for k3s: Secrets encryption, metrics, OIDC auth, reserved resources, ...
+- Storage:
+  - [Longhorn](https://github.com/longhorn/longhorn) as storage provider
+  - Multiple storage classes for different volume types
+  - Local volumes or cross-node replication
+  - Optional encryption via LUKS
   - Backup to and restore from S3 storage
   - Web UI for storage management
-  - Provides default storage class for PVC provisioning
-- Ingress Controller: [Ingress-NGINX](https://github.com/kubernetes/ingress-nginx)
-  - Exposed via configurable pool of ingress nodes
+- Ingress:
+  - [Ingress-NGINX](https://github.com/kubernetes/ingress-nginx) as ingress controller
+  - Expose services via configurable pool of ingress nodes
   - Provides default ingress class
-- Certificate Manager: [CertManager](https://github.com/cert-manager/cert-manager)
-  - Letsencrypt ACME issuer to auto-provision certificates for ingresses
-- DNS Manager: [External-DNS](https://github.com/kubernetes-sigs/external-dns)
-  - Auto-configure and continuously sync DNS records for subdomains
-  - Works with many major DNS providers
-- Identity Provider: [Keycloak](https://github.com/keycloak/keycloak)
-  - Single-Sign-On via OIDC or SAML
-  - [OAuth2-Proxy](https://github.com/oauth2-proxy/oauth2-proxy) for header auth
-  - Cluster-internal OIDC client is auto-provisioned
+  - [CertManager](https://github.com/cert-manager/cert-manager) with preconfigured Letsencrypt ACME issuer to auto-provision (& renew) certificates
+  - [External-DNS](https://github.com/kubernetes-sigs/external-dns) to auto-configure and continuously sync DNS records
+- Authentication:
+  - [Keycloak](https://github.com/keycloak/keycloak) as identity provider
+  - Cluster-internal Single-Sign-On via OIDC or SAML
+  - [OAuth2-Proxy](https://github.com/oauth2-proxy/oauth2-proxy) for proxy header auth
   - Web UI for user management etc.
-- Telemetry System: [Prometheus](https://github.com/prometheus/prometheus) + [Loki](https://github.com/grafana/loki) + [Grafana](https://github.com/grafana/grafana)
+- Telemetry System:
+  - [Prometheus](https://github.com/prometheus/prometheus) for metrics collection
+  - [Loki](https://github.com/grafana/loki) for logs collection
+  - [Grafana](https://github.com/grafana/grafana) for dashboards and alerts
   - [Node-Exporter](https://github.com/prometheus/node_exporter)
   - [AlertManager](https://github.com/prometheus/alertmanager)
-  - Auto-provisioned dashboards and alerts
-- Cluster Backup System: [Velero](https://github.com/vmware-tanzu/velero)
-  - Nightly full-cluster backups
+  - Auto-provisioned dashboards and email alerts for common cases / faults
+- Backups:
+  - [Velero](https://github.com/vmware-tanzu/velero)
+  - Nightly full-cluster backups of all API resources and PV contents
   - Easy manual backing up and restoring
-- GitOps System: [FluxCD](https://github.com/fluxcd/flux2)
+- GitOps System:
+  - [FluxCD](https://github.com/fluxcd/flux2)
   - Continuous, rolling updates of deployed apps based on semver ranges
   - [Weave Gitops](https://github.com/weaveworks/weave-gitops) as Web UI
-- Upgrade System: [System Upgrade Controller](https://github.com/rancher/system-upgrade-controller)
+- Cluster Upgrades:
+  - [System Upgrade Controller](https://github.com/rancher/system-upgrade-controller)
   - Automatic, non-disruptive upgrades from k3s stable channel
   - Upgrades both master and worker nodes
+- Virtual Clusters:
+  - [VCluster](https://github.com/loft-sh/vcluster)
+  - Create virtual sub-clusters, which are constrained to a specific namespace and subset of nodes
+  - Each vcluster has a full k8s API and either reuses the infrastructure components of its host cluster (e.g. Longhorn) or deploys its own set internally
+  - Useful for test environments or providing multi-tenancy with limited resources
 
-## Required resources
+## How to deploy a cluster
 
-- One or more linux machines managed by systemd, to which you have root access
-  - Cheapest tested option: [Strato VPS](https://www.strato.de/server/linux-vserver/)
-  - Best value for money among tested: [Hetzner VPS](https://www.hetzner.com/cloud)
-- A domain managed by one of the [providers supported by external-dns](https://github.com/kubernetes-sigs/external-dns#status-of-providers) with API access
+### Required resources
+
+- One or more **linux machines managed by systemd**, to which you have root access
+  - You can use your own hardware or rent dedicated / virtual machines in a datacenter.
+  - [Strato](https://www.strato.de/server/linux-vserver/) and [Hetzner](https://www.hetzner.com/cloud) offer affordable VPS options
+- A **domain** managed by one of the [providers supported by external-dns](https://github.com/kubernetes-sigs/external-dns#status-of-providers) with API access
   - Both [Digitalocean](https://www.digitalocean.com) and [Cloudflare](https://www.cloudflare.com) offer free DNS plans and have been tested with this setup.
-- Credentials to an SMTP server to send automatic emails from
+- Credentials to an **SMTP server** to send automatic emails from
   - [Strato](https://www.strato.de/mail/) offers very affordable mail packages
-- Credentials to an existing, empty S3 bucket
-  - [OVH](https://www.ovhcloud.com/de/public-cloud/object-storage/) offers low-prices S3-compatible storage
+- Credentials to an existing, empty **S3 bucket**
+  - [OVH](https://www.ovhcloud.com/de/public-cloud/object-storage/) offers low-priced S3-compatible storage
 - Optional: Free [Tailscale](https://tailscale.com/) account and credentials
 
 ### Workstation setup
@@ -84,25 +123,25 @@ Then run this to install Ansible-specific dependencies:
 ansible-galaxy install -r requirements.yaml
 ```
 
-## Cluster setup
+### About VClusters
 
-> How to setup a k8s production cluster on bare Linux hosts in under 15 minutes.
+Once you have gone through below setup steps to create a host cluster, you may repeat the same steps with a subset of the original nodes and different configuration to create a vcluster on top. Note that you have to set `cluster.virtual=true` in `./clusters/$CLUSTER_NAME/group_vars/cluster/configmap.yaml` for a vcluster to be created.
 
-First activate the poetry env via:
+> ⚠️ You have to include at least one of the host cluster control nodes in the subset and mark it with `control=true`. This is required as certain setup steps have to be performed via ssh on a control node.
+---
+> Note that some config options are not available for vclusters. This is mentioned in the respective configmap template comments.
+---
+> Storage is managed fully by the host cluster, including backups of PVs
 
-```bash
-poetry shell
-```
+### Configuration
 
 Copy the cluster inventory template `clusters/_example`:
 
 ```bash
-cp ./clusters/_example_ ./clusters/$CLUSTER_NAME
+cp ./clusters/_example ./clusters/$CLUSTER_NAME
 ```
 
 Replace `$CLUSTER_NAME` with an arbitrary alphanumeric name for your cluster.
-
-### Provide configuration
 
 #### Hosts
 
@@ -123,7 +162,7 @@ By default, nodes are assigned to the region `backbone` and the zone `default`. 
 By default, the first backbone host is taken as the sole control plane host. If you want to change this bevavior, set the value `control=true` on a subset of hosts.
 
 > It is recommended to have either one or at least 3 control plane nodes. Make sure you store the hosts file somewhere safe.
-> Please also set `control nodes` for vclusters. This has no effect on where the control plane pods run, but it tells Ansible on which machines it can execute administrative tasks.
+> Please also set `control nodes` for vclusters. This has no effect on where the control plane pods run, but it tells Ansible on which machines it can execute administrative tasks via ssh.
 
 #### Ingress hosts
 
@@ -135,13 +174,13 @@ By default, all hosts are taken as storage hosts, yet non-backbone hosts are exc
 
 #### Cluster config and secrets
 
-Then copy the default cluster config file `./roles/cluster-config/configmap.yaml` to `./clusters/$CLUSTER_NAME/group_vars/cluster/configmap.yaml` and the cluster secrets template file `./roles/cluster-config/secrets.yaml` to `./clusters/$CLUSTER_NAME/group_vars/cluster/secrets.yaml`. Fill in the required values and change or delete the optional ones to your liking.
+Copy the default cluster config file `./roles/cluster-config/configmap.yaml` to `./clusters/$CLUSTER_NAME/group_vars/cluster/configmap.yaml` and the cluster secrets template file `./roles/cluster-config/secrets.yaml` to `./clusters/$CLUSTER_NAME/group_vars/cluster/secrets.yaml`. Fill in the required values and change or delete the optional ones to your liking.
 
-### Setup the cluster
+### Cluster setup
 
 > Please either manually make sure that all your nodes are listed as trusted in `known_hosts` or append `-e auto_trust_remotes=true` to below command, otherwise you will have to type `yes` and hit Enter for each of your hosts at the beginning of the playbook run.
 
-To setup all you provided hosts as kubernetes nodes and join them into a single cluster, run:
+To setup all you provided hosts as Kubernetes nodes and join them into a single cluster, run:
 
 ```bash
 ansible-playbook setup.yaml -i clusters/$CLUSTER_NAME
@@ -149,11 +188,41 @@ ansible-playbook setup.yaml -i clusters/$CLUSTER_NAME
 
 > If you recently rebuilt the OS on any of the hosts and thereby lost its public key, make sure to also update (or at least delete) its `known_hosts` entry, otherwise Ansible will throw an error. You can also append `-e clear_known_hosts=true` to above command to delete the `known_hosts` entries for all hosts in the inventory before executing the setup.
 
-## Operations
+## How to do cluster operations
 
-For cluster operations, which do not change the set of nodes, the Ansible playbook isn't required. You can use `kubectl` or specific CLI tools relying on `kubectl` to perform these operations.
+### Dashboards
 
-These CLI tools are installed automatically on all control hosts:
+As already mentioned above, this Kubernetes setup includes multiple web dashboards, which allow you to do various maintenance tasks and are available under different subdomains of the domain you supplied in the cluster config:
+
+- `id.yourdomain.org`
+  - Keycloak Web UI
+  - Manage your Single-Sign-On users, groups and OIDC/SAML clients
+  - Manage your own admin credentials
+- `kubectl.yourdomain.org`
+  - Kubernetes Dashboard
+  - List k8s API resources with their attributes, events and some metrics
+  - Manually create, mutate and delete any resource
+  - Deploy new GitOps resources
+  - View most recent logs of pods or shell into their containers
+- `gitops.yourdomain.org`
+  - Weave GitOps Dashboard
+  - List all deployed GitOps resources with their attributes and state
+  - Sync, pause and resume resources
+- `telemetry.yourdomain.org`
+  - Grafana Dashboard UI
+  - View and search logs of the past few days
+  - Query and visualize in-depth metrics
+  - Check the state of (preconfigured) alert rules
+- `longhorn.yourdomain.org`
+  - Longhorn UI
+  - Manage and monitor persistent storage nodes, volumes and backups
+  - Only available in a host cluster
+
+> All these dashboards are secured via OIDC authentication
+
+### CLI / API operations
+
+For most cluster operations the Ansible playbook isn't required. You can instead use `kubectl` or specific CLI tools relying on `kubectl` (or the k8s API directly). These CLI tools are installed automatically on all control hosts:
 
 - [kubectl](https://kubernetes.io/docs/reference/kubectl/)
 - [helm](https://helm.sh/docs/helm/)
@@ -161,41 +230,65 @@ These CLI tools are installed automatically on all control hosts:
 - [velero](https://velero.io/)
 - [vcluster](https://www.vcluster.com/)
 
-Best just `ssh` into one of the control hosts and perform operations from there.
+> Best just `ssh` into one of the control hosts and perform operations from the terminal there.
 
-### Adding nodes
+#### Removing nodes
 
-Simply add new node hosts to your cluster's `hosts.yaml` and re-run the setup playbook.
-
-> **Attention:** Adding new control nodes is currently untested and could leave your cluster in a failed state!
-
-### Removing nodes
-
-#### Recommended: manual removal
-
-1. _Via Longhorn Web UI_:\
+1. *Via Longhorn Web UI_:\
    [Request eviction](https://longhorn.io/docs/1.5.1/volumes-and-nodes/disks-or-nodes-eviction/#select-disks-or-nodes-for-eviction) of the associated Longhorn storage node.
 2. Wait for all volumes to be evicted.
-3. _Via terminal on any control node_:\
+3. *Via terminal on any control node_:\
    [`kubectl drain` the k8s node](https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/#use-kubectl-drain-to-remove-a-node-from-service) to evict all running pods from it and disable scheduling.
    > You will probably want to run `kubectl drain` with these flags: `--ignore-daemonsets --delete-emptydir-data`
 4. Wait for all pods to be evicted.
-5. _Via terminal on the node to be removed_:\
+5. *Via terminal on the node to be removed_:\
    Execute [uninstall script](https://docs.k3s.io/installation/uninstall):
    - For agents: `/usr/local/bin/k3s-agent-uninstall.sh`
    - For servers: `/usr/local/bin/k3s-uninstall.sh`
-6. _Via kubectl on control node or k8s-dashboard_:\
+6. *Via kubectl on control node or k8s-dashboard_:\
    Delete the `Node` resource object.
 
-#### Batch removal
+### Ansible operations
 
-> ⚠️ This is still experimental and can damage your cluster!
+#### Adding nodes
 
-Create a copy of your `./clusters/$CLUSTER_NAME` directory named `./clusters/$CLUSTER_NAME-unprovision` and only keep hosts in `hosts.yaml`, **that you want to be removed**. Then run:
+Simply add new node hosts **to the end** of your cluster's `hosts.yaml` and re-run the setup playbook.
 
-```bash
-ansible-playbook destroy.yaml -i clusters/$CLUSTER_NAME-unprovision
-```
+> ⚠️ Adding new control nodes is currently untested and could leave your cluster in a failed state!
+
+## How to deploy apps
+
+While you are free to deploy any containerized app into your cluster, a few select ones have been optimized to work well with the specific storage / networking / authentication infrastructure of this project. Concretely, these are custom helm charts (partly based on the official helm charts of these apps), which are contained in the folder `/charts/apps`. To deploy any of these custom helm charts, follow these steps:
+
+> Note that this is one way to do it. If you have experience with k8s and GitOps, feel free to use your own tools.
+
+1. Open up the Kubernetes Dashboard UI under `kubectl.yourdomain.org`.
+2. Open up the form for creating a new resource via the `+` button at the top right.
+3. Paste this template for a FluxCD helm release into the form:
+
+    ```yaml
+    apiVersion: helm.toolkit.fluxcd.io/v2beta1
+    kind: HelmRelease
+    metadata:
+      name: "" # Custom name of your release
+      namespace: "" # Name of an existing namespace (best create a new one)
+    spec:
+      chart:
+        spec:
+          chart: "" # Name of the chart in /charts/apps
+          sourceRef:
+            kind: HelmRepository
+            name: base-app-repo
+            namespace: flux-system
+          version: "" # Semver version constraint (use the latest version)
+      interval: 1h
+      values: {} # Custom values. See the chart's values.yaml file.
+    ```
+
+4. Fill in the missing values and hit `Upload`.
+5. Monitor the release's progress via `gitops.yourdomain.org`.
+
+> You can also find a list of all deployed HelmReleases in the Kubernetes Dashboard.
 
 ## Troubleshooting
 

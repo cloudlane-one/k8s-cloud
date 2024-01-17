@@ -1,5 +1,0 @@
-- name: Destroy all nodes
-  hosts: cluster
-  become: true
-  roles:
-    - role: node-destruction

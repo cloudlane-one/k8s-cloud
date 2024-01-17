@@ -71,6 +71,7 @@ cluster:
   # Tailscale enables you to use nodes which don't have a static public ip or no public ip at all.
   # Please refer to the according [k3s setup guide](https://docs.k3s.io/installation/network-options#integration-with-the-tailscale-vpn-provider-experimental) 
   # and perform steps 1 to 3 manually before deploying the cluster.
+  # Note: This feature is not available in vclusters.
   tailscale:
     enabled: false
     # Optional. URL of self-hosted Headscale control server.
@@ -106,4 +107,5 @@ cluster:
   # Force k3s agent and server daemons to not exceed their reserved resources.
   # Warning: This feature is experimental, as its impact on k3s upgrades hasn't been sufficiently tested! 
   # Use at own risk!
+  # Note: This feature is not available in vclusters.
   enforce_kube_reserved: false
