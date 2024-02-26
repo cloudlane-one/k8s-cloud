@@ -74,10 +74,10 @@ spec:
       resources:
         requests:
           {{- if .Values.ha_deployment.enabled }}
-          cpu: 20m
+          cpu: 100m
           memory: 128Mi
           {{- else }}
-          cpu: 50m
+          cpu: 200m
           memory: 256Mi
           {{- end }}
     vcluster:
@@ -93,14 +93,21 @@ spec:
               name: vcluster-mariadb-endpoint
               key: url
       resources:
+        {{- if .Values.ha_deployment.enabled }}
         requests:
-          {{- if .Values.ha_deployment.enabled }}
           cpu: 300m
           memory: 1.3Gi
-          {{- else }}
+        limits:
+          cpu: 600m
+          memory: 2.6Gi
+        {{- else }}
+        requests:
           cpu: 500m
           memory: 1.8Gi
-          {{- end }}
+        limits:
+          cpu: 1
+          memory: 3.6Gi
+        {{- end }}
     coredns:
       replicas: 2
       resources:
