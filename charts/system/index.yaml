@@ -42,6 +42,20 @@ entries:
     version: 0.1.1
   control:
   - apiVersion: v2
+    appVersion: 0.1.6
+    created: "2024-02-26T18:01:08.347481178Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: k8s-dashboard with proper config and extras
+    digest: a038d08df5c9918ab9987742f5b00902c18de88c2c1d6b73c6aa90d11c13e004
+    name: control
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/control-0.1.6/control-0.1.6.tgz
+    version: 0.1.6
+  - apiVersion: v2
     appVersion: 0.1.5
     created: "2023-12-02T10:22:25.063185883Z"
     dependencies:
@@ -85,6 +99,20 @@ entries:
     version: 0.1.3
   dns:
   - apiVersion: v2
+    appVersion: 0.1.1
+    created: "2024-02-26T18:01:08.544124202Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: external-dns + extras
+    digest: e586d29517489e5a1b39a985058c14f308ccdbd6d9e05f4aa92485cc75fd293c
+    name: dns
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/dns-0.1.1/dns-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
     appVersion: 0.1.0
     created: "2023-12-01T14:22:40.551216546Z"
     dependencies:
@@ -99,6 +127,20 @@ entries:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/dns-0.1.0/dns-0.1.0.tgz
     version: 0.1.0
   gitops:
+  - apiVersion: v2
+    appVersion: 0.1.4
+    created: "2024-02-26T18:01:08.819242576Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: FluxCD + Weave-Gitops Dashboard + extras
+    digest: d2d3c11fb50a2c90f3cdd16298b52374b07c27d70e9fb2c514201f7c09087e60
+    name: gitops
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/gitops-0.1.4/gitops-0.1.4.tgz
+    version: 0.1.4
   - apiVersion: v2
     appVersion: 0.1.3
     created: "2024-01-10T12:51:42.461279324Z"
@@ -158,6 +200,20 @@ entries:
     version: 0.2.1
   sso:
   - apiVersion: v2
+    appVersion: 0.2.0
+    created: "2024-02-26T18:01:09.063626235Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Keycloak-based Signle-Sign-On and some useful extras
+    digest: f0ae22f24fe3273650d7e5d0691f16260ba0f3926efe9a223a34100655df3891
+    name: sso
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/sso-0.2.0/sso-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
     appVersion: 0.1.4
     created: "2023-12-02T09:13:16.411638637Z"
     dependencies:
@@ -187,6 +243,20 @@ entries:
     version: 0.1.2
   storage:
   - apiVersion: v2
+    appVersion: 0.2.2
+    created: "2024-02-26T18:01:09.29263101Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Longhorn-based storage system
+    digest: 8522448a3ee28948de17d17c77b061e55d791bc3ad64f0426d9877277cdb08aa
+    name: storage
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/storage-0.2.2/storage-0.2.2.tgz
+    version: 0.2.2
+  - apiVersion: v2
     appVersion: 0.2.1
     created: "2023-12-01T14:22:41.502957558Z"
     dependencies:
@@ -201,6 +271,20 @@ entries:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/storage-0.2.1/storage-0.2.1.tgz
     version: 0.2.1
   telemetry:
+  - apiVersion: v2
+    appVersion: 0.3.0
+    created: "2024-02-26T18:01:09.480643752Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Prometheus + Loki + Grafana
+    digest: d55be6806212b589dd1306934d1e3a0d361ae0ef3adbe8c8ce3d0929d204b635
+    name: telemetry
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/telemetry-0.3.0/telemetry-0.3.0.tgz
+    version: 0.3.0
   - apiVersion: v2
     appVersion: 0.2.10
     created: "2024-01-11T11:19:26.077156254Z"
@@ -438,6 +522,20 @@ entries:
     version: 0.1.1
   vcluster:
   - apiVersion: v2
+    appVersion: 0.19.1
+    created: "2024-02-26T18:01:09.682044077Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: HA vcluster with extras
+    digest: 41d6931ee7455db897362eeff98133878912776096b5420117b3d37f403159f3
+    name: vcluster
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-0.2.0/vcluster-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
     appVersion: 0.16.4
     created: "2023-12-01T19:29:16.28373058Z"
     dependencies:
@@ -465,4 +563,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-0.1.6/vcluster-0.1.6.tgz
     version: 0.1.6
-generated: "2024-01-11T11:19:26.077259817Z"
+generated: "2024-02-26T18:01:09.682212924Z"
