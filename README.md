@@ -298,3 +298,9 @@ While you are free to deploy any containerized app into your cluster, a few sele
 ### UPGRADE FAILED: another operation (install/upgrade/rollback) is in progres
 
 Likely a previous helm operation was interrupted, leaving it in an intermediate state. See [this StackOverflow response](https://stackoverflow.com/a/71663688) for possible solutions.
+
+### Persistent Volume Claim is stuck being deleted
+
+Have a look at the field `metadata.finalizers` of the PVC in question. If it contains [`snapshot.storage.kubernetes.io/pvc-as-source-protection`](https://kubernetes.io/docs/concepts/storage/volume-snapshots/#persistent-volume-claim-as-snapshot-source-protection), then there exists an unfinished volume snapshot of this PVC. This could mean that a snapshot is being created right now, in which case the finalizer should be removed within the next few minutes (depending on volume size) and then the PVC deleted, but it could also mean that there exists a failed snapshot, in which case k8s unfortunately leaves the finalizer indefinitely.
+
+If you do not care about the integrity of the PVC's snapshots (because you don't want to keep backups) then you can remove the finalizer entry manually and thereby trigger immediate deletion. Otherwise best wait for about an hour and only then remove the finalizer manually.
