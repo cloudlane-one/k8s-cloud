@@ -15,7 +15,7 @@ spec:
   chart:
     spec:
       chart: kubernetes-dashboard
-      version: "^6"
+      version: "^6.0.8"
       sourceRef:
         kind: HelmRepository
         name: k8s-dashboard
@@ -55,6 +55,14 @@ spec:
         name:  volumesnapshots.snapshot.storage.k8s.io
         displayName: Volume Snapshot
         namespaced: true
+      - kind: customresourcedefinition
+        name:  volumesnapshotcontents.snapshot.storage.k8s.io
+        displayName: Volume Snapshot Content
+        namespaced: true
+      - kind: customresourcedefinition
+        name:  volumesnapshotclasses.snapshot.storage.k8s.io
+        displayName: Volume Snapshot Class
+        namespaced: true
       {{- if not .Values.vcluster }}
       - kind: customresourcedefinition
         name:  volumes.longhorn.io
@@ -67,6 +75,10 @@ spec:
       - kind: customresourcedefinition
         name:  nodes.longhorn.io
         displayName: Longhorn Node
+        namespaced: true
+      - kind: customresourcedefinition
+        name:  snapshots.longhorn.io
+        displayName: Longhorn Snapshot
         namespaced: true
       {{- end }}
     app:

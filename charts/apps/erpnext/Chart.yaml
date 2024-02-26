@@ -2,8 +2,8 @@ apiVersion: v2
 name: erpnext
 description: ERPNext with SSO and some useful extras
 type: application
-version: "0.1.0"
-appVersion: "0.1.0"
+version: "0.1.1"
+appVersion: "0.1.1"
 
 dependencies:
   - name: common

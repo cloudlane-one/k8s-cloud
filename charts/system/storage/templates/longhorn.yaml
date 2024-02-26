@@ -16,7 +16,7 @@ spec:
   chart:
     spec:
       chart: longhorn
-      version: "^1.5.1"
+      version: "^1.6.0"
       sourceRef:
         kind: HelmRepository
         name: longhorn
@@ -30,6 +30,7 @@ spec:
       backupTarget: {{ printf "s3://%s@%s/" .Values.s3.bucket .Values.s3.region }}
       backupTargetCredentialSecret: s3-secret
       priorityClass: system-cluster-critical
+      concurrentAutomaticEngineUpgradePerNodeLimit: 1
     ingress:
       enabled: true
       annotations:

@@ -2,8 +2,8 @@ apiVersion: v2
 name: control
 description: k8s-dashboard with proper config and extras
 type: application
-version: "0.1.5"
-appVersion: "0.1.5"
+version: "0.1.6"
+appVersion: "0.1.6"
 dependencies:
   - name: common
     version: "^1"

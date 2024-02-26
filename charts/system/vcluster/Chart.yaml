@@ -2,8 +2,8 @@ apiVersion: v2
 name: vcluster
 description: HA vcluster with extras
 type: application
-version: "0.1.7"
-appVersion: "0.16.4"
+version: "0.2.0"
+appVersion: "0.19.1"
 
 dependencies:
   - name: common

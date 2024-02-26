@@ -110,7 +110,7 @@ spec:
   chart:
     spec:
       chart: wordpress
-      version: "18.1.14"
+      version: "19.4.1"
       sourceRef:
         kind: HelmRepository
         name: bitnami
