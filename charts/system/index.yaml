@@ -537,6 +537,20 @@ entries:
   vcluster:
   - apiVersion: v2
     appVersion: 0.19.1
+    created: "2024-02-26T19:00:37.115867436Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: HA vcluster with extras
+    digest: 891d23abb4134499c8a2c7b9d15aa053cac1ab65974d6ac8f0119615a9af5e25
+    name: vcluster
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-0.2.1/vcluster-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
+    appVersion: 0.19.1
     created: "2024-02-26T18:01:09.682044077Z"
     dependencies:
     - name: common
@@ -577,4 +591,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-0.1.6/vcluster-0.1.6.tgz
     version: 0.1.6
-generated: "2024-02-26T18:12:22.510635992Z"
+generated: "2024-02-26T19:00:37.115957613Z"
