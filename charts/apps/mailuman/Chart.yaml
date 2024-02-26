@@ -2,8 +2,8 @@ apiVersion: v2
 name: mailuman
 description: Mail server + mailing list service + Web UIs
 type: application
-version: "0.5.2"
-appVersion: "0.5.2"
+version: "0.5.3"
+appVersion: "0.5.3"
 
 dependencies:
   - name: common

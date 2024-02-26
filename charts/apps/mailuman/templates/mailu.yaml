@@ -207,7 +207,7 @@ spec:
         storageClass: single
       resources:
         requests:
-          memory: 2Gi # measured on 2023-11-30
+          memory: 6Gi # measured on 2024-02-26
           cpu: 50m # measured on 2023-11-30
     oletools:
       resources:
