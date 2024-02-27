@@ -525,6 +525,16 @@ entries:
     version: 0.1.5
   upgrade:
   - apiVersion: v2
+    appVersion: 0.1.2
+    created: "2024-02-27T16:45:56.249474741Z"
+    description: Rancher system upgrade controller + plans
+    digest: 8356d010058d9610dae609874134180d27e9f62b7e4e58e47c95d12232615c88
+    name: upgrade
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/upgrade-0.1.2/upgrade-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
     appVersion: 0.1.1
     created: "2023-12-01T14:22:42.021969487Z"
     description: Rancher system upgrade controller + plans
@@ -633,4 +643,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-0.1.6/vcluster-0.1.6.tgz
     version: 0.1.6
-generated: "2024-02-27T16:23:46.197435138Z"
+generated: "2024-02-27T16:45:56.249558027Z"
