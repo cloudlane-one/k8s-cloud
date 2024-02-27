@@ -30,7 +30,7 @@ spec:
   chart:
     spec:
       chart: vcluster
-      version: "0.17.1"
+      version: "^0.19.2"
       sourceRef:
         kind: HelmRepository
         name: loft-sh
@@ -38,16 +38,6 @@ spec:
   dependsOn:
     - name: vcluster-mariadb
   values:
-    enableHA: true
-    {{- if .Values.ha_deployment.enabled }}
-    replicas: 2
-    podDisruptionBudget:
-      enabled: true
-    {{- else }}
-    replicas: 1
-    {{- end }}
-    storage:
-      persistence: false # use external db.
     sync:
       nodes:
         enabled: true
@@ -61,6 +51,13 @@ spec:
       networkpolicies:
         enabled: true
     syncer:
+      {{- if .Values.ha_deployment.enabled }}
+      replicas: 2
+      {{- else }}
+      replicas: 1
+      {{- end }}
+      storage:
+        persistence: false # use external db.
       extraArgs:
         - "--tls-san={{ .Values.host }}"
         - "--sync-labels=svccontroller.k3s.cattle.io/lbpool"
