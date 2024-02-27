@@ -28,6 +28,16 @@ entries:
     version: 0.1.0
   k3s-auto-upgrade-plan:
   - apiVersion: v2
+    appVersion: 0.1.1
+    created: "2024-02-27T16:44:40.929319465Z"
+    description: Plan CR for automatic, non-disruptive k3s upgrades
+    digest: 0aedae81122c7d2e38e3ce1dff9e0a8562018a4cdc162241e63075b6451dfb26
+    name: k3s-auto-upgrade-plan
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/k3s-auto-upgrade-plan-0.1.1/k3s-auto-upgrade-plan-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
     appVersion: 0.1.0
     created: "2023-12-01T14:23:03.739770189Z"
     description: Plan CR for automatic, non-disruptive k3s upgrades
@@ -194,4 +204,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-mariadb-endpoint-0.1.0/vcluster-mariadb-endpoint-0.1.0.tgz
     version: 0.1.0
-generated: "2023-12-03T11:16:23.636884496Z"
+generated: "2024-02-27T16:44:40.929345544Z"
