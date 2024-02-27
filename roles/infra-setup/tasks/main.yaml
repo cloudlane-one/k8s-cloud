@@ -159,7 +159,6 @@
             chart:
               release_name: vcluster-stack
               chart_name: vcluster
-              version: "^0.1.6"
               namespace: "{{ cluster_name }}"
               chart_values:
                 cluster_name: "{{ cluster_name }}"
@@ -242,7 +241,7 @@
         create_namespace: true
         chart_repo_url: https://fluxcd-community.github.io/helm-charts
         chart_ref: flux2
-        chart_version: "^2"
+        chart_version: "^2.12.2"
         values:
           policies:
             create: false
@@ -326,13 +325,10 @@
         kubeconfig: "{{ kubeconfig }}"
   loop:
     - name: storage-stack
-      version: "^0.2.0"
       namespace: longhorn-system
     - name: cert-stack
-      version: "^0.1.0"
       namespace: cert-system
     - name: telemetry-stack
-      version: "^0.1.4"
       namespace: telemetry-system
 
 - name: Ensure zoning tags are applied to Longhorn nodes
@@ -420,7 +416,6 @@
             chart:
               release_name: storage-stack
               chart_name: storage
-              version: "^0.2.1"
               namespace: longhorn-system
               chart_values:
                 host: "{{ cluster.subdomains.longhorn }}.{{ cluster.domain }}"
@@ -440,7 +435,6 @@
             chart:
               release_name: backup-stack
               chart_name: backup
-              version: "^0.1.1"
               namespace: backup-system
               chart_values:
                 s3: "{{ cluster.backup.s3 }}"
@@ -500,7 +494,6 @@
         chart:
           release_name: dns-stack
           chart_name: dns
-          version: "^0.1.0"
           name: dns-stack
           namespace: dns-system
           chart_values:
@@ -522,14 +515,12 @@
   loop:
     - release_name: k3s-auto-upgrade
       chart_name: upgrade
-      version: "^0.1.1"
       namespace: upgrade-system
       chart_values:
         k3s_version: "{{ k3s_version }}"
 
     - release_name: cert-stack
       chart_name: cert
-      version: "^0.1.1"
       namespace: cert-system
       chart_values:
         admin_email: "{{ cluster.mail.admin_address }}"
@@ -539,7 +530,6 @@
 
     - release_name: ingress-stack
       chart_name: ingress
-      version: "^0.2.1"
       namespace: ingress-system
       chart_values:
         cluster_name: "{{ cluster_name }}"
@@ -547,7 +537,6 @@
     - release_name: control-stack
       chart_name: control
       name: control-stack
-      version: "^0.1.5"
       namespace: kube-system
       chart_values:
         host: "{{ cluster.subdomains.k8s_dashboard }}.{{ cluster.domain }}"
@@ -557,7 +546,6 @@
 
     - release_name: sso-stack
       chart_name: sso
-      version: "^0.1.4"
       namespace: sso-system
       chart_values:
         domain: "{{ cluster.domain }}"
@@ -578,7 +566,6 @@
 
     - release_name: telemetry-stack
       chart_name: telemetry
-      version: "^0.2.3"
       namespace: telemetry-system
       chart_values:
         domain: "{{ cluster.domain }}"
@@ -595,7 +582,6 @@
 
     - release_name: cicd-stack
       chart_name: gitops
-      version: "^0.1.1"
       namespace: flux-system
       chart_values:
         host: "{{ cluster.subdomains.weave_gitops }}.{{ cluster.domain }}"

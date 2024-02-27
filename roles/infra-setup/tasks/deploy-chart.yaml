@@ -39,7 +39,6 @@
         chart:
           spec:
             chart: "{{ chart.chart_name }}"
-            version: "{{ chart.version }}"
             sourceRef:
               kind: HelmRepository
               name: base-system-repo

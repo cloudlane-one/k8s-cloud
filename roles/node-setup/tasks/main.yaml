@@ -167,12 +167,12 @@
     - name: Install k3s via official script
       vars:
         k3s_service: "{{ control | ternary('k3s', 'k3s-agent') }}.service"
-      when: "k3s_service not in ansible_facts.services.keys()"
       block:
         - name: Install k3s on first node and download config
           when: "inventory_hostname == main_control_node"
           block:
             - name: Run k3s install script for first control node
+              when: "k3s_service not in ansible_facts.services.keys()"
               ansible.builtin.command:
                 argv:
                   - /tmp/k3s-install.sh
@@ -208,12 +208,14 @@
                 mode: '0755'
 
             - name: Upload join token file
+              when: "k3s_service not in ansible_facts.services.keys()"
               ansible.builtin.copy:
                 src: "{{ playbook_dir }}/join-token"
                 dest: /etc/k8s-cloud/k3s-join-token
                 mode: '0644'
 
             - name: Run k3s install script for additional node
+              when: "k3s_service not in ansible_facts.services.keys()"
               throttle: 1
               any_errors_fatal: true
               ansible.builtin.command:
