@@ -12,13 +12,6 @@ spec:
         operator: In
         values:
           - "true"
-  prepare:
-    image: alpine
-    command: [sh, -c]
-    args:
-      [
-        'while ! [ "$(date +%H | cut -c 1-2)" -ge 0 -a "$(date +%H | cut -c 1-2)" -lt 2 ]; do sleep 60; done',
-      ]
   serviceAccountName: system-upgrade
   upgrade:
     image: rancher/k3s-upgrade

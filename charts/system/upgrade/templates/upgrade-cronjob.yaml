@@ -1,0 +1,65 @@
+# CronJob to scale down system upgrade controller between 6 am and 12am
+# and thereby prevent updates during the day.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: system-upgrade-upscale
+spec:
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: system-upgrade-cron
+          containers:
+          - name: system-upgrade-cron
+            image: bitnami/kubectl:latest
+            command: ["/bin/sh", "-c"]
+            args:
+            - kubectl scale deployment system-upgrade-controller --replicas=1
+          restartPolicy: OnFailure
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: system-upgrade-downscale
+spec:
+  schedule: "0 6 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: system-upgrade-cron
+          containers:
+          - name: system-upgrade-cron
+            image: bitnami/kubectl:latest
+            command: ["/bin/sh", "-c"]
+            args:
+            - kubectl scale deployment system-upgrade-controller --replicas=0
+          restartPolicy: OnFailure
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: system-upgrade-cron
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: deployment-scaler
+rules:
+- apiGroups: ["apps"]
+  resources: ["deployments", "deployments/scale"]
+  verbs: ["get", "list", "watch", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: system-upgrade-cron
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: deployment-scaler
+subjects:
+- kind: ServiceAccount
+  name: system-upgrade-cron
