@@ -256,7 +256,7 @@ spec:
       - name: Accounts_OAuth_Custom_Keycloak_email_field
         value: email
       - name: Accounts_OAuth_Custom_Keycloak_name_field
-        value: name
+        value: given_name
       - name: Accounts_OAuth_Custom_Keycloak_merge_users
         value: "true"
 
