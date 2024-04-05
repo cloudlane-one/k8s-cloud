@@ -243,6 +243,20 @@ entries:
     version: 0.4.2
   nextcloud:
   - apiVersion: v2
+    appVersion: 28.0.4
+    created: "2024-04-05T09:59:09.158969638Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Nextcloud with SSO and some useful extras
+    digest: 52959d84176a780e0183b17492fc1aa5bf76bb02db930f18f8c02185fca16f7d
+    name: nextcloud
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/nextcloud-0.10.2/nextcloud-0.10.2.tgz
+    version: 0.10.2
+  - apiVersion: v2
     appVersion: 28.0.2
     created: "2024-03-27T08:25:19.913209517Z"
     dependencies:
@@ -327,6 +341,20 @@ entries:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/nextcloud-0.8.4/nextcloud-0.8.4.tgz
     version: 0.8.4
   rocketchat:
+  - apiVersion: v2
+    appVersion: 6.6.6
+    created: "2024-04-05T09:59:09.252023259Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Rocket.Chat with SSO and some useful extras
+    digest: ca1ba0c7a47beb9da472bf63f6dcc9a4435f7a8a9e88ff5e6f50d82be96ea782
+    name: rocketchat
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/rocketchat-0.3.3/rocketchat-0.3.3.tgz
+    version: 0.3.3
   - apiVersion: v2
     appVersion: 6.6.1
     created: "2024-03-27T08:25:20.053069272Z"
@@ -413,6 +441,20 @@ entries:
     version: 0.1.12
   wordpress:
   - apiVersion: v2
+    appVersion: 6.5.0
+    created: "2024-04-05T09:59:09.332166045Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Wordpress with SSO and some useful extras
+    digest: fd194be0773c9dfb573545120df0ac92fb22fb50e01c58a40c509dc33701a64d
+    name: wordpress
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.2.1/wordpress-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
     appVersion: 6.4.3
     created: "2024-02-26T18:00:18.44316628Z"
     dependencies:
@@ -468,4 +510,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.0/wordpress-0.1.0.tgz
     version: 0.1.0
-generated: "2024-03-27T08:25:20.053182112Z"
+generated: "2024-04-05T09:59:09.332268867Z"
