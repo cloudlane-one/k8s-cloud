@@ -2,6 +2,7 @@
 flannel-backend: "wireguard-native"
 flannel-external-ip: True
 {% endif %}
+flannel-ipv6-masq: True # Needed to fix IPv6 egress issue: https://github.com/k3s-io/k3s/issues/5766#issuecomment-1352575431
 cluster-cidr: "10.42.0.0/16,2001:cafe:42:0::/56"
 service-cidr: "10.43.0.0/16,2001:cafe:42:1::/112"
 disable:
