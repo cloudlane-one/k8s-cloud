@@ -199,6 +199,13 @@ spec:
         {{- end }}
         {{- end }}
       configs:
+        logging.config.php: |
+          <?php
+          $CONFIG = array (
+            "log_type" => "errorlog",
+            "loglevel" => {{ .Values.debug | ternary 0 2 }},
+          );
+          ?>
         oidc.config.php: | 
           <?php
           $CONFIG = array (
@@ -298,8 +305,13 @@ spec:
         - name: autoconfig
           mountPath: /autoconfig
           readOnly: true
-    lifecycle:
-      postStartCommand: ["/bin/bash", "-c", "(cd /autoconfig; bash setup.sh)"]
+      hooks:
+        post-installation: |
+          cd /autoconfig
+          bash setup.sh
+        post-upgrade: |
+          cd /autoconfig
+          bash setup.sh
     {{- end }}
     internalDatabase:
       enabled: false
