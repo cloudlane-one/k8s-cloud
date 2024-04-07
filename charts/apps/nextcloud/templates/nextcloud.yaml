@@ -202,7 +202,8 @@ spec:
         logging.config.php: |
           <?php
           $CONFIG = array (
-            "log_type" => "errorlog",
+            "log_type" => "file",
+            "logfile" => "nextcloud.log",
             "loglevel" => {{ .Values.debug | ternary 0 2 }},
           );
           ?>
@@ -296,7 +297,14 @@ spec:
             'maintenance_window_start' => 2,
           );
           ?>
-    {{- if .Values.autoconfig.enabled }}
+      extraSidecarContainers:
+        - name: nextcloud-logger
+          image: busybox
+          command: [/bin/sh, -c, 'while ! test -f "/var/www/html/data/nextcloud.log"; do sleep 1; done; tail -n+1 -f /var/www/html/data/nextcloud.log']
+          volumeMounts:
+          - name: nextcloud-main
+            mountPath: /var/www/html/data
+      {{- if .Values.autoconfig.enabled }}
       extraVolumes:
         - name: autoconfig
           configMap:
@@ -312,7 +320,7 @@ spec:
         post-upgrade: |
           cd /autoconfig
           bash setup.sh
-    {{- end }}
+      {{- end }}
     internalDatabase:
       enabled: false
     externalDatabase:
