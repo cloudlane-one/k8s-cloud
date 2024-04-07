@@ -61,6 +61,7 @@ data:
     echo 'loading config.json...'
     ( echo "cat <<EOF" ; cat config.json ; echo EOF ) | sh > /var/www/html/config.json
     runuser --user www-data -- /var/www/html/occ config:import config.json
+    rm /var/www/html/config.json
     echo 'loading config.json... done'
 
     echo 'nextcloud all set up.'
@@ -198,14 +199,6 @@ spec:
         {{- end }}
         {{- end }}
       configs:
-        logging.config.php: |
-          <?php
-          $CONFIG = array (
-            "log_type" => "file",
-            "logfile" => "/dev/stdout",
-            "loglevel" => {{ .Values.debug | ternary 0 2 }},
-          );
-          ?>
         oidc.config.php: | 
           <?php
           $CONFIG = array (
@@ -287,6 +280,13 @@ spec:
           <?php
           $CONFIG = array (
             'mail_smtptimeout' => 30,
+          );
+          ?>
+        maintenance.config.php: |
+          <?php
+          $CONFIG = array (
+            // Start maintenance at 2am, after all backups should have completed.
+            'maintenance_window_start' => 2,
           );
           ?>
     {{- if .Values.autoconfig.enabled }}
