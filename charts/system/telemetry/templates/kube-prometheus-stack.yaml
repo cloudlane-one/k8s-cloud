@@ -24,7 +24,7 @@ spec:
   chart:
     spec:
       chart: kube-prometheus-stack
-      version: "^57.2.0"
+      version: "^59.0.0"
       sourceRef:
         kind: HelmRepository
         name: prometheus-community
@@ -250,7 +250,7 @@ spec:
           cpu: 50m # measured on 2023-11-30
           memory: 384Mi # measured on 2023-11-30
       envValueFrom:
-        SMTP_PASSWORD:
+        GF_SMTP_PASSWORD:
           secretKeyRef:
             name: smtp-creds
             key: password
@@ -276,7 +276,6 @@ spec:
           enabled: true
           host: {{ printf "%s:%s" .Values.smtp.host .Values.smtp.port | quote }}
           user: {{ .Values.smtp.user }}
-          password: "${SMTP_PASSWORD}"
           from_address: {{ .Values.smtp.from_address }}
         auth:
           disable_login_form: true

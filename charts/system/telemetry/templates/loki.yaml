@@ -17,7 +17,7 @@ spec:
   chart:
     spec:
       chart: loki
-      version: "^5.9.2"
+      version: "^6.6.1"
       sourceRef:
         kind: HelmRepository
         name: grafana
@@ -44,6 +44,10 @@ spec:
           # secretAccessKey: "" # injected, see above
           s3ForcePathStyle: true
           insecure: true
+        bucketNames:
+          chunks: chunks
+          ruler: ruler
+          admin: admin
       compactor:
         retention_enabled: true
       limits_config:
@@ -112,13 +116,13 @@ spec:
         maxReplicas: 3
         targetCPUUtilizationPercentage: 65
         targetMemoryUtilizationPercentage: 65
+    lokiCanary:
+      enabled: false
     monitoring:
       selfMonitoring:
         enabled: false
         grafanaAgent:
           installOperator: false
-      lokiCanary:
-        enabled: false
     test:
       enabled: false
 {{- end }}
