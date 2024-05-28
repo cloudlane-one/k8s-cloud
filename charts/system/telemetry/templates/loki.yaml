@@ -54,6 +54,15 @@ spec:
         retention_period: 168h
       commonConfig:
         replication_factor: 1
+      schema_config:
+        configs:
+          - from: 2024-04-01
+            object_store: s3
+            store: tsdb
+            schema: v13
+            index:
+              prefix: index_
+              period: 24h
     read:
       replicas: 1
       resources:
