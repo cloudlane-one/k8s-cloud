@@ -1,0 +1,7 @@
+host: ""
+
+ingress: true
+
+snapshots:
+  enabled: true
+  class_name: snap

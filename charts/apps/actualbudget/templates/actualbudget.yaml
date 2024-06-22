@@ -1,0 +1,120 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: actualbudget-data
+  annotations:
+    helm.sh/resource-policy: "keep"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: "2Gi"
+  storageClassName: ha
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: actualbudget
+spec:
+  type: ClusterIP
+  selector:
+    app: actualbudget
+  ports:
+    - port: 80
+      targetPort: http
+      name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: actualbudget
+  labels:
+    app: actualbudget
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: actualbudget
+  template:
+    metadata:
+      labels:
+        app: actualbudget
+    spec:
+      hostname: actualbudget
+      containers:
+        - name: actualbudget
+          image: docker.io/actualbudget/actual-server:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 5006
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 120
+            timeoutSeconds: 10
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 30
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 120
+            timeoutSeconds: 10
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: 512Mi # estimated, not measured
+              cpu: 100m # estimated, not measured
+          volumeMounts:
+            - mountPath: "/data"
+              name: data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: actualbudget-data
+{{- if .Values.ingress }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: actualbudget
+  annotations:
+    kubernetes.io/tls-acme: "true"
+spec:
+  tls:
+    - hosts:
+        - {{ .Values.host }}
+      secretName: actualbudget-cert
+  rules:
+    - host: {{ .Values.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: actualbudget
+                port:
+                  name: http
+{{- end }}
+{{- if .Values.snapshots.enabled }}
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "actualbudget-data-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: actualbudget-data
+  {{- if .Values.snapshots.class_name }}
+  volumeSnapshotClassName: {{ .Values.snapshots.class_name }}
+  {{- end }}
+{{- end }}
