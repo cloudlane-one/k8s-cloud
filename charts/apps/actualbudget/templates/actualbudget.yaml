@@ -86,6 +86,7 @@ metadata:
   name: actualbudget
   annotations:
     kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: 1G
 spec:
   tls:
     - hosts:
