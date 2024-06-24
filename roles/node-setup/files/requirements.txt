@@ -2,3 +2,4 @@ pyyaml>=3.11
 kubernetes>=12.0.0
 jsonpatch
 psutil
+requests>=2.32.0 # not directly required, pinned by Snyk to avoid a vulnerability
