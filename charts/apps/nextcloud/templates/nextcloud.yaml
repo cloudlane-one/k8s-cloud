@@ -262,28 +262,6 @@ spec:
             'overwriteprotocol' => 'https',
           );
           ?>
-        {{- if .Values.s3.enabled }}
-        s3.config.php: |-
-          <?php
-          $CONFIG = array (
-            'objectstore' => array(
-              'class' => '\\OC\\Files\\ObjectStore\\S3',
-              'arguments' => array(
-                'bucket'     => {{ .Values.s3.bucket | quote }},
-                'hostname' => {{ .Values.s3.endpoint | quote }},
-                'autocreate' => true,
-                'key'        => {{ .Values.s3.access_key_id | quote }},
-                'secret'     => getenv('S3_SECRET'),
-                'region'     => {{ .Values.s3.region | quote }},
-                'use_ssl'    => true,
-                {{- if .Values.s3.encryption.enabled }}
-                'sse_c_key'  => getenv('S3_ENC_KEY'),
-                {{- end }}
-              )
-            )
-          );
-          ?>
-        {{- end }}
         mail.config.php: | 
           <?php
           $CONFIG = array (
@@ -297,13 +275,28 @@ spec:
             'maintenance_window_start' => 2,
           );
           ?>
+      {{- if .Values.s3.enabled }}
+      objectStore:
+        s3:
+          enabled: true
+          region: {{ .Values.s3.region }}
+          autoCreate: true
+          existingSecret: s3-storage
+          secretKeys:
+            host: host
+            accessKey: id
+            secretKey: secret
+            bucket: bucket
+            sse_c_key: sse_c_key
+      {{- end }}
       extraSidecarContainers:
         - name: nextcloud-logger
           image: busybox
-          command: [/bin/sh, -c, 'while ! test -f "/var/www/html/data/nextcloud.log"; do sleep 1; done; tail -n+1 -f /var/www/html/data/nextcloud.log']
+          command: [/bin/sh, -c, 'while ! test -f "/var/www/html/data/nextcloud.log"; do sleep 1; done; tail -n 0 -f /var/www/html/data/nextcloud.log']
           volumeMounts:
           - name: nextcloud-main
             mountPath: /var/www/html/data
+            subPath: data
       {{- if .Values.autoconfig.enabled }}
       extraVolumes:
         - name: autoconfig
