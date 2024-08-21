@@ -324,11 +324,14 @@
         chart: "{{ item }}"
         kubeconfig: "{{ kubeconfig }}"
   loop:
-    - name: storage-stack
+    - release_name: storage-stack
+      chart_name: storage
       namespace: longhorn-system
-    - name: cert-stack
+    - release_name: cert-stack
+      chart_name: cert
       namespace: cert-system
-    - name: telemetry-stack
+    - release_name: telemetry-stack
+      chart_name: telemetry
       namespace: telemetry-system
 
 - name: Ensure zoning tags are applied to Longhorn nodes

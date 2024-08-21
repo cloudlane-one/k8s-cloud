@@ -1,6 +1,6 @@
 - name: Chart details
   ansible.builtin.debug:
-    msg: "Bootstrapping chart {{ chart.name }} into namespace {{ chart.namespace }}"
+    msg: "Bootstrapping chart {{ chart.release_name }} into namespace {{ chart.namespace }}"
 
 - name: Ensure chart namespace exists
   kubernetes.core.k8s:
@@ -15,7 +15,7 @@
 - name: Check if chart release already exists
   kubernetes.core.helm_info:
     kubeconfig: "{{ kubeconfig }}"
-    name: "{{ chart.name }}"
+    release_name: "{{ chart.release_name }}"
     release_namespace: "{{ chart.namespace }}"
   register: existing_release
 
@@ -32,13 +32,13 @@
       apiVersion: helm.toolkit.fluxcd.io/v2beta1
       kind: HelmRelease
       metadata:
-        name: "{{ chart['release_name'] }}"
-        namespace: "{{ chart['namespace'] }}"
+        name: "{{ chart.release_name }}"
+        namespace: "{{ chart.namespace }}"
       spec:
         interval: 1h
         chart:
           spec:
-            chart: "{{ chart['chart_name'] }}"
+            chart: "{{ chart.chart_name }}"
             sourceRef:
               kind: HelmRepository
               name: base-system-repo
