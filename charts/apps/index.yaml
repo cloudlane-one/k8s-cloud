@@ -428,6 +428,20 @@ entries:
   rocketchat:
   - apiVersion: v2
     appVersion: 6.11.1
+    created: "2024-08-21T10:45:42.955557188Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Rocket.Chat with SSO and some useful extras
+    digest: acc8ed277c41d17a7f7e9ca52cf323e88465ba78c791b7892a8f55e8662e0cc3
+    name: rocketchat
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/rocketchat-0.3.5/rocketchat-0.3.5.tgz
+    version: 0.3.5
+  - apiVersion: v2
+    appVersion: 6.11.1
     created: "2024-08-21T10:07:49.652244624Z"
     dependencies:
     - name: common
@@ -609,4 +623,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.0/wordpress-0.1.0.tgz
     version: 0.1.0
-generated: "2024-08-21T10:07:49.652363057Z"
+generated: "2024-08-21T10:45:42.95563295Z"
