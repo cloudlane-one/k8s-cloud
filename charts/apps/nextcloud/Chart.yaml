@@ -2,7 +2,7 @@ apiVersion: v2
 name: nextcloud
 description: Nextcloud with SSO and some useful extras
 type: application
-version: "0.11.3"
+version: "0.11.4"
 appVersion: "29.0.4"
 
 dependencies:
