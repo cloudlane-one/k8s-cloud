@@ -131,7 +131,7 @@ spec:
   chart:
     spec:
       chart: rocketchat
-      version: '6.11.1'
+      version: '6.19.0'
       sourceRef:
         kind: HelmRepository
         name: rocketchat
