@@ -184,20 +184,6 @@ spec:
             secretKeyRef:
               name: onlyofficejwt
               key: JWT_SECRET
-        {{- if .Values.s3.enabled }}
-        - name: S3_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: s3-access-key
-              key: secret
-        {{- if .Values.s3.encryption.enabled }}
-        - name: S3_ENC_KEY
-          valueFrom:
-            secretKeyRef:
-              name: nextcloud-s3-enc
-              key: key
-        {{- end }}
-        {{- end }}
       configs:
         logging.config.php: |
           <?php
