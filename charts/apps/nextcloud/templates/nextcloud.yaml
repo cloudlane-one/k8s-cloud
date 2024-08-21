@@ -273,9 +273,7 @@ spec:
             accessKey: id
             secretKey: secret
             bucket: bucket
-            {{- if .Values.s3.encryption.enabled }}
             sse_c_key: sse_c_key
-            {{- end }}
       {{- end }}
       extraSidecarContainers:
         - name: nextcloud-logger
