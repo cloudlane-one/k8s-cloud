@@ -32,6 +32,7 @@
           - python3
           - python3-pip
           - unzip
+          - git-all
         update_cache: true
 
     - name: Install packages via yum
@@ -44,6 +45,7 @@
           - python3
           - python3-pip
           - unzip
+          - git-all
         update_cache: true
 
     - name: Install packages via apk
@@ -56,6 +58,7 @@
           - python3
           - py3-pip
           - unzip
+          - git
         update_cache: true
 
     - name: Install packages via dnf
@@ -68,6 +71,7 @@
           - python3
           - python3-pip
           - unzip
+          - git-all
         update_cache: true
 
     - name: Install packages via zypper
@@ -80,6 +84,7 @@
           - python3
           - python3-pip
           - unzip
+          - git
         update_cache: true
 
     - name: Install packages via pacman
@@ -92,6 +97,7 @@
           - python
           - python-pip
           - unzip
+          - git
         update_cache: true
 
 - name: Disable multipath for all sdx devices

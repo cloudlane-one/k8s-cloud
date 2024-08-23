@@ -338,6 +338,10 @@
   environment:
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
   block:
+    - name: Pause for 30 seconds to give k8s time to sync storage nodes
+      ansible.builtin.pause:
+        seconds: 30
+
     - name: Get list of current Longhorn node tags
       loop: "{{ groups['storage'] }}"
       kubernetes.core.k8s_info:
@@ -410,6 +414,8 @@
     label: "{{ item.key }}"
 
 - name: Ensure pre-restore infrastructure is fully set up
+  vars:
+    node_count: "{{ groups['storage'] | length }}"
   block:
     - name: Deploy storage-stack
       ansible.builtin.include_tasks:
@@ -421,6 +427,7 @@
               chart_name: storage
               namespace: longhorn-system
               chart_values:
+                default_ha_replicas: "{{ [node_count | int, 2] | min }}"
                 host: "{{ cluster.subdomains.longhorn }}.{{ cluster.domain }}"
                 cluster_name: "{{ cluster_name }}"
                 oauth2_proxy_host: "{{ cluster.subdomains.oauth2_proxy }}.{{ cluster.domain }}"
