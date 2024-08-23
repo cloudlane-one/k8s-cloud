@@ -214,7 +214,7 @@ spec:
                 'mail' => 'email',
                 'quota' => 'nextcloudQuota',
                 'home' => 'homeDirectory',
-                {{- if .Values.oidc_client.map_groups }}
+                {{- if .Values.oidc.map_groups }}
                 'groups' => 'groups',
                 {{- end }}
                 'photoURL' => 'picture',
