@@ -95,7 +95,7 @@ data:
 
     // When using ReverseProxyAuthMiddleware,
     // the name of the HTTP header which your reverse proxy uses to pass the username (on successful authentication)
-    Setting('REVERSE_PROXY_AUTH_HEADER', 'X-Auth-Request-User');
+    Setting('REVERSE_PROXY_AUTH_HEADER', 'X-Auth-Request-Email');
 
     // LDAP options when using LdapAuthMiddleware
     Setting('LDAP_ADDRESS', ''); // Example value "ldap://vm-dc2019.local.berrnd.net"
@@ -273,16 +273,6 @@ spec:
         app: grocy
     spec:
       hostname: grocy
-      initContainers:
-        - name: copy
-          image: busybox:1
-          command: ["/bin/sh", "-c", "mkdir -p /config/data; cp /init-config/config.php /config/data"]
-          volumeMounts:
-            - mountPath: "/init-config"
-              name: config
-              subPath: config.php
-            - mountPath: "/config"
-              name: data
       containers:
         - name: grocy
           image: lscr.io/linuxserver/grocy:latest
@@ -313,6 +303,10 @@ spec:
           volumeMounts:
             - name: data
               mountPath: "/config"
+            - name: config
+              mountPath: "/config/data/config.php"
+              subPath: config.php
+              readOnly: true
       volumes:
         - name: data
           persistentVolumeClaim:
