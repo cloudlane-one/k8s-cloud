@@ -273,6 +273,15 @@ spec:
         app: grocy
     spec:
       hostname: grocy
+      initContainers:
+        - name: copy
+          image: busybox:1
+          command: ["/bin/sh", "-c", "cp /initial-config/* /config"]
+          volumeMounts:
+            - mountPath: "/initial-config"
+              name: config
+            - mountPath: "/config"
+              name: data
       containers:
         - name: grocy
           image: lscr.io/linuxserver/grocy:latest
@@ -303,9 +312,6 @@ spec:
           volumeMounts:
             - name: data
               mountPath: "/config"
-            - name: config
-              mountPath: "/config"
-              subPath: config.php
       volumes:
         - name: data
           persistentVolumeClaim:
