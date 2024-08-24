@@ -1,3 +1,11 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: bitnami
+spec:
+  interval: 1h
+  url: https://charts.bitnami.com/bitnami
+---
 {{- if .Values.s3.enabled }}
 apiVersion: v1
 kind: Secret
@@ -105,7 +113,7 @@ spec:
       hostname: monica
       containers:
         - name: monica
-          image: monica
+          image: monica:4-apache
           imagePullPolicy: Always
           env:
             - name: APP_ENV
