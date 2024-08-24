@@ -11,14 +11,14 @@ smtp: # For notifications
   from_address: ""
 
 s3:
-  enabled: true # Use S3 bucket as primary file storage.
+  enabled: false # Use S3 bucket as primary file storage.
   endpoint: "" # Hostname (without URL scheme) of your S3 endpoint
   region: "de"
   access_key_id: "" # Your S3 access key id
   access_key_secret:
     # Your S3 access key secret
     namespace: null
-    name: nextcloud-s3
+    name: monica-s3
     key: access_key_secret
   bucket: "" # Name of bucket
 
