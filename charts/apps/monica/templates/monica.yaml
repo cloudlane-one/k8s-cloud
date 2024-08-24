@@ -26,7 +26,6 @@ data:
   mariadb-password: {{ include "common.secrets.passwords.manage" (dict "secret" "monica-mariadb" "key" "mariadb-password" "providedValues" (list "") "context" $) }}
   mariadb-root-password: {{ include "common.secrets.passwords.manage" (dict "secret" "monica-mariadb" "key" "mariadb-root-password" "providedValues" (list "") "context" $) }}
   mariadb-replication-password: {{ include "common.secrets.passwords.manage" (dict "secret" "monica-mariadb" "key" "mariadb-replication-password" "providedValues" (list "") "context" $) }}
-  mariadb-username: {{ "monica" | b64enc }}
 ---
 apiVersion: v1
 kind: Secret
@@ -69,6 +68,7 @@ spec:
   values:
     auth:
       existingSecret: monica-mariadb
+      username: monica
       database: monica
     primary:
       persistence:
