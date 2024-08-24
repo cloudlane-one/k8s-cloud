@@ -343,6 +343,20 @@ entries:
     version: 0.4.2
   monica:
   - apiVersion: v2
+    appVersion: 0.1.2
+    created: "2024-08-24T23:02:41.894415402Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: The Personal Relationship Manager
+    digest: 374168a4bb9dfed21fde8b930adb4767263ca2ffa00f3863ee1b3341b5733c5c
+    name: monica
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/monica-0.1.2/monica-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
     appVersion: 0.1.1
     created: "2024-08-24T22:59:35.634731454Z"
     dependencies:
@@ -863,4 +877,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.0/wordpress-0.1.0.tgz
     version: 0.1.0
-generated: "2024-08-24T22:59:35.634823807Z"
+generated: "2024-08-24T23:02:41.894504028Z"
