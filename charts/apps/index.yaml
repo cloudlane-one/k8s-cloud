@@ -273,6 +273,20 @@ entries:
   nextcloud:
   - apiVersion: v2
     appVersion: 29.0.4
+    created: "2024-08-24T10:44:09.924731674Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Nextcloud with SSO and some useful extras
+    digest: 0e0707ac6912ad137ba8203350bb25b6865e12e7d23d1c45b710b7e474ec7d9b
+    name: nextcloud
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/nextcloud-0.11.7/nextcloud-0.11.7.tgz
+    version: 0.11.7
+  - apiVersion: v2
+    appVersion: 29.0.4
     created: "2024-08-21T14:19:45.6298501Z"
     dependencies:
     - name: common
@@ -512,6 +526,20 @@ entries:
   rocketchat:
   - apiVersion: v2
     appVersion: 6.11.1
+    created: "2024-08-24T10:44:10.039145623Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Rocket.Chat with SSO and some useful extras
+    digest: 140373ea9918fdeb8a78f1a04f4cbc9fccf8ec222016ab16b4c54989683a97d2
+    name: rocketchat
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/rocketchat-0.3.6/rocketchat-0.3.6.tgz
+    version: 0.3.6
+  - apiVersion: v2
+    appVersion: 6.11.1
     created: "2024-08-21T10:45:42.955557188Z"
     dependencies:
     - name: common
@@ -707,4 +735,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.0/wordpress-0.1.0.tgz
     version: 0.1.0
-generated: "2024-08-21T14:19:45.630004297Z"
+generated: "2024-08-24T10:44:10.0396688Z"
