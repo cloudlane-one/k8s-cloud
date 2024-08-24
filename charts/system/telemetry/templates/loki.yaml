@@ -77,7 +77,7 @@ spec:
       autoscaling:
         enabled: true
         minReplicas: 1
-        maxReplicas: 3
+        maxReplicas: {{ .Values.ha_deployment.max_replicas }}
         targetCPUUtilizationPercentage: 65
         targetMemoryUtilizationPercentage: 65
     write:
@@ -89,7 +89,7 @@ spec:
       autoscaling:
         enabled: true
         minReplicas: 1
-        maxReplicas: 3
+        maxReplicas: {{ .Values.ha_deployment.max_replicas }}
         targetCPUUtilizationPercentage: 65
         targetMemoryUtilizationPercentage: 65
       persistence:
@@ -108,7 +108,7 @@ spec:
       autoscaling:
         enabled: true
         minReplicas: 1
-        maxReplicas: 3
+        maxReplicas: {{ .Values.ha_deployment.max_replicas }}
         targetCPUUtilizationPercentage: 65
         targetMemoryUtilizationPercentage: 65
       persistence:
@@ -127,7 +127,7 @@ spec:
       autoscaling:
         enabled: true
         minReplicas: 1
-        maxReplicas: 3
+        maxReplicas: {{ .Values.ha_deployment.max_replicas }}
         targetCPUUtilizationPercentage: 65
         targetMemoryUtilizationPercentage: 65
     lokiCanary:

@@ -522,6 +522,8 @@
         kubeconfig: "{{ kubeconfig }}"
   loop_control:
     label: "{{ item.release_name }} in {{ item.namespace }}"
+  vars:
+    node_count: "{{ groups['cluster'] | length }}"
   loop:
     - release_name: k3s-auto-upgrade
       chart_name: upgrade
@@ -589,6 +591,8 @@
         node_endpoints: "{{ groups['all'] }}"
         letsencrypt_staging: "{{ cluster.letsencrypt_staging }}"
         k3s: true
+        ha_deployment:
+          max_replicas: "{{ [node_count | int, 3] | min }}"
 
     - release_name: cicd-stack
       chart_name: gitops
