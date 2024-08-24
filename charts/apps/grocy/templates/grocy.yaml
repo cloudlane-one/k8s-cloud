@@ -276,10 +276,11 @@ spec:
       initContainers:
         - name: copy
           image: busybox:1
-          command: ["/bin/sh", "-c", "cp /initial-config/* /config"]
+          command: ["/bin/sh", "-c", "mkdir -p /config/data; cp /init-config/config.php /config/data"]
           volumeMounts:
-            - mountPath: "/initial-config"
+            - mountPath: "/init-config"
               name: config
+              subPath: config.php
             - mountPath: "/config"
               name: data
       containers:
@@ -292,7 +293,7 @@ spec:
           livenessProbe:
             tcpSocket:
               port: http
-            initialDelaySeconds: 120
+            initialDelaySeconds: 30
             timeoutSeconds: 10
             periodSeconds: 20
             successThreshold: 1
@@ -300,7 +301,7 @@ spec:
           readinessProbe:
             tcpSocket:
               port: http
-            initialDelaySeconds: 120
+            initialDelaySeconds: 30
             timeoutSeconds: 10
             periodSeconds: 20
             successThreshold: 1
