@@ -144,7 +144,7 @@ spec:
             - name: MAIL_HOST
               value: {{ .Values.smtp.host }}
             - name: MAIL_PORT
-              value: {{ .Values.smtp.port }}
+              value: {{ .Values.smtp.port | quote }}
             - name: MAIL_USERNAME
               value: {{ .Values.smtp.user }}
             - name: MAIL_PASSWORD
