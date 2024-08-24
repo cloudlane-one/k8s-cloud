@@ -49,8 +49,8 @@ spec:
       storageClass: local
     resources:
       requests:
-        memory: 256Mi # measured on 2023-11-30
-        cpu: 100m # measured on 2023-11-30
+        memory: 256Mi
+        cpu: 50m
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
@@ -89,7 +89,7 @@ spec:
       resources:
         requests:
           memory: 128Mi # measured on 2023-11-30
-          cpu: 50m # measured on 2023-11-30
+          cpu: 50m
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
@@ -124,7 +124,7 @@ spec:
         size: 4Gi
       resources:
         requests:
-          cpu: 100m # measured on 2023-11-30
+          cpu: 50m
           memory: 128Mi # measured on 2023-11-30
     metrics:
       enabled: true

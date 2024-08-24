@@ -188,10 +188,10 @@ spec:
       requests:
         {{- if .Values.ha_deployment.enabled }}
         memory: 768Mi # measured on 2023-11-30
-        cpu: 200m # measured on 2023-11-30
+        cpu: 100m # measured on 2023-11-30
         {{- else }}
         memory: 1Gi # measured on 2024-08-24
-        cpu: 250m # measured on 2024-08-24
+        cpu: 150m # measured on 2024-08-24
         {{- end }}
     extraEnv:
       - name: Site_Name

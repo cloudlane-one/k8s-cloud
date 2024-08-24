@@ -128,7 +128,7 @@ spec:
     # replicaCount: 2
     resources:
       requests:
-        cpu: 200m # measured on 2024-08-24
+        cpu: 150m # measured on 2024-08-24
         memory: 1Gi # measured on 2024-08-24
     ingress:
       enabled: {{ .Values.ingress }}

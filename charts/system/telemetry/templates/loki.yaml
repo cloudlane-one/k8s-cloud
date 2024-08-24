@@ -65,9 +65,15 @@ spec:
               prefix: index_
               period: 24h
     chunksCache:
-      allocatedMemory: 512
+      resources:
+        requests:
+          cpu: 100m
+          memory: 768Mi
     resultsCache:
-      allocatedMemory: 512
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
     read:
       replicas: 1
       resources:
@@ -122,7 +128,7 @@ spec:
       replicas: 1
       resources:
         requests:
-          cpu: 300m # measured on 2023-11-30
+          cpu: 200m
           memory: 32Mi
       autoscaling:
         enabled: true
