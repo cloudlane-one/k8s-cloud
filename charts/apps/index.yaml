@@ -201,6 +201,20 @@ entries:
     version: 0.1.1
   mailuman:
   - apiVersion: v2
+    appVersion: 0.5.4
+    created: "2024-08-24T12:08:37.549947861Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Mail server + mailing list service + Web UIs
+    digest: b8e8288ea4e3214c6b6c318155784ae58e47c4a9d705551e711f748ad9b29079
+    name: mailuman
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/mailuman-0.5.4/mailuman-0.5.4.tgz
+    version: 0.5.4
+  - apiVersion: v2
     appVersion: 0.5.3
     created: "2024-02-26T18:00:18.014148876Z"
     dependencies:
@@ -271,6 +285,20 @@ entries:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/mailuman-0.4.2/mailuman-0.4.2.tgz
     version: 0.4.2
   nextcloud:
+  - apiVersion: v2
+    appVersion: 29.0.4
+    created: "2024-08-24T12:08:37.725852504Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Nextcloud with SSO and some useful extras
+    digest: ff18e368bfce627b23c26e11fba96a861daf774923cc4665e400b575ad024ced
+    name: nextcloud
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/nextcloud-0.11.8/nextcloud-0.11.8.tgz
+    version: 0.11.8
   - apiVersion: v2
     appVersion: 29.0.4
     created: "2024-08-24T10:44:09.924731674Z"
@@ -526,6 +554,20 @@ entries:
   rocketchat:
   - apiVersion: v2
     appVersion: 6.11.1
+    created: "2024-08-24T12:08:37.918632255Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Rocket.Chat with SSO and some useful extras
+    digest: 126e8a9aad6156f4ffd7fb80f8a6ac8bd2bcfac91e401eb3989de67ba17598d8
+    name: rocketchat
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/rocketchat-0.3.7/rocketchat-0.3.7.tgz
+    version: 0.3.7
+  - apiVersion: v2
+    appVersion: 6.11.1
     created: "2024-08-24T10:44:10.039145623Z"
     dependencies:
     - name: common
@@ -735,4 +777,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.0/wordpress-0.1.0.tgz
     version: 0.1.0
-generated: "2024-08-24T10:44:10.0396688Z"
+generated: "2024-08-24T12:08:37.918921777Z"
