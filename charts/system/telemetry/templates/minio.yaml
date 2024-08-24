@@ -60,8 +60,8 @@ spec:
         purge: false
     resources:
       requests:
-        cpu: 100m # measured on 2023-11-30
-        memory: 1Gi # measured on 2023-11-30
+        cpu: 100m # measured on 2024-08-24
+        memory: 768Mi # measured on 2024-08-24
     persistence:
       size: 10Gi
       storageClass: local

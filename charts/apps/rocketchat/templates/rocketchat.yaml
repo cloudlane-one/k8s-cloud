@@ -119,8 +119,8 @@ spec:
       size: 8Gi
     resources:
       requests:
-        memory: 1.5Gi # measured on 2023-11-30
-        cpu: 400m # measured on 2023-11-30
+        memory: 1Gi # measured on 2024-08-24
+        cpu: 400m # measured on 2024-08-24
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
@@ -190,8 +190,8 @@ spec:
         memory: 768Mi # measured on 2023-11-30
         cpu: 200m # measured on 2023-11-30
         {{- else }}
-        memory: 1.5Gi # measured on 2023-11-30
-        cpu: 300m # measured on 2023-11-30
+        memory: 1Gi # measured on 2024-08-24
+        cpu: 250m # measured on 2024-08-24
         {{- end }}
     extraEnv:
       - name: Site_Name

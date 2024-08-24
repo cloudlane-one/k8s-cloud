@@ -236,11 +236,11 @@ spec:
         retention: 3d
         resources:
           requests:
-            cpu: 150m # measured on 2023-11-30
-            memory: 2.5Gi # measured on 2023-11-30
+            cpu: 300m # measured on 2024-08-24
+            memory: 1.5Gi # measured on 2024-08-24
           limits:
-            cpu: 300m # measured on 2023-11-30
-            memory: 3Gi # measured on 2023-11-30
+            cpu: 500m # measured on 2024-08-24
+            memory: 3Gi # measured on 2024-08-24
     grafana:
       replicas: 1
       deploymentStrategy:

@@ -64,6 +64,10 @@ spec:
             index:
               prefix: index_
               period: 24h
+    chunksCache:
+      allocatedMemory: 512
+    resultsCache:
+      allocatedMemory: 512
     read:
       replicas: 1
       resources:

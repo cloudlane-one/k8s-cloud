@@ -128,8 +128,8 @@ spec:
     # replicaCount: 2
     resources:
       requests:
-        cpu: 200m # measured on 2023-11-30
-        memory: 2Gi # measured on 2023-11-30
+        cpu: 200m # measured on 2024-08-24
+        memory: 1Gi # measured on 2024-08-24
     ingress:
       enabled: {{ .Values.ingress }}
       tls:
@@ -355,8 +355,8 @@ spec:
           size: 4Gi
         resources:
           requests:
-            cpu: 100m # measured on 2023-11-30
-            memory: 1Gi # measured on 2023-11-30
+            cpu: 100m # measured on 2024-08-24
+            memory: 512Mi # measured on 2024-08-24
     {{- if not (eq .Values.zone "") }}
         nodeSelector:
           topology.kubernetes.io/zone: {{ .Values.zone }}
