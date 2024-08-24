@@ -1,0 +1,9 @@
+host: ""
+
+oauth2_proxy_host: ""
+
+ingress: true
+
+snapshots:
+  enabled: true
+  class_name: snap
