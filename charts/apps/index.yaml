@@ -201,6 +201,20 @@ entries:
     version: 0.1.1
   grocy:
   - apiVersion: v2
+    appVersion: 4.2.0
+    created: "2024-08-24T17:16:18.800478768Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: ERP beyond your fridge
+    digest: 9c02952a6c4f1ed10b3cbb82d0d77e7fd89f0167dc2697e2635ff1c2996faaf8
+    name: grocy
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/grocy-0.1.1/grocy-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
     appVersion: 0.1.0
     created: "2024-08-24T17:04:31.591677392Z"
     dependencies:
@@ -792,4 +806,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.0/wordpress-0.1.0.tgz
     version: 0.1.0
-generated: "2024-08-24T17:04:31.591794342Z"
+generated: "2024-08-24T17:16:18.800597549Z"
