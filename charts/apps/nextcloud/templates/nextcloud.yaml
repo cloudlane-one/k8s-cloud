@@ -184,12 +184,22 @@ spec:
             secretKeyRef:
               name: onlyofficejwt
               key: JWT_SECRET
+      phpConfigs:
+        opcache-recommended.ini: |
+          opcache.enable=1
+          opcache.interned_strings_buffer=64
+          opcache.max_accelerated_files=10000
+          opcache.memory_consumption=256
+          opcache.save_comments=1
+          opcache.revalidate_freq=60
+          opcache.jit=1255
+          opcache.jit_buffer_size=256M
       configs:
         logging.config.php: |
           <?php
           $CONFIG = array (
             "log_type" => "file",
-            "logfile" => "nextcloud.log",
+            "logfile" => "data/nextcloud.log",
             "loglevel" => {{ .Values.debug | ternary 0 2 }},
           );
           ?>
