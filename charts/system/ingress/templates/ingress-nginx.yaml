@@ -35,6 +35,7 @@ spec:
       config:
         proxy-buffer-size: "16k" # See https://andrewlock.net/fixing-nginx-upstream-sent-too-big-header-error-when-running-an-ingress-controller-in-kubernetes/ for explanation
       allowSnippetAnnotations: true
+      enableAnnotationValidations: false # Avoid validation errors due to variables in URLs (auth-signin, etc.)
       nodeSelector:
         {{ .Values.cluster_name }}-ingress: "1"
       service:
