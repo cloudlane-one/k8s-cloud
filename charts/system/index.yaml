@@ -185,6 +185,20 @@ entries:
     version: 0.1.1
   ingress:
   - apiVersion: v2
+    appVersion: 0.2.2
+    created: "2025-01-07T12:13:56.150952839Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: NGINX ingress controller + extras
+    digest: ec278e02875d8f46c8dbfd2dce5f7d9dfc86e8601c81e9e811d9ada02c0e2f9b
+    name: ingress
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/ingress-0.2.2/ingress-0.2.2.tgz
+    version: 0.2.2
+  - apiVersion: v2
     appVersion: 0.2.1
     created: "2023-12-01T14:22:41.021548165Z"
     dependencies:
@@ -769,4 +783,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-0.1.6/vcluster-0.1.6.tgz
     version: 0.1.6
-generated: "2024-08-24T12:08:47.522177815Z"
+generated: "2025-01-07T12:13:56.151074947Z"
