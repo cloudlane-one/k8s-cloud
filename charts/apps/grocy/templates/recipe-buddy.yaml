@@ -9,6 +9,20 @@ data:
 {{- if .Values.recipe_buddy.enabled }}
 ---
 apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: rb-data
+  annotations:
+    helm.sh/resource-policy: "keep"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: "2Gi"
+  storageClassName: ha
+---
+apiVersion: v1
 kind: Service
 metadata:
   name: recipe-buddy
@@ -82,6 +96,13 @@ spec:
             requests:
               memory: 256Mi # estimated, not measured
               cpu: 50m # estimated, not measured
+          volumeMounts:
+            - name: data
+              mountPath: "/home/node/app/data"
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: rb-data
 {{- if .Values.recipe_buddy.ingress }}
 ---
 apiVersion: networking.k8s.io/v1
@@ -113,5 +134,20 @@ spec:
                 name: recipe-buddy
                 port:
                   name: http
+{{- end }}
+{{- if .Values.snapshots.enabled }}
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "rb-data-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: rb-data
+  {{- if .Values.snapshots.class_name }}
+  volumeSnapshotClassName: {{ .Values.snapshots.class_name }}
+  {{- end }}
 {{- end }}
 {{- end }}
