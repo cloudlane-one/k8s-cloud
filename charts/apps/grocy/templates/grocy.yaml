@@ -221,7 +221,7 @@ data:
     Setting('FEATURE_FLAG_RECIPES', true);
     Setting('FEATURE_FLAG_CHORES', true);
     Setting('FEATURE_FLAG_TASKS', true);
-    Setting('FEATURE_FLAG_BATTERIES', true);
+    Setting('FEATURE_FLAG_BATTERIES', false);
     Setting('FEATURE_FLAG_EQUIPMENT', true);
     Setting('FEATURE_FLAG_CALENDAR', true);
     Setting('FEATURE_FLAG_LABEL_PRINTER', false);
@@ -326,7 +326,11 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/auth-response-headers: "Authorization, X-Auth-Request-User, X-Auth-Request-Groups, X-Auth-Request-Email, X-Auth-Request-Preferred-Username, X-Auth-Request-Access-Token"
     nginx.ingress.kubernetes.io/auth-signin: {{ printf "https://%s/oauth2/start?rd=$scheme%%3A%%2F%%2F$host$escaped_request_uri" .Values.oauth2_proxy_host }}
+    {{- if .Values.group_restriction.enabled }}
+    nginx.ingress.kubernetes.io/auth-url: {{ printf "https://%s/oauth2/auth?allowed_groups=%s" .Values.oauth2_proxy_host (urlquery .Values.group_restriction.allowed_groups) }}
+    {{- else }}
     nginx.ingress.kubernetes.io/auth-url: {{ printf "https://%s/oauth2/auth" .Values.oauth2_proxy_host }}
+    {{- end }}
     kubernetes.io/tls-acme: "true"
     nginx.ingress.kubernetes.io/proxy-body-size: 1G
 spec:

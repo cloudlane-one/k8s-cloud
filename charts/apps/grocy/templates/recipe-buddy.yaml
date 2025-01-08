@@ -1,0 +1,104 @@
+{{- if .Values.recipe_buddy.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: recipe-buddy
+spec:
+  type: ClusterIP
+  selector:
+    app: grocy
+  ports:
+    - port: 80
+      targetPort: http
+      name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recipe-buddy
+  labels:
+    app: recipe-buddy
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: recipe-buddy
+  template:
+    metadata:
+      labels:
+        app: recipe-buddy
+    spec:
+      hostname: recipe-buddy
+      containers:
+        - name: recipe-buddy
+          image: ghcr.io/georgegebbett/recipe-buddy
+          imagePullPolicy: Always
+          env:
+            - name: SERVE_FROM_DOMAIN
+              value: {{ .Values.hosts.mailman }}
+            - name: DATABASE_URL
+              value: {{ printf "postgresql://mailman:%s@mailman-postgresql/mailman" (b64dec $pg_user_pw) }}
+            - name: DATABASE_TYPE
+              value: "postgres"
+            - name: HYPERKITTY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: hyperkitty-key
+                  key: api-key
+          ports:
+            - name: http
+              containerPort: 3000
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 30
+            timeoutSeconds: 10
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 30
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 30
+            timeoutSeconds: 10
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: 256Mi # estimated, not measured
+              cpu: 50m # estimated, not measured
+{{- if .Values.recipe_buddy.ingress }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: recipe-buddy
+  annotations:
+    nginx.ingress.kubernetes.io/auth-signin: {{ printf "https://%s/oauth2/start?rd=$scheme%%3A%%2F%%2F$host$escaped_request_uri" .Values.oauth2_proxy_host }}
+    {{- if .Values.group_restriction.enabled }}
+    nginx.ingress.kubernetes.io/auth-url: {{ printf "https://%s/oauth2/auth?allowed_groups=%s" .Values.oauth2_proxy_host (urlquery .Values.group_restriction.allowed_groups) }}
+    {{- else }}
+    nginx.ingress.kubernetes.io/auth-url: {{ printf "https://%s/oauth2/auth" .Values.oauth2_proxy_host }}
+    {{- end }}
+    kubernetes.io/tls-acme: "true"
+spec:
+  tls:
+    - hosts:
+        - {{ .Values.recipe_buddy.host }}
+      secretName: recipe-buddy-cert
+  rules:
+    - host: {{ .Values.recipe_buddy.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: recipe-buddy
+                port:
+                  name: http
+{{- end }}
+{{- end }}
