@@ -443,6 +443,20 @@ entries:
   nextcloud:
   - apiVersion: v2
     appVersion: 30.0.4"
+    created: "2025-01-08T08:08:51.319810401Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Nextcloud with SSO and some useful extras
+    digest: cefc0895b502f13b9851855abe0787b30662c2eb98d946cbfc4e1cba047f3bc5
+    name: nextcloud
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/nextcloud-0.12.1/nextcloud-0.12.1.tgz
+    version: 0.12.1
+  - apiVersion: v2
+    appVersion: 30.0.4"
     created: "2025-01-08T07:42:36.978923606Z"
     dependencies:
     - name: common
@@ -975,4 +989,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.0/wordpress-0.1.0.tgz
     version: 0.1.0
-generated: "2025-01-08T07:42:37.08671422Z"
+generated: "2025-01-08T08:08:51.320059686Z"
