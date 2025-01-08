@@ -1,5 +1,14 @@
 {{- if .Values.recipe_buddy.enabled }}
 apiVersion: v1
+kind: Secret
+metadata:
+  name: recipe-buddy
+type: Opaque
+stringData:
+  api-key: {{ .Values.recipe_buddy.api_key }}
+  nextauth-secret: {{ include "common.secrets.passwords.manage" (dict "secret" "recipe-buddy" "key" "nextauth-secret" "providedValues" (list "") "context" $) }}
+---
+apiVersion: v1
 kind: Service
 metadata:
   name: recipe-buddy
@@ -36,17 +45,20 @@ spec:
           image: ghcr.io/georgegebbett/recipe-buddy
           imagePullPolicy: Always
           env:
-            - name: SERVE_FROM_DOMAIN
-              value: {{ .Values.hosts.mailman }}
-            - name: DATABASE_URL
-              value: {{ printf "postgresql://mailman:%s@mailman-postgresql/mailman" (b64dec $pg_user_pw) }}
-            - name: DATABASE_TYPE
-              value: "postgres"
-            - name: HYPERKITTY_API_KEY
+            - name: GROCY_BASE_URL
+              value: {{ printf "https://%s" .Values.host }}
+            - name: GROCY_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: hyperkitty-key
+                  name: recipe-buddy
                   key: api-key
+            - name: NEXTAUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: recipe-buddy
+                  key: nextauth-secret
+            - name: NEXTAUTH_URL
+              value: {{ printf "https://%s" .Values.recipe_buddy.host }}
           ports:
             - name: http
               containerPort: 3000
