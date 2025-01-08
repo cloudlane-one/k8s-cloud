@@ -1,12 +1,12 @@
-{{- if .Values.recipe_buddy.enabled }}
 apiVersion: v1
 kind: Secret
 metadata:
   name: recipe-buddy
 type: Opaque
-stringData:
-  api-key: {{ .Values.recipe_buddy.api_key }}
+data:
+  api-key: {{ .Values.recipe_buddy.api_key | b64enc }}
   nextauth-secret: {{ include "common.secrets.passwords.manage" (dict "secret" "recipe-buddy" "key" "nextauth-secret" "providedValues" (list "") "context" $) }}
+{{- if .Values.recipe_buddy.enabled }}
 ---
 apiVersion: v1
 kind: Service
