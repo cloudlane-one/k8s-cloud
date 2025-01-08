@@ -161,7 +161,7 @@ spec:
               name: data
       containers:
         - name: mailman-core
-          image: maxking/mailman-core:0.4
+          image: maxking/mailman-core:0.5
           imagePullPolicy: Always
           command: ["/bin/sh", "-c"]
           args: 
@@ -434,7 +434,7 @@ spec:
               name: data
       containers:
         - name: mailman-web
-          image: maxking/mailman-web:0.4
+          image: maxking/mailman-web:0.5
           imagePullPolicy: Always
           env:
             - name: SERVE_FROM_DOMAIN
