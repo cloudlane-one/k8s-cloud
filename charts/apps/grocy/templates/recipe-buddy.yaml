@@ -15,7 +15,7 @@ metadata:
 spec:
   type: ClusterIP
   selector:
-    app: grocy
+    app: recipe-buddy
   ports:
     - port: 80
       targetPort: http
