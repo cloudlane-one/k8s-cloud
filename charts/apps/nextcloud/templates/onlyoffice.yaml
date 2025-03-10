@@ -1,3 +1,4 @@
+{{- if .Values.onlyoffice.enabled }}
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
@@ -224,3 +225,4 @@ spec:
       ssl:
         enabled: true
         secret: onlyoffice-tls
+{{- end }}

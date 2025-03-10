@@ -43,6 +43,9 @@ storage:
   encrypted: false
   auto_backup: true
 
+onlyoffice:
+  enabled: true
+
 zone: "" # Specific zone to localize this release to (pods and volumes)
 
 snapshots:

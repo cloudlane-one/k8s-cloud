@@ -67,15 +67,19 @@ data:
     echo 'nextcloud all set up.'
   apps.txt: | 
     oidc_login
+    {{- if .Values.onlyoffice.enabled }}
     onlyoffice
+    {{- end }}
   config.json: |
     {
       "system": {},
       "apps": {
+        {{- if .Values.onlyoffice.enabled }}
         "onlyoffice": {
           "DocumentServerUrl": {{ printf "https://%s" .Values.hosts.onlyoffice | quote }},
           "jwt_secret": "$OO_JWT_SECRET"
         },
+        {{- end }}
         "files": {
           "default_quota": "1 GB"
         }
@@ -179,11 +183,13 @@ spec:
             secretKeyRef:
               name: oidc-client.nextcloud
               key: secret
+        {{- if .Values.onlyoffice.enabled }}
         - name: OO_JWT_SECRET
           valueFrom:
             secretKeyRef:
               name: onlyofficejwt
               key: JWT_SECRET
+        {{- end }}
       phpConfigs:
         opcache-recommended.ini: |
           opcache.enable=1
