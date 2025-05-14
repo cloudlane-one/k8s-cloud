@@ -54,6 +54,8 @@ spec:
         name: bitnami
   timeout: 15m0s
   values:
+    containerSecurityContext:
+      readOnlyRootFilesystem: false
     nodeSelector:
       {{- if not (eq .Values.zone "") }}
       topology.kubernetes.io/zone: {{ .Values.zone }}
