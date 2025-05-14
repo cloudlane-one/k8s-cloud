@@ -228,6 +228,20 @@ entries:
     version: 0.2.1
   sso:
   - apiVersion: v2
+    appVersion: 0.5.0
+    created: "2025-05-14T20:48:28.465080963Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Keycloak-based Signle-Sign-On and some useful extras
+    digest: 2b3c3a4fd198e05e22734e1e6c18f64177386814b589ee610386928845ac5e7e
+    name: sso
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/sso-0.5.0/sso-0.5.0.tgz
+    version: 0.5.0
+  - apiVersion: v2
     appVersion: 0.4.1
     created: "2025-05-14T20:24:05.59393217Z"
     dependencies:
@@ -853,4 +867,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-0.1.6/vcluster-0.1.6.tgz
     version: 0.1.6
-generated: "2025-05-14T20:24:05.594028079Z"
+generated: "2025-05-14T20:48:28.465242377Z"
