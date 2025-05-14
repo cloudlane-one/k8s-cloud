@@ -34,7 +34,7 @@ data:
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: OCIRepository
 metadata:
-  name: bitnami
+  name: bitnami-keycloak
 spec:
   interval: 1h
   url: oci://registry-1.docker.io/bitnamicharts/keycloak
@@ -47,12 +47,10 @@ metadata:
   name: keycloak
 spec:
   interval: 1h
-  chart:
-    spec:
-      chart: keycloak
-      sourceRef:
-        kind: OCIRepository
-        name: bitnami
+  releaseName: keycloak
+  chartRef:
+    kind: OCIRepository
+    name: bitnami-keycloak
   timeout: 15m0s
   values:
     containerSecurityContext:
