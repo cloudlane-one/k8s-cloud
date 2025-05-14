@@ -92,16 +92,16 @@ spec:
         # Create custom theme folder:
 
         cd /opt/bitnami/keycloak/themes
-        mkdir ./k8s-cloud
+        mkdir -p ./k8s-cloud
         cd ./k8s-cloud
 
         # Create login theme:
 
-        mkdir ./login
+        mkdir -p ./login
         cd ./login
         cp /opt/k8s-cloud/themes/login/theme.properties ./
-        mkdir ./resources
-        mkdir ./resources/css
+        mkdir -p ./resources
+        mkdir -p ./resources/css
         cp /opt/k8s-cloud/themes/login/styles.css ./resources/css
         cd ..
     metrics:
