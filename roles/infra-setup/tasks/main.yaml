@@ -8,7 +8,7 @@
     suffix: "{{ cluster.domain | community.dns.get_public_suffix }}"
     main_name: "{{ cluster.domain | replace(suffix, '') | split('.') | last }}"
   ansible.builtin.set_fact:
-    k8s_api_host: "{{ cluster.subdomains.k8s_api }}.{{ cluster.domain }}"
+    k8s_api_host: "{{ cluster.components.k8s.endpoints.api }}.{{ cluster.domain }}"
     charts_dir: "{{ playbook_dir }}/charts"
     cluster_name: "{{ cluster.domain | replace('.', '-') }}-cluster"
     registered_domain: "{{ main_name }}{{ suffix }}"
@@ -142,7 +142,7 @@
             labels: "{{ {storage_key: '1'} }}"
 
 - name: Ensure vcluster for cluster.domain exists and is selected in kubeconfig
-  when: "cluster.virtual"
+  when: "cluster.components.k8s.virtual"
   environment:
     K8S_AUTH_KUBECONFIG: "{{ host_kubeconfig }}"
     KUBECONFIG: "{{ host_kubeconfig }}"
@@ -164,7 +164,7 @@
                 cluster_name: "{{ cluster_name }}"
                 host: "{{ k8s_api_host }}"
                 oidc_client:
-                  idp_url: "https://{{ cluster.subdomains.keycloak }}.{{ cluster.domain }}/realms/master"
+                  idp_url: "https://{{ cluster.components.sso.endpoints.keycloak }}.{{ cluster.domain }}/realms/master"
             kubeconfig: "{{ host_kubeconfig }}"
 
     - name: Wait for vcluster deployment to become ready
@@ -257,9 +257,9 @@
             namespace: flux-system
           spec:
             interval: 1h
-            url: "{{ cluster.base_repo }}"
+            url: "{{ cluster.components.gitops.base_repo }}"
             ref:
-              branch: "{{ cluster.base_branch }}"
+              branch: "{{ cluster.components.gitops.base_branch }}"
 
     - name: Reconcile base git repo
       ansible.builtin.command: "flux reconcile source git base-repo -n flux-system"
@@ -276,7 +276,7 @@
             namespace: flux-system
           spec:
             interval: 1h
-            url: "{{ cluster.base_config_repo }}"
+            url: "{{ cluster.components.gitops.base_config_repo }}"
 
     - name: Reconcile base config helm repo
       ansible.builtin.command: "flux reconcile source helm base-config-repo -n flux-system"
@@ -293,7 +293,7 @@
             namespace: flux-system
           spec:
             interval: 1h
-            url: "{{ cluster.base_system_repo }}"
+            url: "{{ cluster.components.gitops.base_system_repo }}"
 
     - name: Reconcile base system helm repo
       ansible.builtin.command: "flux reconcile source helm base-system-repo -n flux-system"
@@ -310,7 +310,7 @@
             namespace: flux-system
           spec:
             interval: 1h
-            url: "{{ cluster.base_app_repo }}"
+            url: "{{ cluster.components.gitops.base_app_repo }}"
 
     - name: Reconcile base app helm repo
       ansible.builtin.command: "flux reconcile source helm base-app-repo -n flux-system"
@@ -428,16 +428,16 @@
               namespace: longhorn-system
               chart_values:
                 default_ha_replicas: "{{ [node_count | int, 2] | min }}"
-                host: "{{ cluster.subdomains.longhorn }}.{{ cluster.domain }}"
+                host: "{{ cluster.components.storage.endpoints.longhorn }}.{{ cluster.domain }}"
                 cluster_name: "{{ cluster_name }}"
-                oauth2_proxy_host: "{{ cluster.subdomains.oauth2_proxy }}.{{ cluster.domain }}"
+                oauth2_proxy_host: "{{ cluster.components.sso.endpoints.oauth2_proxy }}.{{ cluster.domain }}"
                 admin_group: "cluster-admins"
-                s3: "{{ cluster.backup.s3 }}"
+                s3: "{{ cluster.components.backup.s3 }}"
                 zones: "{{ zones }}"
             kubeconfig: "{{ kubeconfig }}"
 
     - name: Deploy backup-stack
-      when: "cluster.backup.enabled"
+      when: "cluster.components.backup.enabled"
       ansible.builtin.include_tasks:
         file: deploy-chart.yaml
         apply:
@@ -447,13 +447,13 @@
               chart_name: backup
               namespace: backup-system
               chart_values:
-                s3: "{{ cluster.backup.s3 }}"
+                s3: "{{ cluster.components.backup.s3 }}"
             kubeconfig: "{{ kubeconfig }}"
 
 - name: Restore cluster from backup
-  when: "cluster.backup.restore.enabled"
+  when: "cluster.components.backup.enabled and cluster.components.backup.restore.enabled"
   vars:
-    restore_name: "{{ cluster.backup.restore.backup_name | ternary(backup.restore.backup_name, cluster.backup.restore.schedule_name) }}"
+    restore_name: "{{ cluster.components.backup.restore.backup_name | ternary(backup.restore.backup_name, cluster.components.backup.restore.schedule_name) }}"
   block:
     - name: Wait for backup resource to be synced from s3
       when: "backup.restore.backup_name"
@@ -461,7 +461,7 @@
         api_version: velero.io/v1
         kind: Backup
         namespace: backup-system
-        name: "{{ cluster.backup.restore.backup_name }}"
+        name: "{{ cluster.components.backup.restore.backup_name }}"
       register: backup_get_result
       retries: 10 # Velero may need time to load the backup from s3.
       delay: 20
@@ -486,32 +486,14 @@
           - create
           - "{{ restore_name }}"
           - "--namespace=backup-system"
-          - "--from-schedule={{ cluster.backup.restore.backup_name | ternary('', cluster.backup.restore.schedule_name) }}"
-          - "--from-backup={{ cluster.backup.restore.backup_name }}"
-          - "--include-resources={{ cluster.backup.restore.included_resources | join(',') }}"
+          - "--from-schedule={{ cluster.components.backup.restore.backup_name | ternary('', cluster.components.backup.restore.schedule_name) }}"
+          - "--from-backup={{ cluster.components.backup.restore.backup_name }}"
+          - "--include-resources={{ cluster.components.backup.restore.included_resources | join(',') }}"
           - "--restore-volumes=true"
           - "--selector"
           - "owner notin (helm)"
           - "--wait"
       changed_when: true
-
-- name: Ensure dns-stack is deployed
-  when: "cluster.dns.enabled"
-  ansible.builtin.include_tasks:
-    file: deploy-chart.yaml
-    apply:
-      vars:
-        chart:
-          release_name: dns-stack
-          chart_name: dns
-          name: dns-stack
-          namespace: dns-system
-          chart_values:
-            domain: "{{ registered_domain }}"
-            provider:
-              name: "{{ cluster.dns.provider }}"
-              extra_config: "{{ cluster.dns.extra_config }}"
-        kubeconfig: "{{ kubeconfig }}"
 
 - name: Ensure remaining infrastructure is fully set up
   ansible.builtin.include_tasks:
@@ -520,11 +502,22 @@
       vars:
         chart: "{{ item }}"
         kubeconfig: "{{ kubeconfig }}"
-  loop_control:
-    label: "{{ item.release_name }} in {{ item.namespace }}"
   vars:
     node_count: "{{ groups['cluster'] | length }}"
+  when: "cluster.components[item.chart_name] is defined and cluster.components[item.chart_name].enabled | default(true)"
+  loop_control:
+    label: "{{ item.release_name }} in {{ item.namespace }}"
   loop:
+    - release_name: dns-stack
+      chart_name: dns
+      name: dns-stack
+      namespace: dns-system
+      chart_values:
+        domain: "{{ registered_domain }}"
+        provider:
+          name: "{{ cluster.components.dns.provider }}"
+          extra_config: "{{ cluster.components.dns.extra_config }}"
+
     - release_name: k3s-auto-upgrade
       chart_name: upgrade
       namespace: upgrade-system
@@ -536,9 +529,7 @@
       namespace: cert-system
       chart_values:
         admin_email: "{{ cluster.mail.admin_address }}"
-        base_repo: "{{ cluster.base_repo }}"
-        base_branch: "{{ cluster.base_branch }}"
-        letsencrypt_staging: "{{ cluster.letsencrypt_staging }}"
+        letsencrypt_staging: "{{ cluster.components.cert.letsencrypt_staging }}"
 
     - release_name: ingress-stack
       chart_name: ingress
@@ -551,8 +542,8 @@
       name: control-stack
       namespace: kube-system
       chart_values:
-        host: "{{ cluster.subdomains.k8s_dashboard }}.{{ cluster.domain }}"
-        oauth2_proxy_host: "{{ cluster.subdomains.oauth2_proxy }}.{{ cluster.domain }}"
+        host: "{{ cluster.components.k8s.endpoints.dashboard }}.{{ cluster.domain }}"
+        oauth2_proxy_host: "{{ cluster.components.sso.endpoints.oauth2_proxy }}.{{ cluster.domain }}"
         admin_group: "cluster-admins"
         cluster_name: "{{ cluster_name }}"
 
@@ -563,18 +554,18 @@
         domain: "{{ cluster.domain }}"
         org: "{{ cluster.org }}"
         hosts:
-          keycloak: "{{ cluster.subdomains.keycloak }}.{{ cluster.domain }}"
-          authproxy: "{{ cluster.subdomains.oauth2_proxy }}.{{ cluster.domain }}"
-          account_console: "{{ cluster.subdomains.account_console }}.{{ cluster.domain }}"
+          keycloak: "{{ cluster.components.sso.endpoints.keycloak }}.{{ cluster.domain }}"
+          authproxy: "{{ cluster.components.sso.endpoints.oauth2_proxy }}.{{ cluster.domain }}"
+          account_console: "{{ cluster.components.sso.endpoints.account_console }}.{{ cluster.domain }}"
         cluster_client:
           id: cluster-oidc
           redirect_uris:
-            - "https://{{ cluster.subdomains.grafana }}.{{ cluster.domain }}/login/generic_oauth"
-            - "https://{{ cluster.subdomains.weave_gitops }}.{{ cluster.domain }}/oauth2/callback"
+            - "https://{{ cluster.components.telemetry.endpoints.grafana }}.{{ cluster.domain }}/login/generic_oauth"
+            - "https://{{ cluster.components.gitops.endpoints.weave }}.{{ cluster.domain }}/oauth2/callback"
         smtp: "{{ cluster.mail.smtp }}"
         admin_group: "cluster-admins"
         admin_email: "{{ cluster.mail.admin_address }}"
-        letsencrypt_staging: "{{ cluster.letsencrypt_staging }}"
+        letsencrypt_staging: "{{ cluster.components.cert.letsencrypt_staging }}"
 
     - release_name: telemetry-stack
       chart_name: telemetry
@@ -582,14 +573,14 @@
       chart_values:
         domain: "{{ cluster.domain }}"
         org: "{{ cluster.org }}"
-        host: "{{ cluster.subdomains.grafana }}.{{ cluster.domain }}"
+        host: "{{ cluster.components.telemetry.endpoints.grafana }}.{{ cluster.domain }}"
         oidc_client:
-          idp_url: "https://{{ cluster.subdomains.keycloak }}.{{ cluster.domain }}/realms/master"
+          idp_url: "https://{{ cluster.components.sso.endpoints.keycloak }}.{{ cluster.domain }}/realms/master"
         admin_email: "{{ cluster.mail.admin_address }}"
         admin_group: "cluster-admins"
         smtp: "{{ cluster.mail.smtp }}"
         node_endpoints: "{{ groups['all'] }}"
-        letsencrypt_staging: "{{ cluster.letsencrypt_staging }}"
+        letsencrypt_staging: "{{ cluster.components.cert.letsencrypt_staging }}"
         k3s: true
         ha_deployment:
           max_replicas: "{{ [node_count | int, 3] | min }}"
@@ -598,12 +589,13 @@
       chart_name: gitops
       namespace: flux-system
       chart_values:
-        host: "{{ cluster.subdomains.weave_gitops }}.{{ cluster.domain }}"
+        host: "{{ cluster.components.gitops.endpoints.weave }}.{{ cluster.domain }}"
         oidc_client:
-          idp_url: "https://{{ cluster.subdomains.keycloak }}.{{ cluster.domain }}/realms/master"
-        letsencrypt_staging: "{{ cluster.letsencrypt_staging }}"
+          idp_url: "https://{{ cluster.components.sso.endpoints.keycloak }}.{{ cluster.domain }}/realms/master"
+        letsencrypt_staging: "{{ cluster.components.cert.letsencrypt_staging }}"
 
 - name: Expose k8s API via Ingress
+  when: "cluster.components.k8s.endpoints.api | type == 'string'"
   environment:
     K8S_AUTH_KUBECONFIG: "{{ kubeconfig }}"
   kubernetes.core.k8s:
@@ -652,7 +644,7 @@
     - name: Template out public kubeconfig
       vars:
         api_url: "https://{{ k8s_api_host }}"
-        issuer_url: "https://{{ cluster.subdomains.keycloak }}.{{ cluster.domain }}/realms/master"
+        issuer_url: "https://{{ cluster.components.sso.endpoints.keycloak }}.{{ cluster.domain }}/realms/master"
         client_secret: "{{ cluster_oidc_secret.resources[0].data.secret | b64decode }}"
       ansible.builtin.template:
         src: public-kubeconfig.yaml
@@ -754,7 +746,7 @@
   changed_when: "host_cluster_name != default_ctx.stdout"
 
 - name: Cleanup port forwarding
-  when: "cluster.virtual"
+  when: "cluster.components.k8s.virtual"
   block:
     - name: Get PIDs of running vcluster port-forwarders
       community.general.pids:

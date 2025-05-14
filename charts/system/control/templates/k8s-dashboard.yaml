@@ -93,6 +93,7 @@ spec:
       requests:
         cpu: 50m
         memory: 128Mi
+    {{- if kindIs "string" .Values.endpoints.dashboard }}
     ingress:
       enabled: true
       annotations:
@@ -102,8 +103,17 @@ spec:
         nginx.ingress.kubernetes.io/auth-signin: {{ printf "https://%s/oauth2/start?rd=$scheme%%3A%%2F%%2F$host$escaped_request_uri" .Values.oauth2_proxy_host }}
         nginx.ingress.kubernetes.io/auth-url: {{ printf "https://%s/oauth2/auth?allowed_groups=%s" .Values.oauth2_proxy_host (urlquery .Values.admin_group) }}
       hosts:
-        - {{ .Values.host }}
+        - {{ .Values.endpoints.dashboard }}
       tls:
         - hosts:
-            - {{ .Values.host }}
+            - {{ .Values.endpoints.dashboard }}
           secretName: k8s-dashboard-cert
+    {{- else if kindIs "int" .Values.endpoints.dashboard }}
+    service:
+      type: NodePort
+      extraSpec:
+        ports:
+          - name: dashboard
+            port: {{ .Values.endpoints.dashboard }}
+            targetPort: web
+    {{- end }}

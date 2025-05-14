@@ -112,7 +112,7 @@
   notify: Restart multipathd
 
 - name: Ensure Tailscale is installed
-  when: "cluster.tailscale.enabled"
+  when: "cluster.components.tailscale.enabled"
   block:
     - name: Check if Tailscale is installed
       ansible.builtin.command: "which tailscale"

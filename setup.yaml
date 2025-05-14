@@ -20,7 +20,7 @@
   become: true
   roles:
     - role: node-setup
-      when: "not cluster.virtual"
+      when: "not cluster.components.k8s.virtual"
 
 - name: Setup infrastructure via kubectl from one of the control hosts
   tags: infra

@@ -1,5 +1,5 @@
 - name: Configure kube-reserve enforcement
-  when: "cluster.enforce_kube_reserved"
+  when: "cluster.components.k8s.enforce_kube_reserved"
   vars:
     service: "{{ control | ternary('k3s', 'k3s-agent') }}"
   block:
@@ -32,7 +32,7 @@
         - Restart k3s
 
 - name: Unconfigure kube-reserve enforcement
-  when: "not cluster.enforce_kube_reserved"
+  when: "not cluster.components.k8s.enforce_kube_reserved"
   ansible.builtin.file:
     state: absent
     path: /etc/rancher/k3s/config.yaml.d/kube-reserve.yaml

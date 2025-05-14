@@ -1,4 +1,7 @@
-host: ""
+endpoints:
+  # Integers and numeric strings map to exposed node ports,
+  # other strings map to subdomains (exposed via ingresses).
+  dashboard: null
 
 cluster_name: ""
 

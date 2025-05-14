@@ -14,7 +14,7 @@
 - name: Ensure PIP dependencies are installed
   ansible.builtin.pip:
     requirements: /tmp/requirements.txt
-    break_system_packages: true
+    # break_system_packages: true
 
 - name: Check if Helm CLI is installed
   ansible.builtin.command: "which helm"

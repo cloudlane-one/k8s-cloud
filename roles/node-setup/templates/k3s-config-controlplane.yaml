@@ -1,4 +1,4 @@
-{% if not cluster.tailscale.enabled %}
+{% if not cluster.components.tailscale.enabled %}
 flannel-backend: "wireguard-native"
 flannel-external-ip: True
 {% endif %}
@@ -11,7 +11,7 @@ disable:
 etcd-expose-metrics: true
 secrets-encryption: true
 kube-apiserver-arg:
-  - "oidc-issuer-url=https://{{ cluster.subdomains.keycloak }}.{{ cluster.domain }}/realms/master"
+  - "oidc-issuer-url=https://{{ cluster.components.sso.endpoints.keycloak }}.{{ cluster.domain }}/realms/master"
   - "oidc-client-id=cluster-oidc"
   - "oidc-groups-claim=groups"
 kube-controller-manager-arg:
@@ -21,6 +21,6 @@ kube-proxy-arg:
   - "metrics-bind-address=0.0.0.0"
 kube-scheduler-arg:
   - "bind-address=0.0.0.0"
-tls-san: "{{ cluster.subdomains.k8s_api }}.{{ cluster.domain }}"
+tls-san: "{{ cluster.components.k8s.endpoints.api }}.{{ cluster.domain }}"
 kubelet-arg+:
   - "kube-reserved=cpu=1.8,memory=2.6Gi,ephemeral-storage=8Gi"

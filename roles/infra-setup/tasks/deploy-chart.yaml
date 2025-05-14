@@ -20,7 +20,7 @@
   vars:
     default_vars:
       bootstrap: false
-      vcluster: "{{ cluster.virtual }}"
+      vcluster: "{{ cluster.components.k8s.virtual }}"
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig }}"
     wait: true

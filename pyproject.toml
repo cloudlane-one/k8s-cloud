@@ -7,8 +7,8 @@ license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"
-ansible = "^10"
+python = "^3.12"
+ansible = "^11"
 jmespath = "^1.0.1"
 psutil = "^5.9.5"
 

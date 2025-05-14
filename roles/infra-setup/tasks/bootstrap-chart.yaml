@@ -45,4 +45,4 @@
               namespace: flux-system
         values:
           bootstrap: true
-          vcluster: "{{ cluster.virtual }}"
+          vcluster: "{{ cluster.components.k8s.virtual }}"

@@ -1,6 +1,6 @@
-{% if cluster.tailscale.enabled %}
-{% if cluster.tailscale.headscale_url %}
-vpn-auth: "name=tailscale,joinKey={{ cluster_secrets.tailscale.auth_key }},controlServerURL={{ cluster.tailscale.headscale_url }}"
+{% if cluster.components.tailscale.enabled %}
+{% if cluster.components.tailscale.headscale_url %}
+vpn-auth: "name=tailscale,joinKey={{ cluster_secrets.tailscale.auth_key }},controlServerURL={{ cluster.components.tailscale.headscale_url }}"
 {% else %}
 vpn-auth: "name=tailscale,joinKey={{ cluster_secrets.tailscale.auth_key }}"
 {% endif %}

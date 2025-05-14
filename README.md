@@ -128,7 +128,7 @@ ansible-galaxy install -r requirements.yaml
 
 ### About VClusters
 
-Once you have gone through below setup steps to create a host cluster, you may repeat the same steps with a subset of the original nodes and different configuration to create a vcluster on top. Note that you have to set `cluster.virtual=true` in `./clusters/$CLUSTER_NAME/group_vars/cluster/configmap.yaml` for a vcluster to be created.
+Once you have gone through below setup steps to create a host cluster, you may repeat the same steps with a subset of the original nodes and different configuration to create a vcluster on top. Note that you have to set `cluster.components.k8s.virtual=true` in `./clusters/$CLUSTER_NAME/group_vars/cluster/configmap.yaml` for a vcluster to be created.
 
 > ⚠️ You have to include at least one of the host cluster control nodes in the subset and mark it with `control=true`. This is required as certain setup steps have to be performed via ssh on a control node.
 ---
