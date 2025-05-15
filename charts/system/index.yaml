@@ -2,6 +2,20 @@ apiVersion: v1
 entries:
   backup:
   - apiVersion: v2
+    appVersion: 0.1.5
+    created: "2025-05-15T21:57:49.388893749Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Velero + extras
+    digest: 07a3334e3210c79f60b56d68529c14abcc2e69525a1227e3ebc06ed5ae102663
+    name: backup
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/backup-0.1.5/backup-0.1.5.tgz
+    version: 0.1.5
+  - apiVersion: v2
     appVersion: 0.1.4
     created: "2025-05-15T21:43:57.102085631Z"
     dependencies:
@@ -176,6 +190,20 @@ entries:
     version: 0.1.0
   gitops:
   - apiVersion: v2
+    appVersion: 0.1.6
+    created: "2025-05-15T21:57:49.553760745Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: FluxCD + Weave-Gitops Dashboard + extras
+    digest: f872d25c1520cb9109183d4e409fe96f5b44dd11dc88418855f949193886087c
+    name: gitops
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/gitops-0.1.6/gitops-0.1.6.tgz
+    version: 0.1.6
+  - apiVersion: v2
     appVersion: 0.1.5
     created: "2025-05-15T21:43:57.471625893Z"
     dependencies:
@@ -246,6 +274,20 @@ entries:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/gitops-0.1.1/gitops-0.1.1.tgz
     version: 0.1.1
   ingress:
+  - apiVersion: v2
+    appVersion: 0.2.6
+    created: "2025-05-15T21:57:49.721573526Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: NGINX ingress controller + extras
+    digest: f0031280a2cd9a92dda01a413159830f079a3dda37958d1b6aeaafbe647a2350
+    name: ingress
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/ingress-0.2.6/ingress-0.2.6.tgz
+    version: 0.2.6
   - apiVersion: v2
     appVersion: 0.2.5
     created: "2025-05-15T21:43:57.647740968Z"
@@ -542,6 +584,20 @@ entries:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/sso-0.1.2/sso-0.1.2.tgz
     version: 0.1.2
   storage:
+  - apiVersion: v2
+    appVersion: 0.2.5
+    created: "2025-05-15T21:57:49.895807161Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Longhorn-based storage system
+    digest: 8a25de964aa94513f3139295c9b7094b93d2adf36af79704ce2dd2113405a0ee
+    name: storage
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/storage-0.2.5/storage-0.2.5.tgz
+    version: 0.2.5
   - apiVersion: v2
     appVersion: 0.2.4
     created: "2025-05-15T21:43:57.83668967Z"
@@ -1265,4 +1321,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-0.1.6/vcluster-0.1.6.tgz
     version: 0.1.6
-generated: "2025-05-15T21:43:57.836948994Z"
+generated: "2025-05-15T21:57:49.895981658Z"
