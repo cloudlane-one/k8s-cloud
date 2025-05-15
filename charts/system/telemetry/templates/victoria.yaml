@@ -42,7 +42,6 @@ spec:
             resources:
               requests:
                 storage: 20Gi
-            storageClassName: local
 {{- if not .Values.bootstrap }}
     defaultDashboards:
       grafanaOperator:
@@ -80,6 +79,23 @@ spec:
             - receiver: default-receiver
               matchers:
                 - severity =~ "error|critical"
+    {{- if .Values.k3s }}
+    {{- if .Values.node_endpoints | len | gt 0 }}
+    kubeControllerManager:
+      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
+    kubeProxy:
+      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
+    kubeScheduler:
+      endpoints: {{ .Values.node_endpoints | toYaml | nindent 8 }}
+    {{- else }}
+    kubeControllerManager:
+      enabled: false
+    kubeProxy:
+      enabled: false
+    kubeScheduler:
+      enabled: false
+    {{- end }}
+    {{- end }}
     additionalVictoriaMetricsMap:
       deployment-errors:
         groups:
@@ -176,8 +192,8 @@ spec:
   datasource:
     access: proxy
     type: victoriametrics-logs-datasource
-    name: VL
-    url: http://victoria-logs-single-server.monitoring.svc.cluster.local:9428
+    name: VictoriaLogs
+    url: http://vlogs-vlogs:9428
   instanceSelector:
     matchLabels:
       dashboards: grafana

@@ -37,7 +37,7 @@ spec:
     config:
       exporters:
         otlphttp:
-          logs_endpoint: http://vlogs:9428/insert/opentelemetry/v1/logs
+          logs_endpoint: http://vlogs-vlogs:9428/insert/opentelemetry/v1/logs
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
@@ -68,5 +68,5 @@ spec:
     config:
       exporters:
         otlphttp:
-          logs_endpoint: http://vlogs:9428/insert/opentelemetry/v1/logs
+          logs_endpoint: http://vlogs-vlogs:9428/insert/opentelemetry/v1/logs
 {{- end }}
