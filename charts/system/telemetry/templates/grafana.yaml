@@ -1,0 +1,137 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: OCIRepository
+metadata:
+  name: grafana-operator
+spec:
+  interval: 1h
+  url: oci://ghcr.io/grafana/helm-charts/grafana-operator
+  ref:
+    semver: '^5.18.0'
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: grafana-operator
+spec:
+  interval: 1h
+  releaseName: grafana-operator
+  chartRef:
+    kind: OCIRepository
+    name: grafana-operator
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+  timeout: 15m0s
+{{- if not .Values.bootstrap }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: grafana-admin
+type: Opaque
+data:
+  username: {{ "admin" | b64enc | quote }}
+  password: {{ include "common.secrets.passwords.manage" (dict "secret" "grafana-admin" "key" "password" "providedValues" (list "") "length" 16 "context" $) }}
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: Grafana
+metadata:
+  name: grafana
+spec:
+  config:
+    server:
+      root_url: {{ printf "https://%s" .Values.host }}
+    smtp:
+      enabled: true
+      host: {{ printf "%s:%s" .Values.smtp.host .Values.smtp.port | quote }}
+      user: {{ .Values.smtp.user }}
+      from_address: {{ .Values.smtp.from_address }}
+    auth:
+      disable_login_form: true
+    log:
+      mode: "console"
+    security:
+      admin_user: admin
+      admin_password: "${ADMIN_PASSWORD}"
+    auth.generic_oauth:
+      # See: https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/configure-authentication/generic-oauth/
+      enabled: true
+      name: Admin OIDC
+      client_id: {{ .Values.oidc_client.id }}
+      client_secret: "${OIDC_SECRET}"
+      scopes: openid,profile,email,groups
+      auth_url: {{ printf "%s/protocol/openid-connect/auth" .Values.oidc_client.idp_url | quote }}
+      token_url: {{ printf "%s/protocol/openid-connect/token" .Values.oidc_client.idp_url | quote }}
+      api_url: {{ printf "%s/protocol/openid-connect/userinfo" .Values.oidc_client.idp_url | quote }}
+      allow_sign_up: true
+      groups_attribute_path: groups
+      allowed_groups: {{ .Values.admin_group | quote }}
+      role_attribute_path: "contains(groups[*], {{ .Values.admin_group | squote }}) && 'GrafanaAdmin' || 'Viewer'"
+      allow_assign_grafana_admin: true
+      auto_login: true
+      {{- if .Values.letsencrypt_staging }}
+      tls_skip_verify_insecure: true
+      {{- end }}
+  ingress:
+    metadata:
+      annotations:
+        kubernetes.io/tls-acme: "true"
+    spec:
+      rules:
+        - host: {{ .Values.host }}
+          http:
+            paths:
+              - backend:
+                  service:
+                    name: grafana-service
+                    port:
+                      number: 3000
+                path: /
+                pathType: Prefix
+      tls:
+        - hosts:
+            - {{ .Values.host }}
+          secretName: grafana-cert
+  persistentVolumeClaim:
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 4Gi
+      storageClassName: ha
+  deployment:
+    spec:
+      replicas: 1
+      strategy:
+        type: Recreate
+      template:
+        spec:
+          containers:
+            - name: grafana
+              env:
+                - name: ADMIN_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: grafana-admin
+                      key: password
+                - name: OIDC_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: oidc-client
+                      key: secret
+                - name: GF_SMTP_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: smtp-creds
+                      key: password
+              resources:
+                requests:
+                  cpu: 50m # measured on 2023-11-30
+                  memory: 384Mi # measured on 2023-11-30
+          volumes:
+            - name: grafana-data
+              persistentVolumeClaim:
+                claimName: grafana-pvc
+{{- end }}

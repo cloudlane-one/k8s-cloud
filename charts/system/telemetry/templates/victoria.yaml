@@ -1,0 +1,184 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: victoriametrics
+spec:
+  interval: 1h
+  url: https://victoriametrics.github.io/helm-charts/
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: vm-k8s-stack
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: victoria-metrics-k8s-stack
+      version: "^0.47.1"
+      sourceRef:
+        kind: HelmRepository
+        name: victoriametrics
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+  timeout: '15m0s' # Account for slow performance of cluster on first setup.
+  values:
+    grafana:
+      enabled: false
+    vmsingle:
+      spec:
+        storageMetadata:
+          labels:
+            recurring-job.longhorn.io/source: enabled
+            recurring-job-group.longhorn.io/default: enabled
+            recurring-job.longhorn.io/snap-delete-after-2: enabled
+            velero.io/exclude-from-backup: "true"
+        storage:
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 20Gi
+            storageClassName: local
+{{- if not .Values.bootstrap }}
+    defaultDashboards:
+      grafanaOperator:
+        enabled: true
+    defaultDatasources:
+      grafanaOperator:
+        enabled: true
+    alertmanager:
+      spec:
+        volumes:
+          - name: smtp
+            secret:
+              secretName: smtp-creds
+              items:
+              - key: password
+                path: password.txt
+        volumeMounts:
+          - name: smtp
+            mountPath: /etc/alertmanager/smtp-conf
+            readOnly: true
+      config:
+        global:
+          smtp_from: {{ .Values.smtp.from_address }}
+          smtp_smarthost: {{ printf "%s:%s" .Values.smtp.host .Values.smtp.port }}
+          smtp_auth_username: {{ .Values.smtp.user }}
+          smtp_auth_password_file: /etc/alertmanager/smtp-conf/password.txt
+        receivers:
+          - name: 'null'
+          - name: default-receiver
+            email_configs:
+              - to: {{ .Values.admin_email }}
+        route:
+          receiver: 'null'
+          routes:
+            - receiver: default-receiver
+              matchers:
+                - severity =~ "error|critical"
+    additionalVictoriaMetricsMap:
+      deployment-errors:
+        groups:
+        - name: failing-k8s-resources
+          rules:
+          - alert: KubeDeploymentNotAvailable20m
+            annotations:
+              description: Deployment {{`{{`}} $labels.namespace {{`}}`}}/{{`{{`}} $labels.name {{`}}`}} has been in a non-available state for longer than 20 minutes.
+              summary: Deployment has been in a non-available state for more than 20 minutes.
+            expr: |-
+              sum by (namespace, deployment) (
+                max by(namespace, deployment) (
+                  kube_deployment_status_condition{job="kube-state-metrics", namespace=~".*", condition="Available", status!="true"}
+                )
+              ) > 0
+            for: 20m
+            labels:
+              severity: critical
+          - alert: KubeStatefulsetUnavailableReplicas20m
+            annotations:
+              description: Statefulset {{`{{`}} $labels.namespace {{`}}`}}/{{`{{`}} $labels.name {{`}}`}} has had unavailable replicas for longer than 20 minutes.
+              summary: Deployment has has unavailable replicas for more than 20 minutes.
+            expr: |-
+              sum by (namespace, statefulset) (
+                count by(namespace, statefulset) (kube_statefulset_status_replicas)
+                -
+                count by(namespace, statefulset) (kube_statefulset_status_replicas_available)
+              ) > 0
+            for: 20m
+            labels:
+              severity: error
+          - alert: KubePodNotReady20m
+            annotations:
+              description: Pod {{`{{`}} $labels.namespace {{`}}`}}/{{`{{`}} $labels.pod {{`}}`}} has been in a non-ready state for longer than 20 minutes.
+              runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepodnotready
+              summary: Pod has been in a non-ready state for more than 20 minutes.
+            expr: |-
+              sum by (namespace, pod) (
+                max by(namespace, pod) (
+                  kube_pod_status_phase{job="kube-state-metrics", namespace=~".*", phase=~"Pending|Unknown|Failed"}
+                ) * on(namespace, pod) group_left(owner_kind) topk by(namespace, pod) (
+                  1, max by(namespace, pod, owner_kind) (kube_pod_owner{owner_kind!="Job"})
+                )
+              ) > 0
+            for: 20m
+            labels:
+              severity: error
+        - name: failing-flux-resources
+          rules:
+          - alert: FluxReleaseNotReady20m
+            annotations:
+              description: Flux {{`{{`}} $labels.kind {{`}}`}} {{`{{`}} $labels.exported_namespace {{`}}`}}/{{`{{`}} $labels.name {{`}}`}} has been in a non-ready state for longer than 20 minutes.
+              runbook_url: https://fluxcd.io/flux/cheatsheets/troubleshooting/
+              summary: Flux release has been in a non-ready state for more than 20 minutes.
+            expr: |-
+              (
+                max by(exported_namespace, name, kind) (
+                  gotk_reconcile_condition{kind=~"HelmRelease|Kustomization", type="Ready", status!="True"}
+                ) 
+                - 
+                max by(exported_namespace, name, kind) (
+                  gotk_suspend_status{kind=~"HelmRelease|Kustomization"}
+                )
+              ) > 0
+            for: 20m
+            labels:
+              severity: error
+---
+kind: VLogs
+metadata:
+  name: vlogs
+spec:
+  retentionPeriod: "12"
+  removePvcAfterDelete: true
+  storageMetadata:
+    labels:
+      recurring-job.longhorn.io/source: enabled
+      recurring-job-group.longhorn.io/default: enabled
+      recurring-job.longhorn.io/snap-delete-after-2: enabled
+      velero.io/exclude-from-backup: "true"
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: vl-datasource
+spec:
+  datasource:
+    access: proxy
+    type: victoriametrics-logs-datasource
+    name: VL
+    url: http://victoria-logs-single-server.monitoring.svc.cluster.local:9428
+  instanceSelector:
+    matchLabels:
+      dashboards: grafana
+  plugins:
+    - name: victoriametrics-logs-datasource
+      version: "0.16.3"
+{{- end }}
