@@ -25,15 +25,6 @@ spec:
   timeout: 15m0s
 {{- if not .Values.bootstrap }}
 ---
-apiVersion: v1
-kind: Secret
-metadata:
-  name: grafana-admin
-type: Opaque
-data:
-  username: {{ "admin" | b64enc | quote }}
-  password: {{ include "common.secrets.passwords.manage" (dict "secret" "grafana-admin" "key" "password" "providedValues" (list "") "length" 16 "context" $) }}
----
 apiVersion: grafana.integreatly.org/v1beta1
 kind: Grafana
 metadata:
