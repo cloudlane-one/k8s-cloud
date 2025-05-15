@@ -93,6 +93,9 @@ spec:
           storage: 4Gi
       storageClassName: ha
   deployment:
+    metadata:
+      labels:
+        dashboards: grafana
     spec:
       replicas: 1
       strategy:
