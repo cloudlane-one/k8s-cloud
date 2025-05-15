@@ -2,6 +2,20 @@ apiVersion: v1
 entries:
   backup:
   - apiVersion: v2
+    appVersion: 0.1.3
+    created: "2025-05-15T06:02:47.554042053Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Velero + extras
+    digest: e2022319a85fce7d452224326758dbb73c280e02f106f646939220677e517d70
+    name: backup
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/backup-0.1.3/backup-0.1.3.tgz
+    version: 0.1.3
+  - apiVersion: v2
     appVersion: 0.1.2
     created: "2023-12-02T12:19:18.203904482Z"
     dependencies:
@@ -30,6 +44,16 @@ entries:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/backup-0.1.1/backup-0.1.1.tgz
     version: 0.1.1
   cert:
+  - apiVersion: v2
+    appVersion: 0.1.2
+    created: "2025-05-15T06:02:47.645504871Z"
+    description: cert-manager with proper config
+    digest: f17bf05c5e6825f6a1262cd0db987c8d3dee3615738b52037eb739117fc8c8a5
+    name: cert
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/cert-0.1.2/cert-0.1.2.tgz
+    version: 0.1.2
   - apiVersion: v2
     appVersion: 0.1.1
     created: "2023-12-01T14:22:40.084604374Z"
@@ -185,6 +209,20 @@ entries:
     version: 0.1.1
   ingress:
   - apiVersion: v2
+    appVersion: 0.2.4
+    created: "2025-05-15T06:02:47.753569298Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: NGINX ingress controller + extras
+    digest: 96b25225ac8faaba21745568a6750dcd4aab77f343c39cce4d6e19f35285ab97
+    name: ingress
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/ingress-0.2.4/ingress-0.2.4.tgz
+    version: 0.2.4
+  - apiVersion: v2
     appVersion: 0.2.3
     created: "2025-01-07T12:37:00.207621318Z"
     dependencies:
@@ -227,6 +265,20 @@ entries:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/ingress-0.2.1/ingress-0.2.1.tgz
     version: 0.2.1
   sso:
+  - apiVersion: v2
+    appVersion: 0.6.5
+    created: "2025-05-15T06:02:47.877806086Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Keycloak-based Signle-Sign-On and some useful extras
+    digest: e4d21639db4da49d78f78e700c241da6e4e8d521fa156179db306d629608e90d
+    name: sso
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/sso-0.6.5/sso-0.6.5.tgz
+    version: 0.6.5
   - apiVersion: v2
     appVersion: 0.6.4
     created: "2025-05-14T22:05:05.603284282Z"
@@ -937,4 +989,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-0.1.6/vcluster-0.1.6.tgz
     version: 0.1.6
-generated: "2025-05-14T22:05:05.603463578Z"
+generated: "2025-05-15T06:02:47.87800516Z"
