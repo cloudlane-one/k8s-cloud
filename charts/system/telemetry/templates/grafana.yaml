@@ -41,12 +41,9 @@ spec:
       user: {{ .Values.smtp.user }}
       from_address: {{ .Values.smtp.from_address }}
     auth:
-      disable_login_form: "true"
+      disable_login_form: "false"
     log:
       mode: "console"
-    security:
-      admin_user: admin
-      admin_password: "${ADMIN_PASSWORD}"
     auth.generic_oauth:
       # See: https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/configure-authentication/generic-oauth/
       enabled: "true"
@@ -104,7 +101,12 @@ spec:
           containers:
             - name: grafana
               env:
-                - name: ADMIN_PASSWORD
+                - name: GF_SECURITY_ADMIN_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: grafana-admin
+                      key: username
+                - name: GF_SECURITY_ADMIN_PASSWORD
                   valueFrom:
                     secretKeyRef:
                       name: grafana-admin
