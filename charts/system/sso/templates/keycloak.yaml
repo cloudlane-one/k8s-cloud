@@ -76,7 +76,7 @@ spec:
       tls: true
     extraEnvVars:
       - name: KC_FEATURES
-        value: 'recovery-codes,account3'
+        value: 'recovery-codes'
     extraVolumes:
       - name: theme-login
         configMap:
@@ -112,8 +112,8 @@ spec:
         enabled: true
     resources:
       requests:
-        cpu: 100m # measured on 2023-11-30
-        memory: 1Gi # measured on 2023-11-30
+        cpu: 50m
+        memory: 800Mi
     {{- if .Values.ha_deployment.enabled }}
     autoscaling:
       enabled: true

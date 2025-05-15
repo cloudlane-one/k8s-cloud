@@ -33,7 +33,7 @@ spec:
         enabled: true
     resources:
       requests:
-        cpu: 50m # measured on 2023-11-30
+        cpu: 30m # measured on 2023-11-30
         memory: 64Mi # measured on 2023-11-30
     webhook:
       resources:

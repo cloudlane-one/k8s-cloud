@@ -121,7 +121,7 @@ spec:
   chart:
     spec:
       chart: nextcloud
-      version: '6.6.9'
+      version: '6.6.10'
       sourceRef:
         kind: HelmRepository
         name: nextcloud
@@ -132,8 +132,8 @@ spec:
     # replicaCount: 2
     resources:
       requests:
-        cpu: 150m # measured on 2024-08-24
-        memory: 1Gi # measured on 2024-08-24
+        cpu: 100m
+        memory: 750Mi
     ingress:
       enabled: {{ .Values.ingress }}
       tls:
@@ -351,7 +351,7 @@ spec:
         resources:
           requests:
             memory: 128Mi # measured on 2023-11-30
-            cpu: 50m # measured on 2023-11-30
+            cpu: 30m
         nodeSelector:
           {{- if not (eq .Values.zone "") }}
           topology.kubernetes.io/zone: {{ .Values.zone }}
@@ -371,7 +371,7 @@ spec:
           size: 4Gi
         resources:
           requests:
-            cpu: 100m # measured on 2024-08-24
+            cpu: 50m
             memory: 512Mi # measured on 2024-08-24
     {{- if not (eq .Values.zone "") }}
         nodeSelector:

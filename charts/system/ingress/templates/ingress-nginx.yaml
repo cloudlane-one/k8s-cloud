@@ -50,7 +50,7 @@ spec:
         enabled: {{ not .Values.exposeViaHostPort }}
       resources:
         requests:
-          cpu: 100m # measured on 2023-11-30
+          cpu: 50m
           memory: 256Mi # measured on 2023-11-30
       admissionWebhooks:
         enabled: false

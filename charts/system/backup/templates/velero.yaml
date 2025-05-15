@@ -53,6 +53,7 @@ spec:
   values:
     resources:
       requests:
+        cpu: 300m # 
         memory: 256Mi # measured on 2023-11-30
     metrics:
       enabled: true

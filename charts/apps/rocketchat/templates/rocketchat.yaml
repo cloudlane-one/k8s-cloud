@@ -131,7 +131,7 @@ spec:
   chart:
     spec:
       chart: rocketchat
-      version: '6.23.2'
+      version: '6.24.0'
       sourceRef:
         kind: HelmRepository
         name: rocketchat
@@ -139,8 +139,6 @@ spec:
     - name: rocketchat-mongodb-urls
     - name: rocketchat-mongodb
   values:
-    image:
-      tag: "7.3.1"
     affinity:
       nodeAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
@@ -189,11 +187,11 @@ spec:
     resources:
       requests:
         {{- if .Values.ha_deployment.enabled }}
-        memory: 768Mi # measured on 2023-11-30
-        cpu: 100m # measured on 2023-11-30
+        memory: 800Mi
+        cpu: 50m
         {{- else }}
         memory: 1Gi # measured on 2024-08-24
-        cpu: 150m # measured on 2024-08-24
+        cpu: 50m
         {{- end }}
     extraEnv:
       - name: Site_Name

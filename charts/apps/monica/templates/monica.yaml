@@ -76,7 +76,7 @@ spec:
         size: 2Gi
       resources:
         requests:
-          cpu: 100m
+          cpu: 50m
           memory: 256Mi
 ---
 apiVersion: v1
@@ -207,7 +207,7 @@ spec:
           resources:
             requests:
               memory: 512Mi # estimated, not measured
-              cpu: 100m # estimated, not measured
+              cpu: 50m # estimated, not measured
           volumeMounts:
             - name: data
               mountPath: "/var/www/html/storage"

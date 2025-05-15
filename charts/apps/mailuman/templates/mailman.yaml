@@ -112,7 +112,7 @@ spec:
         storageClass: ha
       resources:
         requests:
-          cpu: 100m # measured on 2023-11-30
+          cpu: 50m # measured on 2023-11-30
           memory: 128Mi # measured on 2023-11-30
 ---
 apiVersion: v1
