@@ -2,6 +2,20 @@ apiVersion: v1
 entries:
   actualbudget:
   - apiVersion: v2
+    appVersion: 0.1.1
+    created: "2025-05-15T06:02:15.547481241Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Actual Budget server + frontend
+    digest: d73fb2affc6d6578cdc878877399b1d819b519e1d3c5d65860f2eb2d01ab2932
+    name: actualbudget
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/actualbudget-0.1.1/actualbudget-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
     appVersion: 0.1.0
     created: "2024-06-23T11:41:09.231230872Z"
     dependencies:
@@ -201,6 +215,20 @@ entries:
     version: 0.1.1
   grocy:
   - apiVersion: v2
+    appVersion: 0.2.5
+    created: "2025-05-15T06:02:15.68161651Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: ERP beyond your fridge
+    digest: 9ff0f78ce045d109b3f9cee1d7ac6e8640bccd333383ccb9fb3d7af2f23d95ad
+    name: grocy
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/grocy-0.2.5/grocy-0.2.5.tgz
+    version: 0.2.5
+  - apiVersion: v2
     appVersion: 0.2.4
     created: "2025-01-08T13:53:24.35278792Z"
     dependencies:
@@ -328,6 +356,20 @@ entries:
     version: 0.1.0
   mailuman:
   - apiVersion: v2
+    appVersion: 0.6.1
+    created: "2025-05-15T06:02:15.789712377Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Mail server + mailing list service + Web UIs
+    digest: b21befc52b451de766b3201d48fee6d5248c0f9961412b525a5c40adc615e4f2
+    name: mailuman
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/mailuman-0.6.1/mailuman-0.6.1.tgz
+    version: 0.6.1
+  - apiVersion: v2
     appVersion: 0.6.0
     created: "2025-01-08T07:42:36.841286275Z"
     dependencies:
@@ -427,6 +469,20 @@ entries:
     version: 0.4.2
   monica:
   - apiVersion: v2
+    appVersion: 0.1.6
+    created: "2025-05-15T06:02:15.899980629Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: The Personal Relationship Manager
+    digest: e7675deeccfd920b84c99deefa256998056bbf6c53bab85bef4470ed831b313a
+    name: monica
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/monica-0.1.6/monica-0.1.6.tgz
+    version: 0.1.6
+  - apiVersion: v2
     appVersion: 0.1.5
     created: "2024-08-25T00:23:03.708025005Z"
     dependencies:
@@ -511,6 +567,20 @@ entries:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/monica-0.1.0/monica-0.1.0.tgz
     version: 0.1.0
   nextcloud:
+  - apiVersion: v2
+    appVersion: 30.0.10
+    created: "2025-05-15T06:02:16.028116606Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Nextcloud with SSO and some useful extras
+    digest: 821acb40521e01a3e283793cb97668523d334c8cb3e7250e885f203ef82d0629
+    name: nextcloud
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/nextcloud-0.13.0/nextcloud-0.13.0.tgz
+    version: 0.13.0
   - apiVersion: v2
     appVersion: 30.0.6"
     created: "2025-03-14T07:59:08.563287413Z"
@@ -849,6 +919,20 @@ entries:
     version: 0.8.4
   rocketchat:
   - apiVersion: v2
+    appVersion: 7.4.1
+    created: "2025-05-15T06:02:16.136305709Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Rocket.Chat with SSO and some useful extras
+    digest: f62bbff48e2ab6243727acf7579d9177fd1bdd99945b339e461356858689bb73
+    name: rocketchat
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/rocketchat-0.6.0/rocketchat-0.6.0.tgz
+    version: 0.6.0
+  - apiVersion: v2
     appVersion: 7.3.1
     created: "2025-02-14T17:01:12.888694467Z"
     dependencies:
@@ -1101,4 +1185,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.0/wordpress-0.1.0.tgz
     version: 0.1.0
-generated: "2025-03-14T07:59:08.563569219Z"
+generated: "2025-05-15T06:02:16.136804747Z"
