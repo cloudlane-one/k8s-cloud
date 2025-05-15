@@ -147,6 +147,7 @@ spec:
             labels:
               severity: error
 ---
+apiVersion: operator.victoriametrics.com/v1beta1
 kind: VLogs
 metadata:
   name: vlogs
