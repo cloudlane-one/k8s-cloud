@@ -29,6 +29,8 @@ apiVersion: grafana.integreatly.org/v1beta1
 kind: Grafana
 metadata:
   name: grafana
+  labels:
+    dashboards: "grafana"
 spec:
   config:
     server:
@@ -93,9 +95,6 @@ spec:
           storage: 4Gi
       storageClassName: ha
   deployment:
-    metadata:
-      labels:
-        dashboards: grafana
     spec:
       replicas: 1
       strategy:
