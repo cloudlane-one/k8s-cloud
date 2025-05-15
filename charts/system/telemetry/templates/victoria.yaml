@@ -79,6 +79,18 @@ spec:
             - receiver: default-receiver
               matchers:
                 - severity =~ "error|critical"
+    defaultRules:
+      groups:
+        general:
+          create: false
+        {{- if and .Values.k3s (.Values.node_endpoints | len | eq 0) }}
+        kubeernetesSystemControllerManager:
+          create: false
+        kubernetesSystemSchedulerAlerting:
+          create: false
+        kubeScheduler:
+          create: false
+        {{- end }}
     {{- if .Values.k3s }}
     {{- if .Values.node_endpoints | len | gt 0 }}
     kubeControllerManager:

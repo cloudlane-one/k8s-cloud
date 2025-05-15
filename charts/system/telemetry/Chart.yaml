@@ -2,8 +2,8 @@ apiVersion: v2
 name: telemetry
 description: Prometheus + Loki + Grafana
 type: application
-version: "0.4.11"
-appVersion: "0.4.11"
+version: "0.4.12"
+appVersion: "0.4.12"
 dependencies:
   - name: common
     version: "^1"
