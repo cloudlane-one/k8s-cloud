@@ -2,8 +2,8 @@ apiVersion: v2
 name: ingress
 description: NGINX ingress controller + extras
 type: application
-version: "0.2.4"
-appVersion: "0.2.4"
+version: "0.2.5"
+appVersion: "0.2.5"
 dependencies:
   - name: common
     version: "^1"

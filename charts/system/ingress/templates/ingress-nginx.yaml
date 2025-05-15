@@ -100,11 +100,15 @@ spec:
                 description: Too many 4XXs
                 summary: More than 5% of all requests returned 4XX, this requires your attention
 ---
-apiVersion: v1
-kind: ConfigMap
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
 metadata:
-  name: grafana-dashboards
-  labels:
-    grafana_dashboard: "1"
-data:
-{{ (.Files.Glob "config/grafana-dashboards/nginx*").AsConfig | indent 2 }}
+  name: nginx
+spec:
+  resyncPeriod: 30s
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana"
+  json: >
+    {{ (.Files.Get "config/grafana-dashboards/nginx.json") | nindent 4 }}

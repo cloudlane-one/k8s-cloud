@@ -134,15 +134,6 @@ spec:
   groups: []
   task: snapshot
 ---
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: grafana-dashboards
-  labels:
-    grafana_dashboard: "1"
-data:
-{{ (.Files.Glob "config/grafana-dashboards/longhorn*").AsConfig | indent 2 }}
----
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
@@ -151,5 +142,18 @@ metadata:
     role: alert-rules
   name: longhorn
 spec: {{ .Files.Get "config/alert-rules.yaml" | nindent 2 }}
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: longhorn
+spec:
+  resyncPeriod: 30s
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana"
+  json: >
+    {{ (.Files.Get "config/grafana-dashboards/longhorn.json") | nindent 4 }}
 {{- end }}
 {{- end }}

@@ -52,12 +52,42 @@ spec:
       podMonitor:
         create: true
 ---
-apiVersion: v1
-kind: ConfigMap
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
 metadata:
-  name: grafana-dashboards
-  labels:
-    grafana_dashboard: "1"
-data:
-{{ (.Files.Glob "config/grafana-dashboards/flux*").AsConfig | indent 2 }}
+  name: flux-cluster
+spec:
+  resyncPeriod: 30s
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana"
+  json: >
+    {{ (.Files.Get "config/grafana-dashboards/flux-cluster.json") | nindent 4 }}
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: flux-control-plane
+spec:
+  resyncPeriod: 30s
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana"
+  json: >
+    {{ (.Files.Get "config/grafana-dashboards/flux-control-plane.json") | nindent 4 }}
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: flux-logs
+spec:
+  resyncPeriod: 30s
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana"
+  json: >
+    {{ (.Files.Get "config/grafana-dashboards/flux-logs.json") | nindent 4 }}
 {{- end }}
