@@ -591,8 +591,6 @@
         node_endpoints: "{{ groups['all'] }}"
         letsencrypt_staging: "{{ cluster.letsencrypt_staging }}"
         k3s: true
-        ha_deployment:
-          max_replicas: "{{ [node_count | int, 3] | min }}"
 
     - release_name: cicd-stack
       chart_name: gitops
