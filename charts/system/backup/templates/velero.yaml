@@ -1,4 +1,3 @@
-{{- if not .Values.vcluster }}
 # This VolumeSnapshotClass will be used by Velero to automatically 
 # trigger volume snapshotting and snapshot backup via Longhorn.
 # See here: https://longhorn.io/docs/1.4.1/snapshots-and-backups/csi-snapshot-support/csi-volume-snapshot-associated-with-longhorn-backup/#create-a-csi-volumesnapshot-associated-with-longhorn-backup
@@ -13,7 +12,6 @@ deletionPolicy: Delete
 parameters:
   type: bak
 ---
-{{- end }}
 apiVersion: v1
 kind: Secret
 metadata:

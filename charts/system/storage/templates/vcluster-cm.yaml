@@ -1,8 +1,0 @@
-{{- if .Values.vcluster }}
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ .Release.Name }}-vcluster-cm
-data:
-  readme: "This infrastructure component is (partially) supported by host cluster infrastructure via vcluster."
-{{- end }}

@@ -20,7 +20,6 @@
   become: true
   roles:
     - role: node-setup
-      when: "not cluster.virtual"
 
 - name: Setup infrastructure via kubectl from one of the control hosts
   tags: infra

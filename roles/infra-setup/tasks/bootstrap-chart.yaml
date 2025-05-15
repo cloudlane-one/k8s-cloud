@@ -45,4 +45,3 @@
               namespace: flux-system
         values:
           bootstrap: true
-          vcluster: "{{ cluster.virtual }}"

@@ -1,4 +1,3 @@
-{{- if not .Values.vcluster }}
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
@@ -17,4 +16,3 @@ spec:
         namespace: flux-system
   values:
     k3s_version: {{ .Values.k3s_version | default "null" }}
-{{- end }}

@@ -63,7 +63,6 @@ spec:
         name:  volumesnapshotclasses.snapshot.storage.k8s.io
         displayName: Volume Snapshot Class
         namespaced: true
-      {{- if not .Values.vcluster }}
       - kind: customresourcedefinition
         name:  volumes.longhorn.io
         displayName: Longhorn Volume
@@ -80,7 +79,6 @@ spec:
         name:  snapshots.longhorn.io
         displayName: Longhorn Snapshot
         namespaced: true
-      {{- end }}
     app:
       scaling:
         replicas: 2

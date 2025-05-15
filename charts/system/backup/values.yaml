@@ -1,5 +1,3 @@
-vcluster: false
-
 s3:
   endpoint: "" # Full URL of your S3 endpoint (minus credentials)
   region: "de"

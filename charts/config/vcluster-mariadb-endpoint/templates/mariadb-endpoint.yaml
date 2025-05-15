@@ -1,8 +1,0 @@
-{{- $password := get ((lookup "v1" "Secret" .Release.Namespace "vcluster-mariadb").data) "mariadb-password" | b64dec }}
-apiVersion: v1
-kind: Secret
-metadata:
-  name: vcluster-mariadb-endpoint
-type: Opaque
-data:
-  url: {{ printf "mysql://vcluster:%s@tcp(vcluster-mariadb:3306)/vcluster" $password | b64enc }}

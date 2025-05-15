@@ -10,8 +10,6 @@ default_ha_replicas: 2
 
 zones: [] # List of all zones in the cluster
 
-vcluster: false
-
 oauth2_proxy_host: ""
 admin_group: ""
 
