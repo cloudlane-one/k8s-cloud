@@ -34,12 +34,12 @@ spec:
     server:
       root_url: {{ printf "https://%s" .Values.host }}
     smtp:
-      enabled: true
+      enabled: "true"
       host: {{ printf "%s:%s" .Values.smtp.host .Values.smtp.port | quote }}
       user: {{ .Values.smtp.user }}
       from_address: {{ .Values.smtp.from_address }}
     auth:
-      disable_login_form: true
+      disable_login_form: "true"
     log:
       mode: "console"
     security:
@@ -47,7 +47,7 @@ spec:
       admin_password: "${ADMIN_PASSWORD}"
     auth.generic_oauth:
       # See: https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/configure-authentication/generic-oauth/
-      enabled: true
+      enabled: "true"
       name: Admin OIDC
       client_id: {{ .Values.oidc_client.id }}
       client_secret: "${OIDC_SECRET}"
@@ -55,14 +55,14 @@ spec:
       auth_url: {{ printf "%s/protocol/openid-connect/auth" .Values.oidc_client.idp_url | quote }}
       token_url: {{ printf "%s/protocol/openid-connect/token" .Values.oidc_client.idp_url | quote }}
       api_url: {{ printf "%s/protocol/openid-connect/userinfo" .Values.oidc_client.idp_url | quote }}
-      allow_sign_up: true
+      allow_sign_up: "true"
       groups_attribute_path: groups
       allowed_groups: {{ .Values.admin_group | quote }}
       role_attribute_path: "contains(groups[*], {{ .Values.admin_group | squote }}) && 'GrafanaAdmin' || 'Viewer'"
-      allow_assign_grafana_admin: true
-      auto_login: true
+      allow_assign_grafana_admin: "true"
+      auto_login: "true"
       {{- if .Values.letsencrypt_staging }}
-      tls_skip_verify_insecure: true
+      tls_skip_verify_insecure: "true"
       {{- end }}
   ingress:
     metadata:
