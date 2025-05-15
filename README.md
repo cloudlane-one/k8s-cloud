@@ -63,8 +63,8 @@ The following system / infrastructure components can be deployed via `setup.yaml
   - [OAuth2-Proxy](https://github.com/oauth2-proxy/oauth2-proxy) for proxy header auth
   - Web UI for user management etc.
 - Telemetry System:
-  - [Prometheus](https://github.com/prometheus/prometheus) for metrics collection
-  - [Loki](https://github.com/grafana/loki) for logs collection
+  - [OpenTelemetry Collector](https://github.com/open-telemetry/opentelemetry-collector) for metrics and logs collection
+  - [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics) for metrics and logs storage
   - [Grafana](https://github.com/grafana/grafana) for dashboards and alerts
   - [Node-Exporter](https://github.com/prometheus/node_exporter)
   - [AlertManager](https://github.com/prometheus/alertmanager)
@@ -81,11 +81,6 @@ The following system / infrastructure components can be deployed via `setup.yaml
   - [System Upgrade Controller](https://github.com/rancher/system-upgrade-controller)
   - Automatic, non-disruptive upgrades from k3s stable channel
   - Upgrades both master and worker nodes
-- Virtual Clusters:
-  - [VCluster](https://github.com/loft-sh/vcluster)
-  - Create virtual sub-clusters, which are constrained to a specific namespace and subset of nodes
-  - Each vcluster has a full k8s API and either reuses the infrastructure components of its host cluster (e.g. Longhorn) or deploys its own set internally
-  - Useful for test environments or providing multi-tenancy with limited resources
 
 ## How to deploy a cluster
 
@@ -126,16 +121,6 @@ Then run this to install Ansible-specific dependencies:
 ansible-galaxy install -r requirements.yaml
 ```
 
-### About VClusters
-
-Once you have gone through below setup steps to create a host cluster, you may repeat the same steps with a subset of the original nodes and different configuration to create a vcluster on top. Note that you have to set `cluster.virtual=true` in `./clusters/$CLUSTER_NAME/group_vars/cluster/configmap.yaml` for a vcluster to be created.
-
-> ⚠️ You have to include at least one of the host cluster control nodes in the subset and mark it with `control=true`. This is required as certain setup steps have to be performed via ssh on a control node.
----
-> Note that some config options are not available for vclusters. This is mentioned in the respective configmap template comments.
----
-> Storage is managed fully by the host cluster, including backups of PVs
-
 ### Configuration
 
 Copy the cluster inventory template `clusters/_example`:
@@ -165,7 +150,6 @@ By default, nodes are assigned to the region `backbone` and the zone `default`. 
 By default, the first backbone host is taken as the sole control plane host. If you want to change this bevavior, set the value `control=true` on a subset of hosts.
 
 > It is recommended to have either one or at least 3 control plane nodes. Make sure you store the hosts file somewhere safe.
-> Please also set `control nodes` for vclusters. This has no effect on where the control plane pods run, but it tells Ansible on which machines it can execute administrative tasks via ssh.
 
 #### Ingress hosts
 
@@ -211,7 +195,7 @@ As already mentioned above, this Kubernetes setup includes multiple web dashboar
   - Weave GitOps Dashboard
   - List all deployed GitOps resources with their attributes and state
   - Sync, pause and resume resources
-- `telemetry.yourdomain.org`
+- `grafana.yourdomain.org`
   - Grafana Dashboard UI
   - View and search logs of the past few days
   - Query and visualize in-depth metrics
@@ -231,7 +215,6 @@ For most cluster operations the Ansible playbook isn't required. You can instead
 - [helm](https://helm.sh/docs/helm/)
 - [flux](https://fluxcd.io/flux/cmd/)
 - [velero](https://velero.io/)
-- [vcluster](https://www.vcluster.com/)
 
 > Best just `ssh` into one of the control hosts and perform operations from the terminal there.
 
@@ -270,7 +253,7 @@ While you are free to deploy any containerized app into your cluster, a few sele
 3. Paste this template for a FluxCD helm release into the form:
 
     ```yaml
-    apiVersion: helm.toolkit.fluxcd.io/v2beta1
+    apiVersion: helm.toolkit.fluxcd.io/v2
     kind: HelmRelease
     metadata:
       name: "" # Custom name of your release
