@@ -11,3 +11,5 @@
 
 # Do not commit lockfile
 /poetry.lock
+
+/data
