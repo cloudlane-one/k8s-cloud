@@ -44,7 +44,7 @@ spec:
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: keycloak
+  name: keycloak-oci
 spec:
   interval: 1h
   releaseName: keycloak
