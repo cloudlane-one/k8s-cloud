@@ -29,7 +29,7 @@ spec:
         name: oauth2-proxy
   timeout: '30m0s' # Setting up public domains for OIDC takes time.
   dependsOn:
-    - name: keycloak
+    - name: keycloak-oci
   valuesFrom:
     - kind: Secret
       name: cluster-oidc
