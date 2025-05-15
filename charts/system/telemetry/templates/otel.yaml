@@ -23,8 +23,6 @@ spec:
   timeout: '15m0s' # Account for slow performance of cluster on first setup.
   values:
     mode: daemonset
-    image:
-      repository: otel/opentelemetry-collector-k8s
     presets:
       kubernetesAttributes:
         enabled: true
@@ -53,8 +51,6 @@ spec:
   timeout: '15m0s' # Account for slow performance of cluster on first setup.
   values:
     mode: deployment
-    image:
-      repository: otel/opentelemetry-collector-k8s
     replicaCount: 1
     presets:
       clusterMetrics:
