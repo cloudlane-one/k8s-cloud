@@ -7,4 +7,4 @@ metadata:
 type: Opaque
 data:
   {{ .Values.targetSecret.keys.postgres }}: {{ printf "pg://%s:5432?u=%s&p=%s&d=%s" .Values.postgres.serviceName .Values.postgres.user $pgPassword .Values.postgres.database | b64enc }}
-  {{ .Values.targetSecret.keys.redis }}: {{ printf "redis://:%s@%s:6380" .Values.redis.serviceName $rdPassword | b64enc }}
+  {{ .Values.targetSecret.keys.redis }}: {{ printf "redis://:%s@%s:6380" $rdPassword .Values.redis.serviceName | b64enc }}
