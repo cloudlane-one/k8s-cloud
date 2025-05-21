@@ -1,0 +1,22 @@
+postgres:
+  serviceName: nocodb-postgres
+
+  user: nocodb
+  database: nocodb
+
+  passwordSecret:
+    name: nocodb-postgres
+    key: user-password
+
+redis:
+  serviceName: nocodb-redis
+
+  passwordSecret:
+    name: nocodb-redis
+    key: password
+
+targetSecret:
+  name: nocodb-urls
+  keys:
+    postgres: postgres
+    redis: redis
