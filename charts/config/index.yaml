@@ -71,6 +71,16 @@ entries:
     version: 0.0.1
   nocodb-urls:
   - apiVersion: v2
+    appVersion: 0.1.6
+    created: "2025-05-21T07:52:16.785329251Z"
+    description: Setup url secret for nocodb
+    digest: 12f1564e8d17388368c70acd59d8582fd66a11652dac4f64d90aef72c413c8b2
+    name: nocodb-urls
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/nocodb-urls-0.1.6/nocodb-urls-0.1.6.tgz
+    version: 0.1.6
+  - apiVersion: v2
     appVersion: 0.1.5
     created: "2025-05-21T07:50:00.565616308Z"
     description: Setup url secret for nocodb
@@ -265,4 +275,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-mariadb-endpoint-0.1.0/vcluster-mariadb-endpoint-0.1.0.tgz
     version: 0.1.0
-generated: "2025-05-21T07:50:00.565667167Z"
+generated: "2025-05-21T07:52:16.785388652Z"
