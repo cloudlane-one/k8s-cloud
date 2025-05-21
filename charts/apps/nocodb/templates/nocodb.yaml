@@ -264,7 +264,7 @@ spec:
               cpu: 100m
           volumeMounts:
             - name: data
-              mountPath: "/var/www/html/storage"
+              mountPath: "/usr/app/data"
       volumes:
         - name: data
           persistentVolumeClaim:
