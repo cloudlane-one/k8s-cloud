@@ -1,5 +1,5 @@
 postgres:
-  serviceName: nocodb-postgres
+  serviceName: nocodb-postgres-postgresql
 
   user: nocodb
   database: nocodb
@@ -9,7 +9,7 @@ postgres:
     key: user-password
 
 redis:
-  serviceName: nocodb-redis
+  serviceName: nocodb-redis-master
 
   passwordSecret:
     name: nocodb-redis
