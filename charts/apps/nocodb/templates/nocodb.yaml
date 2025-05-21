@@ -228,7 +228,7 @@ spec:
             - name: NC_SMTP_REJECT_UNAUTHORIZED
               value: "true"
             - name: NC_PUBLIC_URL
-              value: {{ .Values.host }}
+              value: {{ printf "https://%s" .Values.host }}
             - name: NC_REDIS_URL
               valueFrom:
                 secretKeyRef:
@@ -240,7 +240,7 @@ spec:
           livenessProbe:
             tcpSocket:
               port: http
-            initialDelaySeconds: 20
+            initialDelaySeconds: 30
             timeoutSeconds: 10
             periodSeconds: 20
             successThreshold: 1
