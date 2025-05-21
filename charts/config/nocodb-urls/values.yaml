@@ -11,6 +11,8 @@ postgres:
     key: user-password
 
 redis:
+  enabled: true
+  
   service: 
     name: nocodb-redis-master
     port: "6379"

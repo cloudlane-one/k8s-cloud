@@ -1,10 +1,12 @@
-{{- $pgPassword := get ((lookup "v1" "Secret" .Release.Namespace .Values.postgres.passwordSecret.name).data) .Values.postgres.passwordSecret.key | b64dec }}
-{{- $rdPassword := get ((lookup "v1" "Secret" .Release.Namespace .Values.redis.passwordSecret.name).data) .Values.redis.passwordSecret.key | b64dec }}
 apiVersion: v1
 kind: Secret
 metadata:
   name: {{ .Values.targetSecret.name }}
 type: Opaque
 data:
+  {{- $pgPassword := get ((lookup "v1" "Secret" .Release.Namespace .Values.postgres.passwordSecret.name).data) .Values.postgres.passwordSecret.key | b64dec }}
   {{ .Values.targetSecret.keys.postgres }}: {{ printf "pg://%s:%s?u=%s&p=%s&d=%s" .Values.postgres.service.name .Values.postgres.service.port .Values.postgres.user $pgPassword .Values.postgres.database | b64enc }}
+  {{- if .Values.redis.enabled }}
+  {{- $rdPassword := get ((lookup "v1" "Secret" .Release.Namespace .Values.redis.passwordSecret.name).data) .Values.redis.passwordSecret.key | b64dec }}
   {{ .Values.targetSecret.keys.redis }}: {{ printf "redis://:%s@%s:%s" $rdPassword .Values.redis.service.name .Values.redis.service.port | b64enc }}
+  {{- end }}

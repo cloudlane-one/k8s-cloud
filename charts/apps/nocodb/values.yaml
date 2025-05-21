@@ -1,5 +1,7 @@
 host: ""
 
+admin_email: ""
+
 smtp: # For notifications
   host: ""
   port: ""
@@ -17,3 +19,6 @@ snapshots:
   class_name: snap
 
 zone: ""
+
+redis:
+  enabled: false # redis currently causes nocodb to crash without error logs...
