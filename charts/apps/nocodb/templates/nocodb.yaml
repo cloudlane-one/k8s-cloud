@@ -85,8 +85,8 @@ spec:
           database: nocodb
           existingSecret: nocodb-postgres
           secretKeys:
-            adminPasswordKey: user-password
-            userPasswordKey: postgres-password
+            userPasswordKey: user-password
+            adminPasswordKey: postgres-password
             replicationPasswordKey: replication-password
     primary:
       nodeSelector:
