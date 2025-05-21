@@ -917,6 +917,21 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/nextcloud-0.8.4/nextcloud-0.8.4.tgz
     version: 0.8.4
+  nocodb:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2025-05-21T06:56:59.40437263Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: No-code database solution on top of Postgres
+    digest: 630bf374d08f3a4cfd3135ee16ce2624f8bbe1700240cae9d6ec386664283244
+    name: nocodb
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/nocodb-0.1.0/nocodb-0.1.0.tgz
+    version: 0.1.0
   rocketchat:
   - apiVersion: v2
     appVersion: 7.4.1
@@ -1185,4 +1200,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.0/wordpress-0.1.0.tgz
     version: 0.1.0
-generated: "2025-05-15T06:02:16.136804747Z"
+generated: "2025-05-21T06:56:59.404537865Z"
