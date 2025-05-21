@@ -919,6 +919,20 @@ entries:
     version: 0.8.4
   nocodb:
   - apiVersion: v2
+    appVersion: 0.1.3
+    created: "2025-05-21T07:19:20.040581659Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: No-code database solution on top of Postgres
+    digest: 21367b066e537b385d25680ae84d92300e9d2677b4b1854480a394c33d4a8ad1
+    name: nocodb
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/nocodb-0.1.3/nocodb-0.1.3.tgz
+    version: 0.1.3
+  - apiVersion: v2
     appVersion: 0.1.2
     created: "2025-05-21T07:08:41.095794888Z"
     dependencies:
@@ -1228,4 +1242,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.0/wordpress-0.1.0.tgz
     version: 0.1.0
-generated: "2025-05-21T07:08:41.0959826Z"
+generated: "2025-05-21T07:19:20.040716739Z"
