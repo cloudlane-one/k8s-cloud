@@ -1,5 +1,7 @@
 postgres:
-  serviceName: nocodb-postgres-postgresql
+  service:
+    name: nocodb-postgres-postgresql
+    port: 5432
 
   user: nocodb
   database: nocodb
@@ -9,7 +11,9 @@ postgres:
     key: user-password
 
 redis:
-  serviceName: nocodb-redis-master
+  service: 
+    name: nocodb-redis-master
+    port: 6379
 
   passwordSecret:
     name: nocodb-redis
