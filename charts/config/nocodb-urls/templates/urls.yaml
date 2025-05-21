@@ -6,5 +6,5 @@ metadata:
   name: {{ .Values.targetSecret.name }}
 type: Opaque
 data:
-  {{ .Values.targetSecret.keys.postgres }}: {{ printf "pg://%s:%d?u=%s&p=%s&d=%s" .Values.postgres.service.name .Values.postgres.service.port .Values.postgres.user $pgPassword .Values.postgres.database | b64enc }}
-  {{ .Values.targetSecret.keys.redis }}: {{ printf "redis://:%s@%s:%d" $rdPassword .Values.redis.service.name .Values.redis.service.port | b64enc }}
+  {{ .Values.targetSecret.keys.postgres }}: {{ printf "pg://%s:%s?u=%s&p=%s&d=%s" .Values.postgres.service.name .Values.postgres.service.port .Values.postgres.user $pgPassword .Values.postgres.database | b64enc }}
+  {{ .Values.targetSecret.keys.redis }}: {{ printf "redis://:%s@%s:%s" $rdPassword .Values.redis.service.name .Values.redis.service.port | b64enc }}
