@@ -234,6 +234,8 @@ spec:
                 secretKeyRef:
                   name: nocodb-urls
                   key: redis
+            - name: NC_INVITE_ONLY_SIGNUP
+              value: "true"
           ports:
             - name: http
               containerPort: 8080
