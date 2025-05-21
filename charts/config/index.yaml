@@ -69,6 +69,17 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/namespace-isolation-0.0.1/namespace-isolation-0.0.1.tgz
     version: 0.0.1
+  nocodb-urls:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2025-05-21T06:57:40.81084505Z"
+    description: Setup url secret for nocodb
+    digest: 42bacfabf8b7deb80cc5322ae5a32f25dac3eb581c101e601f3e8812fbf4de0f
+    name: nocodb-urls
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/nocodb-urls-0.1.0/nocodb-urls-0.1.0.tgz
+    version: 0.1.0
   rocketchat-mongodb-urls:
   - apiVersion: v2
     appVersion: 0.1.0
@@ -204,4 +215,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-mariadb-endpoint-0.1.0/vcluster-mariadb-endpoint-0.1.0.tgz
     version: 0.1.0
-generated: "2024-02-27T16:44:40.929345544Z"
+generated: "2025-05-21T06:57:40.810875818Z"
