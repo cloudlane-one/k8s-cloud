@@ -18,7 +18,6 @@ spec:
   ref:
     semver: '^21.1.5'
 ---
-{{- end }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -27,16 +26,6 @@ type: Opaque
 data:
   {{- $passRef := .Values.smtp.password_secret }}
   password: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $passRef.namespace) $passRef.name).data) $passRef.key }}
----
-{{- if .Values.s3.enabled }}
-apiVersion: v1
-kind: Secret
-metadata:
-  name: nocodb-s3
-type: Opaque
-data:
-  {{- $secretRef := .Values.s3.access_key_secret }}
-  secret: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
 ---
 apiVersion: v1
 kind: Secret
@@ -195,6 +184,12 @@ spec:
         app: nocodb
     spec:
       hostname: nocodb
+      nodeSelector:
+        {{- if not (eq .Values.zone "") }}
+        topology.kubernetes.io/zone: {{ .Values.zone }}
+        {{- else }}
+        backbone: "1"
+        {{- end }}
       containers:
         - name: nocodb
           image: nocodb/nocodb:latest
