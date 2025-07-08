@@ -1,4 +1,8 @@
 cluster_name: ""
 
+grafana_dashboard:
+  # Set to true to enable the Grafana dashboard CR for NGINX Ingress Controller.
+  enabled: true
+
 # Set to true to use host-port instead of LoadBalancer service to expose ingresses.
 exposeViaHostPort: false

@@ -98,6 +98,7 @@ spec:
               annotations:
                 description: Too many 4XXs
                 summary: More than 5% of all requests returned 4XX, this requires your attention
+{{- if .Values.grafana_dashboard.enabled }}
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
@@ -111,3 +112,4 @@ spec:
       dashboards: "grafana"
   json: >
     {{ (.Files.Get "config/grafana-dashboards/nginx.json") | nindent 4 }}
+{{- end }}
