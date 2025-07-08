@@ -32,6 +32,7 @@ spec:
         update-status-on-shutdown: "false"
       config:
         proxy-buffer-size: "16k" # See https://andrewlock.net/fixing-nginx-upstream-sent-too-big-header-error-when-running-an-ingress-controller-in-kubernetes/ for explanation
+        proxy-busy-buffers-size: "16k" # Set in response to new error message after update to chart 4.13.0: '"proxy_busy_buffers_size" must be equal to or greater than the maximum of the value of "proxy_buffer_size"'
         annotations-risk-level: Critical # Required for `server-snippet` annotation to work
       allowSnippetAnnotations: true
       enableAnnotationValidations: false # ! Required to avoid validation errors due to variables in annotations (auth-signin, etc.)
