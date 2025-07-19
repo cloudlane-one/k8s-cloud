@@ -274,6 +274,17 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/sso-clients-0.1.0/sso-clients-0.1.0.tgz
     version: 0.1.0
+  tandoor-config:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2025-07-19T22:22:41.074340464Z"
+    description: Setup config secret for Tandoor
+    digest: 1f5c0278051f5d1b9b210ba3e11bca1458430770eabf09e3740d5206e600e7ed
+    name: tandoor-config
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/tandoor-config-0.1.0/tandoor-config-0.1.0.tgz
+    version: 0.1.0
   vcluster-mariadb-endpoint:
   - apiVersion: v2
     appVersion: 0.1.0
@@ -285,4 +296,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-mariadb-endpoint-0.1.0/vcluster-mariadb-endpoint-0.1.0.tgz
     version: 0.1.0
-generated: "2025-05-21T08:33:34.754748964Z"
+generated: "2025-07-19T22:22:41.0744234Z"
