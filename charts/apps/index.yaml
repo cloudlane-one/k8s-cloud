@@ -1213,6 +1213,21 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/rocketchat-0.1.12/rocketchat-0.1.12.tgz
     version: 0.1.12
+  tandoor:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2025-07-19T22:22:38.865700699Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Recipes + shopping lists + X
+    digest: 5cdca3620c1162a47110ea12eb9c8fa731e395754e092dc59acb347c13371e7b
+    name: tandoor
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/tandoor-0.1.0/tandoor-0.1.0.tgz
+    version: 0.1.0
   wordpress:
   - apiVersion: v2
     appVersion: 6.5.0
@@ -1284,4 +1299,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.0/wordpress-0.1.0.tgz
     version: 0.1.0
-generated: "2025-05-21T08:33:31.055167445Z"
+generated: "2025-07-19T22:22:38.865888744Z"
