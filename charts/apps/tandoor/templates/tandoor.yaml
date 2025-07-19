@@ -1,0 +1,301 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: OCIRepository
+metadata:
+  name: bitnami-postgres
+spec:
+  interval: 1h
+  url: oci://registry-1.docker.io/bitnamicharts/postgresql
+  ref:
+    semver: '^16.7.20'
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tandoor-postgres
+type: Opaque
+data:
+  user-password: {{ include "common.secrets.passwords.manage" (dict "secret" "tandoor-postgres" "key" "user-password" "providedValues" (list "") "length" 16 "context" $) }}
+  postgres-password: {{ include "common.secrets.passwords.manage" (dict "secret" "tandoor-postgres" "key" "postgres-password" "providedValues" (list "") "length" 16 "context" $) }}
+  replication-password: {{ include "common.secrets.passwords.manage" (dict "secret" "tandoor-postgres" "key" "replication-password" "providedValues" (list "") "length" 16 "context" $) }}
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: tandoor-postgres
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: bitnami-postgres
+  values:
+    global:
+      postgresql:
+        auth:
+          username: tandoor
+          database: tandoor
+          existingSecret: tandoor-postgres
+          secretKeys:
+            userPasswordKey: user-password
+            adminPasswordKey: postgres-password
+            replicationPasswordKey: replication-password
+    primary:
+      nodeSelector:
+        {{- if not (eq .Values.zone "") }}
+        topology.kubernetes.io/zone: {{ .Values.zone }}
+        {{- else }}
+        backbone: "1"
+        {{- end }}
+      persistence:
+        size: 4Gi
+        storageClass: ha
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: sso-clients
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: sso-clients
+      version: "^0.1.4"
+      sourceRef:
+        kind: HelmRepository
+        name: base-config-repo
+        namespace: flux-system
+  values:
+    oidc:
+      id: tandoor
+      redirect_uris:
+        - {{ printf "https://%s/*" .Values.host }}
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: tandoor-config
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: tandoor-config
+      version: "^0.1.0"
+      sourceRef:
+        kind: HelmRepository
+        name: base-config-repo
+        namespace: flux-system
+  valuesFrom:
+    - kind: ConfigMap
+      name: sso-keycloak
+      valuesKey: url
+      targetPath: "oidc.url"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tandoor-smtp
+type: Opaque
+data:
+  {{- $passRef := .Values.smtp.password_secret }}
+  password: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $passRef.namespace) $passRef.name).data) $passRef.key }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tandoor
+type: Opaque
+data:
+  secret: {{ include "common.secrets.passwords.manage" (dict "secret" "tandoor" "key" "secret" "providedValues" (list "") "length" 32 "context" $) }}
+  admin-password: {{ include "common.secrets.passwords.manage" (dict "secret" "tandoor" "key" "admin-password" "providedValues" (list "") "length" 20 "context" $) }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tandoor-data
+  annotations:
+    helm.sh/resource-policy: "keep"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: "4Gi"
+  storageClassName: ha
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tandoor
+  labels:
+    app: tandoor
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: tandoor
+  template:
+    metadata:
+      labels:
+        app: tandoor
+    spec:
+      hostname: tandoor
+      nodeSelector:
+        {{- if not (eq .Values.zone "") }}
+        topology.kubernetes.io/zone: {{ .Values.zone }}
+        {{- else }}
+        backbone: "1"
+        {{- end }}
+      containers:
+        - name: tandoor
+          image: vabene1111/recipes:latest
+          imagePullPolicy: Always
+          env:
+            - name: DB_ENGINE
+              value: django.db.backends.postgresql
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: tandoor
+                  key: secret
+            - name: POSTGRES_USER
+              value: tandoor
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: tandoor-postgres
+                  key: user-password
+            - name: POSTGRES_DB
+              value: tandoor
+            - name: POSTGRES_HOST
+              value: tandoor-postgres-postgresql
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: EMAIL_HOST
+              value: {{ .Values.smtp.host | quote }}
+            - name: EMAIL_PORT
+              value: {{ .Values.smtp.port | quote }}
+            - name: EMAIL_HOST_USER
+              value: {{ .Values.smtp.user | quote }}
+            - name: EMAIL_HOST_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: tandoor-smtp
+                  key: password
+            - name: DEFAULT_FROM_EMAIL
+              value: {{ .Values.smtp.from_address | quote }}
+            - name: EMAIL_USE_SSL
+              value: "1"
+            {{- if .Values.ai.enabled }}
+            - name: AI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.ai.api_key_secret.name }}
+                  key: {{ .Values.ai.api_key_secret.key }}
+            - name: AI_MODEL_NAME
+              value: {{ .Values.ai.model | quote }}
+            - name: AI_RATELIMIT
+              value: "60/hour"
+              {{- end }}
+            - name: SOCIAL_PROVIDERS
+              value: allauth.socialaccount.providers.openid_connect
+            - name: SOCIALACCOUNT_PROVIDERS
+              valueFrom:
+                configMapKeyRef:
+                  name: tandoor-config
+                  key: oidc
+          ports:
+            - name: http
+              containerPort: 8080
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 30
+            timeoutSeconds: 10
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 10
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 30
+            timeoutSeconds: 10
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: 512Mi
+              cpu: 100m
+          volumeMounts:
+            - name: static
+              mountPath: "/opt/recipes/staticfiles"
+            - name: media
+              mountPath: "/opt/recipes/mediafiles"
+      volumes:
+        - name: static
+          persistentVolumeClaim:
+            claimName: tandoor-data
+            subPath: static
+        - name: media
+          persistentVolumeClaim:
+            claimName: tandoor-data
+            subPath: media
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tandoor
+spec:
+  type: ClusterIP
+  selector:
+    app: tandoor
+  ports:
+    - port: 80
+      targetPort: http
+      name: http
+{{- if .Values.ingress }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tandoor
+  annotations:
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: 1G
+spec:
+  tls:
+    - hosts:
+        - {{ .Values.host }}
+      secretName: tandoor-cert
+  rules:
+    - host: {{ .Values.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tandoor
+                port:
+                  name: http
+{{- end }}
+{{- if .Values.snapshots.enabled }}
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "tandoor-data-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: tandoor-data
+  {{- if .Values.snapshots.class_name }}
+  volumeSnapshotClassName: {{ .Values.snapshots.class_name }}
+  {{- end }}
+{{- end }}

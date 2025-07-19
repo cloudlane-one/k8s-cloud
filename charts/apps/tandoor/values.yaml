@@ -1,0 +1,30 @@
+host: ""
+
+smtp: # For notifications
+  host: ""
+  port: ""
+  user: ""
+  password_secret:
+    namespace: kube-system
+    name: mail-smtp
+    key: password
+  from_address: ""
+
+ai:
+  enabled: false
+  model: ""
+  api_key_secret:
+    namespace: kube-system
+    name: ai-api
+    key: key
+
+ingress: true
+
+snapshots:
+  enabled: true
+  class_name: snap
+
+zone: ""
+
+redis:
+  enabled: false # redis currently causes nocodb to crash without error logs...

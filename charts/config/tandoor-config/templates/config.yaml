@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.targetSecret.name }}
+type: Opaque
+data:
+  {{- $oidcSecret := get ((lookup "v1" "Secret" .Release.Namespace .Values.oidc.secret.name).data) .Values.oidc.secret.key | b64dec }}
+  {{ .Values.targetSecret.keys.oidc }}: {{ printf .Values.oidc.config_template .Values.oidc.id $oidcSecret .Values.oidc.url | b64enc }}

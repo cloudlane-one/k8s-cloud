@@ -1,0 +1,28 @@
+oidc:
+  id: tandoor
+  url: ""
+  secret:
+    name: oidc-client.tandoor
+    key: secret
+
+  config_template: |
+    {
+      "openid_connect": {
+        "APPS": [
+          {
+            "provider_id": "sso",
+            "name": "SSO",
+            "client_id": "%s",
+            "secret": "%s",
+            "settings": {
+              "server_url": "%s/.well-known/openid-configuration"
+            }
+          }
+        ]
+      }
+    }
+
+targetSecret:
+  name: tandoor-config
+  keys:
+    oidc: oidc
