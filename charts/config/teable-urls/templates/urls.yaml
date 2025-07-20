@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.targetSecret.name }}
+type: Opaque
+data:
+  {{- $pgPassword := get ((lookup "v1" "Secret" .Release.Namespace .Values.postgres.passwordSecret.name).data) .Values.postgres.passwordSecret.key | b64dec }}
+  postgres: {{ printf "postgresql://%s:%s@%s:%s/%s" .Values.postgres.user $pgPassword .Values.postgres.service.name .Values.postgres.service.port .Values.postgres.database | b64enc }}
+  {{- if .Values.redis.enabled }}
+  {{- $rdPassword := get ((lookup "v1" "Secret" .Release.Namespace .Values.redis.passwordSecret.name).data) .Values.redis.passwordSecret.key | b64dec }}
+  redis: {{ printf "redis://:%s@%s:%s" $rdPassword .Values.redis.service.name .Values.redis.service.port | b64enc }}
+  {{- end }}
+  oidc_userinfo: {{ printf "%s/protocol/openid-connect/userinfo" .Values.oidc.issuer_url | b64enc }}
+  oidc_auth: {{ printf "%s/protocol/openid-connect/auth" .Values.oidc.issuer_url | b64enc }}
+  oidc_token: {{ printf "%s/protocol/openid-connect/token" .Values.oidc.issuer_url | b64enc }}

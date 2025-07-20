@@ -1,0 +1,28 @@
+postgres:
+  service:
+    name: teable-postgres-postgresql
+    port: "5432"
+
+  user: teable
+  database: teable
+
+  passwordSecret:
+    name: teable-postgres
+    key: user-password
+
+redis:
+  enabled: true
+
+  service:
+    name: teable-redis-master
+    port: "6379"
+
+  passwordSecret:
+    name: teable-redis
+    key: password
+
+oidc:
+  issuer_url: ""
+
+targetSecret:
+  name: teable-urls
