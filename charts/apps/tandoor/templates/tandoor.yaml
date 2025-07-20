@@ -164,6 +164,8 @@ spec:
           image: vabene1111/recipes:latest
           imagePullPolicy: Always
           env:
+            - name: ALLOWED_HOSTS
+              value: {{ .Values.host | quote }}
             - name: TANDOOR_PORT
               value: '8080' # required because otherwise Tandoor somehow resolves its port to the full k8s service URL and crashes
             - name: DB_ENGINE
