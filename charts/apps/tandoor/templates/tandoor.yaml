@@ -260,6 +260,10 @@ spec:
             - --log-level
             - INFO
             - recipes.wsgi
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+              name: gunicorn
           livenessProbe:
             failureThreshold: 3
             httpGet:
@@ -291,9 +295,6 @@ spec:
             - containerPort: 80
               protocol: TCP
               name: http
-            - containerPort: 8080
-              protocol: TCP
-              name: gunicorn
           resources:
             requests:
               cpu: 100m
@@ -329,6 +330,11 @@ spec:
     - port: 80
       targetPort: http
       name: http
+      protocol: TCP
+    - port: 8080
+      targetPort: gunicorn
+      name: gunicorn
+      protocol: TCP
 {{- if .Values.ingress }}
 ---
 apiVersion: networking.k8s.io/v1
@@ -348,6 +354,20 @@ spec:
       http:
         paths:
           - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tandoor
+                port:
+                  name: gunicorn
+          - path: /media
+            pathType: Prefix
+            backend:
+              service:
+                name: tandoor
+                port:
+                  name: http
+          - path: /static
             pathType: Prefix
             backend:
               service:
