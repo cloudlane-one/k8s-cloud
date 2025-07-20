@@ -933,6 +933,20 @@ entries:
     version: 0.8.4
   nocodb:
   - apiVersion: v2
+    appVersion: 0.1.7
+    created: "2025-07-20T15:58:45.691402797Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: No-code database solution on top of Postgres
+    digest: bf42f06c04e0de83d1c9da364dfe7890d5ce35c48165300e2bc98d11dc96f52d
+    name: nocodb
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/nocodb-0.1.7/nocodb-0.1.7.tgz
+    version: 0.1.7
+  - apiVersion: v2
     appVersion: 0.1.6
     created: "2025-05-21T08:33:31.055024161Z"
     dependencies:
@@ -1230,6 +1244,20 @@ entries:
   tandoor:
   - apiVersion: v2
     appVersion: 1.5.35
+    created: "2025-07-20T15:58:45.815891862Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Recipes + shopping lists + X
+    digest: 11528d8450260215e195b2927e8382592df3fb9659f5e4bfd66cfc3a923a4a5e
+    name: tandoor
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/tandoor-0.1.8/tandoor-0.1.8.tgz
+    version: 0.1.8
+  - apiVersion: v2
+    appVersion: 1.5.35
     created: "2025-07-20T13:49:05.072733011Z"
     dependencies:
     - name: common
@@ -1343,6 +1371,20 @@ entries:
   teable:
   - apiVersion: v2
     appVersion: 1.9.0
+    created: "2025-07-20T15:58:45.926764047Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: No-code database solution on top of Postgres
+    digest: cff018c35edc4e3dc58c0ea20186ac37628d687489361e017c2a288895b594a8
+    name: teable
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/teable-0.1.1/teable-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
+    appVersion: 1.9.0
     created: "2025-07-20T15:50:50.666075332Z"
     dependencies:
     - name: common
@@ -1426,4 +1468,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.0/wordpress-0.1.0.tgz
     version: 0.1.0
-generated: "2025-07-20T15:50:50.666271242Z"
+generated: "2025-07-20T15:58:45.927011894Z"
