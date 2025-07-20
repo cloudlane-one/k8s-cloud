@@ -150,7 +150,7 @@ spec:
         - name: IMPORT_VARSUBSTITUTION_ENABLED
           value: "true"
         - name: LOGGING_LEVEL_HTTP
-          value: "debug"
+          value: "info"
         - name: SMTP_PASSWORD
           valueFrom:
             secretKeyRef:

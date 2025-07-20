@@ -130,7 +130,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: keycloak-config-cli
-          image: bitnami/keycloak-config-cli:5.9.0-debian-11-r1
+          image: bitnami/keycloak-config-cli:latest
           command:
             - java
             - -jar
@@ -154,7 +154,7 @@ spec:
             - name: IMPORT_VARSUBSTITUTION_ENABLED
               value: "true"
             - name: LOGGING_LEVEL_HTTP
-              value: "debug"
+              value: "info"
             {{- if .Values.oidc.enabled }}
             - name: OIDC_SECRET.{{ .Values.oidc.id }}
               valueFrom:
