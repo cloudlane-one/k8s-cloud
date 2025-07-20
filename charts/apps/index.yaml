@@ -2,6 +2,20 @@ apiVersion: v1
 entries:
   actualbudget:
   - apiVersion: v2
+    appVersion: 0.1.2
+    created: "2025-07-20T10:50:34.266689784Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Actual Budget server + frontend
+    digest: ec8c0508d7721dfb5c6e2f0147af3fa85ce2310cde8ab398731948dcd999ba23
+    name: actualbudget
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/actualbudget-0.1.2/actualbudget-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
     appVersion: 0.1.1
     created: "2025-05-15T06:02:15.547481241Z"
     dependencies:
@@ -1299,4 +1313,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.0/wordpress-0.1.0.tgz
     version: 0.1.0
-generated: "2025-07-19T22:22:38.865888744Z"
+generated: "2025-07-20T10:50:34.266886093Z"
