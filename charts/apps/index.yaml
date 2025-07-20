@@ -1371,6 +1371,20 @@ entries:
   teable:
   - apiVersion: v2
     appVersion: 1.9.0
+    created: "2025-07-20T16:31:24.505734923Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: No-code database solution on top of Postgres
+    digest: 6b19a881b382610c329746a557b50ad3f006343ba6ac66ea8ff1207bd2a2e454
+    name: teable
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/teable-0.1.2/teable-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
+    appVersion: 1.9.0
     created: "2025-07-20T15:58:45.926764047Z"
     dependencies:
     - name: common
@@ -1468,4 +1482,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.0/wordpress-0.1.0.tgz
     version: 0.1.0
-generated: "2025-07-20T15:58:45.927011894Z"
+generated: "2025-07-20T16:31:24.505888791Z"
