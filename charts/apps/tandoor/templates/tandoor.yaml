@@ -214,7 +214,7 @@ spec:
               value: allauth.socialaccount.providers.openid_connect
             - name: SOCIALACCOUNT_PROVIDERS
               valueFrom:
-                configMapKeyRef:
+                secretKeyRef:
                   name: tandoor-config
                   key: oidc
           ports:
