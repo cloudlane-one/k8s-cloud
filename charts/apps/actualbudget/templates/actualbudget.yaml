@@ -1,3 +1,23 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: sso-clients
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: sso-clients
+      version: "^0.1.8"
+      sourceRef:
+        kind: HelmRepository
+        name: base-config-repo
+        namespace: flux-system
+  values:
+    oidc:
+      id: actualbudget
+      redirect_uris:
+        - {{ printf "https://%s/*" .Values.host }}
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -48,6 +68,21 @@ spec:
         - name: actualbudget
           image: docker.io/actualbudget/actual-server:latest
           imagePullPolicy: Always
+          env:
+            - name: ACTUAL_OPENID_DISCOVERY_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: sso-keycloak
+                  key: url
+            - name: ACTUAL_OPENID_SERVER_HOSTNAME
+              value: {{ printf "https://%s" .Values.host }}
+            - name: ACTUAL_OPENID_CLIENT_ID
+              value: "actualbudget"
+            - name: ACTUAL_OPENID_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oidc-client.actualbudget
+                  key: secret
           ports:
             - name: http
               containerPort: 5006
