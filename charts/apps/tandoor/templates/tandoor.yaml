@@ -62,7 +62,7 @@ spec:
   chart:
     spec:
       chart: sso-clients
-      version: "^0.1.4"
+      version: "^0.1.8"
       sourceRef:
         kind: HelmRepository
         name: base-config-repo
@@ -232,19 +232,16 @@ spec:
               memory: 512Mi
               cpu: 100m
           volumeMounts:
-            - name: static
+            - name: data
               mountPath: "/opt/recipes/staticfiles"
-            - name: media
+              subPath: static
+            - name: data
               mountPath: "/opt/recipes/mediafiles"
+              subPath: media
       volumes:
-        - name: static
+        - name: data
           persistentVolumeClaim:
             claimName: tandoor-data
-            subPath: static
-        - name: media
-          persistentVolumeClaim:
-            claimName: tandoor-data
-            subPath: media
 ---
 apiVersion: v1
 kind: Service
