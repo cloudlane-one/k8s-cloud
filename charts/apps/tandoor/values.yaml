@@ -12,7 +12,7 @@ smtp: # For notifications
 
 ai:
   enabled: false
-  model: ""
+  model: "" # has to be a model identifier supported by LiteLLM: https://docs.litellm.ai/docs/providers
   api_key_secret:
     namespace: kube-system
     name: ai-api

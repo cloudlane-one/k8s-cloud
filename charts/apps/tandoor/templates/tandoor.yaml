@@ -105,6 +105,15 @@ data:
 apiVersion: v1
 kind: Secret
 metadata:
+  name: tandoor-ai-api
+type: Opaque
+data:
+  {{- $apiKeyRef := .Values.ai.api_key_secret }}
+  key: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $apiKeyRef.namespace) $apiKeyRef.name).data) $apiKeyRef.key }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
   name: tandoor
 type: Opaque
 data:
@@ -194,8 +203,8 @@ spec:
             - name: AI_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.ai.api_key_secret.name }}
-                  key: {{ .Values.ai.api_key_secret.key }}
+                  name: tandoor-ai-api
+                  key: key
             - name: AI_MODEL_NAME
               value: {{ .Values.ai.model | quote }}
             - name: AI_RATELIMIT
