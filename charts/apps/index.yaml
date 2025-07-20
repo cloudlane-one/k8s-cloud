@@ -1229,6 +1229,20 @@ entries:
     version: 0.1.12
   tandoor:
   - apiVersion: v2
+    appVersion: 0.1.2
+    created: "2025-07-20T11:36:57.374699933Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Recipes + shopping lists + X
+    digest: cc80446f596eb6630baa7d6fb694e9bb2941fedbd2b7ffbac9e310676b4efc54
+    name: tandoor
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/tandoor-0.1.2/tandoor-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
     appVersion: 0.1.1
     created: "2025-07-20T11:02:11.796811488Z"
     dependencies:
@@ -1327,4 +1341,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.0/wordpress-0.1.0.tgz
     version: 0.1.0
-generated: "2025-07-20T11:02:11.797002016Z"
+generated: "2025-07-20T11:36:57.374920999Z"
