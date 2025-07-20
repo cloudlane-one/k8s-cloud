@@ -70,7 +70,7 @@ metadata:
   name: nocodb-redis
 type: Opaque
 data:
-  password: {{ include "common.secrets.passwords.manage" (dict "secret" "nocodb-postgres" "key" "user-password" "providedValues" (list "") "length" 16 "context" $) }}
+  password: {{ include "common.secrets.passwords.manage" (dict "secret" "nocodb-redis" "key" "password" "providedValues" (list "") "length" 16 "context" $) }}
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease

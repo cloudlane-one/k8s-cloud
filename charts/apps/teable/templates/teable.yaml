@@ -123,7 +123,7 @@ spec:
         namespace: flux-system
   values:
     oidc:
-      id: tandoor
+      id: teable
       redirect_uris:
         - {{ printf "https://%s/api/auth/oidc/callback" .Values.host }}
 ---
