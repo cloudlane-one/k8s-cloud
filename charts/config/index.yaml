@@ -301,6 +301,16 @@ entries:
     version: 0.1.0
   teable-urls:
   - apiVersion: v2
+    appVersion: 0.1.1
+    created: "2025-07-20T16:11:49.856090363Z"
+    description: Setup URL secret for Teable
+    digest: e4124059469595b166a4740ee48a36b1ded7971c83e52e1edff24fe1361d26ba
+    name: teable-urls
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/teable-urls-0.1.1/teable-urls-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
     appVersion: 0.1.0
     created: "2025-07-20T15:50:53.751147296Z"
     description: Setup URL secret for Teable
@@ -321,4 +331,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-mariadb-endpoint-0.1.0/vcluster-mariadb-endpoint-0.1.0.tgz
     version: 0.1.0
-generated: "2025-07-20T15:50:53.751187361Z"
+generated: "2025-07-20T16:11:49.856130138Z"
