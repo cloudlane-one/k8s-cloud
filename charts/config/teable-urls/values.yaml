@@ -3,12 +3,12 @@ postgres:
     name: teable-postgres-postgresql
     port: "5432"
 
-  user: teable
+  user: postgres
   database: teable
 
   passwordSecret:
     name: teable-postgres
-    key: user-password
+    key: postgres-password
 
 redis:
   enabled: true
