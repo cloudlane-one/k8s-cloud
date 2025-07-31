@@ -2,7 +2,7 @@ apiVersion: v2
 name: wordpress
 description: Wordpress with SSO and some useful extras
 type: application
-version: "0.2.1"
+version: "0.2.2"
 appVersion: "6.5.0"
 
 dependencies:

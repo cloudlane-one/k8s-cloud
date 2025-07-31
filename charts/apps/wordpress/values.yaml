@@ -10,6 +10,7 @@ smtp: # For admin notifications
   host: ""
   port: ""
   user: ""
+  starttls: false
   password_secret:
     namespace: kube-system
     name: mail-smtp

@@ -149,7 +149,7 @@ spec:
     smtpHost: {{ .Values.smtp.host }}
     smtpPort: {{ .Values.smtp.port | quote }}
     smtpUser: {{ .Values.smtp.user | quote }}
-    smtpProtocol: ssl
+    smtpProtocol: {{ .Values.smtp.starttls | ternary "tls" "ssl" }}
     smtpExistingSecret: smtp
     service:
       type: ClusterIP
