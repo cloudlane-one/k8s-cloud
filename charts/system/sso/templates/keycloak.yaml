@@ -215,7 +215,7 @@ spec:
             host: {{ .Values.smtp.host }}
             {{- if not .Values.smtp.starttls }}
             ssl: 'true'
-            {{- else -}}
+            {{- else }}
             starttls: 'true'
             {{- end }}
             auth: 'true'
