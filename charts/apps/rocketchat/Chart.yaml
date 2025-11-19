@@ -3,7 +3,7 @@ name: rocketchat
 description: Rocket.Chat with SSO and some useful extras
 type: application
 version: "0.6.2"
-appVersion: "7.7.9"
+appVersion: "7.11.0"
 
 dependencies:
   - name: common
