@@ -193,11 +193,11 @@ spec:
         {{- end }}
       containers:
         - name: tandoor
-          image: vabene1111/recipes:latest
+          image: vabene1111/recipes:2.3
           imagePullPolicy: Always
           env:
-            - name: TANDOOR_PORT
-              value: '8080' # required because otherwise Tandoor somehow resolves its port to the full k8s service URL and crashes
+            # - name: TANDOOR_PORT
+            #   value: '8080' # required because otherwise Tandoor somehow resolves its port to the full k8s service URL and crashes
             - name: DB_ENGINE
               value: django.db.backends.postgresql
             - name: SECRET_KEY
@@ -251,19 +251,10 @@ spec:
                 secretKeyRef:
                   name: tandoor-config
                   key: oidc
-          command:
-            - /opt/recipes/venv/bin/gunicorn
-            - -b
-            - :8080
-            - --access-logfile
-            - "-"
-            - --error-logfile
-            - "-"
-            - --log-level
-            - INFO
-            - recipes.wsgi
+            - name: LOG_LEVEL
+              value: INFO
           ports:
-            - containerPort: 8080
+            - containerPort: 80
               protocol: TCP
               name: gunicorn
           livenessProbe:
