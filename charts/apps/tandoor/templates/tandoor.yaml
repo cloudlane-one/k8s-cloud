@@ -122,36 +122,6 @@ data:
   secret: {{ include "common.secrets.passwords.manage" (dict "secret" "tandoor" "key" "secret" "providedValues" (list "") "length" 32 "context" $) }}
   admin-password: {{ include "common.secrets.passwords.manage" (dict "secret" "tandoor" "key" "admin-password" "providedValues" (list "") "length" 20 "context" $) }}
 ---
-kind: ConfigMap
-apiVersion: v1
-metadata:
-  labels:
-    app: tandoor
-  name: tandoor-nginx-config
-data:
-  nginx-config: |-
-    events {
-      worker_connections 1024;
-    }
-    http {
-      include mime.types;
-      server {
-        listen 80;
-        server_name _;
-
-        client_max_body_size 128M;
-
-        # serve static files
-        location /static/ {
-          alias /static/;
-        }
-        # serve media files
-        location /media/ {
-          alias /media/;
-        }
-      }
-    }
----
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -196,8 +166,8 @@ spec:
           image: vabene1111/recipes:2.3
           imagePullPolicy: Always
           env:
-            # - name: TANDOOR_PORT
-            #   value: '8080' # required because otherwise Tandoor somehow resolves its port to the full k8s service URL and crashes
+            - name: TANDOOR_PORT
+              value: '80' # required because otherwise Tandoor somehow resolves its port to the full k8s service URL and crashes
             - name: DB_ENGINE
               value: django.db.backends.postgresql
             - name: SECRET_KEY
@@ -256,18 +226,19 @@ spec:
           ports:
             - containerPort: 80
               protocol: TCP
-              name: gunicorn
+              name: http
           livenessProbe:
-            failureThreshold: 3
+            failureThreshold: 10
             httpGet:
               path: /
-              port: 8080
+              port: 80
               scheme: HTTP
             periodSeconds: 30
           readinessProbe:
+            failureThreshold: 3
             httpGet:
               path: /
-              port: 8080
+              port: 80
               scheme: HTTP
             periodSeconds: 30
           resources:
@@ -281,35 +252,10 @@ spec:
             - name: data
               mountPath: "/opt/recipes/mediafiles"
               subPath: media
-        - name: recipes-nginx
-          image: nginx:latest
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 80
-              protocol: TCP
-              name: http
-          resources:
-            requests:
-              cpu: 100m
-              memory: 64Mi
-          volumeMounts:
-            - mountPath: /media
-              name: data
-              subPath: media
-            - mountPath: /static
-              name: data
-              subPath: static
-            - name: nginx-config
-              mountPath: /etc/nginx/nginx.conf
-              subPath: nginx-config
-              readOnly: true
       volumes:
         - name: data
           persistentVolumeClaim:
             claimName: tandoor-data
-        - name: nginx-config
-          configMap:
-            name: tandoor-nginx-config
 ---
 apiVersion: v1
 kind: Service
