@@ -1,0 +1,5 @@
+apiVersion: v2
+name: pw-secret-gen
+description: Password Secret Generator based on External Secrets Operator
+type: application
+version: "0.1.0"
