@@ -2,5 +2,4 @@ apiVersion: v2
 name: upgrade
 description: Rancher system upgrade controller + plans
 type: application
-version: "0.1.2"
-appVersion: "0.1.2"
+version: "0.1.3"

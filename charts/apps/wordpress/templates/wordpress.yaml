@@ -6,7 +6,7 @@ spec:
   interval: 1h
   url: https://charts.bitnami.com/bitnami
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: sso-clients
@@ -101,7 +101,7 @@ type: Opaque
 data:
   wordpress-password: {{ include "common.secrets.passwords.manage" (dict "secret" "wordpress-admin" "key" "wordpress-password" "providedValues" (list "") "length" 16 "context" $) }}
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: wordpress

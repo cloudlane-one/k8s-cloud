@@ -15,7 +15,7 @@ spec:
   interval: 1h
   url: https://download.onlyoffice.com/charts/stable
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: onlyoffice-rabbitmq
@@ -53,7 +53,7 @@ spec:
         memory: 256Mi
         cpu: 30m
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: onlyoffice-redis
@@ -92,7 +92,7 @@ spec:
           memory: 128Mi # measured on 2023-11-30
           cpu: 30m
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: onlyoffice-postgres
@@ -132,7 +132,7 @@ spec:
       serviceMonitor:
         enabled: true
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: onlyoffice

@@ -59,7 +59,7 @@ type: Opaque
 data:
   secret: {{ include "common.secrets.passwords.manage" (dict "secret" "firefly-auto-import" "key" "secret" "providedValues" (list "") "length" 16 "context" $) }}
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: firefly-postgres
@@ -99,7 +99,7 @@ spec:
       serviceMonitor:
         enabled: true
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: firefly-redis
@@ -138,7 +138,7 @@ spec:
           memory: 128Mi
           cpu: 100m
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: firefly
@@ -232,7 +232,7 @@ spec:
         existingSecret: firefly
         secretKey: STATIC_CRON_TOKEN
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: firefly-importer

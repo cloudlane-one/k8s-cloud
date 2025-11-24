@@ -88,7 +88,7 @@ spec:
   interval: 1h
   url: https://charts.bitnami.com/bitnami
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: mailman-postgresql
@@ -234,7 +234,7 @@ type: Opaque
 data:
   secret: {{ include "common.secrets.passwords.manage" (dict "secret" "django-secret" "key" "secret" "providedValues" (list "") "length" 16 "context" $) }}
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: sso-clients

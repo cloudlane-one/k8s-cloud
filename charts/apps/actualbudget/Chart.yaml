@@ -2,8 +2,8 @@ apiVersion: v2
 name: actualbudget
 description: Actual Budget server + frontend
 type: application
-version: "0.1.2"
-appVersion: "0.1.2"
+version: "0.1.3"
+appVersion: "latest"
 
 dependencies:
   - name: common

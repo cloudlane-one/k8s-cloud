@@ -6,7 +6,7 @@ spec:
   interval: 1h
   url: https://nextcloud.github.io/helm/
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: sso-clients
@@ -112,7 +112,7 @@ spec:
   storageClassName: {{ not (eq .Values.zone "") | ternary (printf "ha-zone-%s" .Values.zone) "ha-backbone" }}{{ .Values.storage.encrypted | ternary "-enc" "" }}
   volumeMode: Filesystem
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: nextcloud

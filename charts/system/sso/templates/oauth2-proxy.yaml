@@ -14,7 +14,7 @@ type: Opaque
 data:
   secret: {{ include "common.secrets.passwords.manage" (dict "secret" "cookies" "key" "secret" "providedValues" (list "") "length" 16 "context" $) }}
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: oauth2-proxy
