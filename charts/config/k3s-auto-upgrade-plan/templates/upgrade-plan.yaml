@@ -46,3 +46,13 @@ spec:
   {{- else -}}
   channel: https://update.k3s.io/v1-release/channels/stable
   {{- end }}
+  window:
+    days:
+      - monday
+      - tuesday
+      - wednesday
+      - thursday
+      - friday
+    startTime: 2:00
+    endTime: 5:00
+    timeZone: UTC
