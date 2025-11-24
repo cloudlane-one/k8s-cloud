@@ -13,15 +13,17 @@ zones: [] # List of all zones in the cluster
 oauth2_proxy_host: ""
 admin_group: ""
 
-s3:
-  endpoint: "" # Full URL of your S3 endpoint (minus credentials)
-  region: "de"
-  access_key_id: "" # Your S3 access key id
-  access_key_secret:
-    # Your S3 access key secret
-    namespace: kube-system
-    name: backup-s3
-    key: access_key_secret
-  bucket: "" # Name of bucket
+backup:
+  enabled: true
+  s3:
+    endpoint: "" # Full URL of your S3 endpoint (minus credentials)
+    region: "de"
+    access_key_id: "" # Your S3 access key id
+    access_key_secret:
+      # Your S3 access key secret
+      namespace: kube-system
+      name: backup-s3
+      key: access_key_secret
+    bucket: "" # Name of bucket
 
 bootstrap: false # Set to true to install in bootstrap mode (minimum deployment to support core functions and CRs)

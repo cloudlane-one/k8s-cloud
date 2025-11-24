@@ -74,19 +74,6 @@ spec:
   endpoints:
     - port: manager
 ---
-# Snapshot cleanup job to avoid too-many-snapshots errors
-apiVersion: longhorn.io/v1beta1
-kind: RecurringJob
-metadata:
-  name: snap-delete-after-14
-spec:
-  concurrency: 1
-  cron: '0 0 * * *'
-  groups:
-    - default
-  retain: 14
-  task: snapshot-delete
----
 # Filesystem trim job to avoid ever-growing volume sizes
 apiVersion: longhorn.io/v1beta1
 kind: RecurringJob
@@ -97,31 +84,20 @@ spec:
   cron: '0 0 * * *'
   groups:
     - default
+    - no-backup
   task: filesystem-trim
 ---
-# Additional, non-default snapshot cleanup job
 apiVersion: longhorn.io/v1beta1
 kind: RecurringJob
 metadata:
-  name: snap-delete-after-7
+  name: backup-daily
 spec:
   concurrency: 1
   cron: '0 0 * * *'
-  groups: []
   retain: 7
-  task: snapshot-delete
----
-# Additional, non-default snapshot cleanup job
-apiVersion: longhorn.io/v1beta1
-kind: RecurringJob
-metadata:
-  name: snap-delete-after-2
-spec:
-  concurrency: 1
-  cron: '0 0 * * *'
-  groups: []
-  retain: 2
-  task: snapshot-delete
+  groups:
+    - default
+  task: {{ .Values.backup.enabled | ternary "backup" "snapshot" }}
 ---
 apiVersion: longhorn.io/v1beta1
 kind: RecurringJob
@@ -130,8 +106,21 @@ metadata:
 spec:
   concurrency: 1
   cron: '0 0 * * *'
-  groups: []
+  retain: 7
+  groups:
+    - no-backup
   task: snapshot
+---
+apiVersion: longhorn.io/v1beta1
+kind: RecurringJob
+metadata:
+  name: snap-delete-after-2d
+spec:
+  concurrency: 1
+  cron: '0 0 * * *'
+  retain: 2
+  groups: []
+  task: snapshot-delete
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule

@@ -48,10 +48,6 @@ spec:
         displayName: Certificate
         namespaced: true
       - kind: customresourcedefinition
-        name: backups.velero.io
-        displayName: Velero Backup
-        namespaced: true
-      - kind: customresourcedefinition
         name:  volumesnapshots.snapshot.storage.k8s.io
         displayName: Volume Snapshot
         namespaced: true
