@@ -2,6 +2,20 @@ apiVersion: v1
 entries:
   actualbudget:
   - apiVersion: v2
+    appVersion: latest
+    created: "2025-11-24T08:41:30.213899461Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Actual Budget server + frontend
+    digest: c6c46ec4d489dd1900dab3936f9f5d9b05e05d7004237f6e77bfd98441a9efb8
+    name: actualbudget
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/actualbudget-0.1.3/actualbudget-0.1.3.tgz
+    version: 0.1.3
+  - apiVersion: v2
     appVersion: 0.1.2
     created: "2025-07-20T10:50:34.266689784Z"
     dependencies:
@@ -59,6 +73,19 @@ entries:
     version: 0.0.1
   erpnext:
   - apiVersion: v2
+    created: "2025-11-24T08:41:30.375755378Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: ERPNext with SSO and some useful extras
+    digest: f3bdf8baface59f16a36826619562293303564617bbdd23c24ee58c926024fbc
+    name: erpnext
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/erpnext-0.1.2/erpnext-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
     appVersion: 0.1.1
     created: "2024-02-26T18:00:17.640752456Z"
     dependencies:
@@ -87,6 +114,19 @@ entries:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/erpnext-0.1.0/erpnext-0.1.0.tgz
     version: 0.1.0
   firefly:
+  - apiVersion: v2
+    created: "2025-11-24T08:41:30.55080573Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Firefly III with SSO and other components
+    digest: e6cc672cdeac241bf668edf159a8b2af31f26e59ef3950648d9b28342efbeb82
+    name: firefly
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/firefly-0.2.7/firefly-0.2.7.tgz
+    version: 0.2.7
   - apiVersion: v2
     appVersion: 0.2.6
     created: "2024-02-26T18:00:17.835123439Z"
@@ -370,6 +410,19 @@ entries:
     version: 0.1.0
   mailuman:
   - apiVersion: v2
+    created: "2025-11-24T08:41:30.788669911Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Mail server + mailing list service + Web UIs
+    digest: b6bdf9d713f4202b92a7b30c86fb33e4b2eb02fd441f49d00ffe9d2dbd24b740
+    name: mailuman
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/mailuman-0.6.2/mailuman-0.6.2.tgz
+    version: 0.6.2
+  - apiVersion: v2
     appVersion: 0.6.1
     created: "2025-05-15T06:02:15.789712377Z"
     dependencies:
@@ -483,6 +536,19 @@ entries:
     version: 0.4.2
   monica:
   - apiVersion: v2
+    created: "2025-11-24T08:41:30.975241879Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: The Personal Relationship Manager
+    digest: fd772701f6c33591d51c02a3e3a38cf043073badb572db4161cba341cc3c6116
+    name: monica
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/monica-0.1.7/monica-0.1.7.tgz
+    version: 0.1.7
+  - apiVersion: v2
     appVersion: 0.1.6
     created: "2025-05-15T06:02:15.899980629Z"
     dependencies:
@@ -581,6 +647,20 @@ entries:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/monica-0.1.0/monica-0.1.0.tgz
     version: 0.1.0
   nextcloud:
+  - apiVersion: v2
+    appVersion: 30.0.10
+    created: "2025-11-24T08:41:31.129749922Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Nextcloud with SSO and some useful extras
+    digest: e436d10e9792902856f996fed19d0c2f560cbdf467ed229625908cc99aec707b
+    name: nextcloud
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/nextcloud-0.13.1/nextcloud-0.13.1.tgz
+    version: 0.13.1
   - apiVersion: v2
     appVersion: 30.0.10
     created: "2025-05-15T06:02:16.028116606Z"
@@ -1286,6 +1366,20 @@ entries:
   tandoor:
   - apiVersion: v2
     appVersion: "2.3"
+    created: "2025-11-24T08:41:31.380163786Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Recipes + shopping lists + X
+    digest: ccc26f3259d78278b78ea512670710e74cb018afdd74e59bd81983ba34b0d591
+    name: tandoor
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/tandoor-0.1.11/tandoor-0.1.11.tgz
+    version: 0.1.11
+  - apiVersion: v2
+    appVersion: "2.3"
     created: "2025-11-20T13:32:41.462277569Z"
     dependencies:
     - name: common
@@ -1441,6 +1535,20 @@ entries:
   teable:
   - apiVersion: v2
     appVersion: 1.9.0
+    created: "2025-11-24T08:41:31.557409818Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: No-code database solution on top of Postgres
+    digest: 2a66b5f9fa32df8f1da08aff2637f5348aa7c1a0b2057c7694da63bea8eec81a
+    name: teable
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/teable-0.1.3/teable-0.1.3.tgz
+    version: 0.1.3
+  - apiVersion: v2
+    appVersion: 1.9.0
     created: "2025-07-20T16:31:24.505734923Z"
     dependencies:
     - name: common
@@ -1482,6 +1590,20 @@ entries:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/teable-0.1.0/teable-0.1.0.tgz
     version: 0.1.0
   wordpress:
+  - apiVersion: v2
+    appVersion: 6.5.0
+    created: "2025-11-24T08:41:31.699090112Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Wordpress with SSO and some useful extras
+    digest: 272926f8f2bb2a503c9aebe695297149703d7970ee62982a0d11cfb16c4d3926
+    name: wordpress
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.2.3/wordpress-0.2.3.tgz
+    version: 0.2.3
   - apiVersion: v2
     appVersion: 6.5.0
     created: "2025-07-31T06:39:36.679552872Z"
@@ -1566,4 +1688,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.0/wordpress-0.1.0.tgz
     version: 0.1.0
-generated: "2025-11-23T21:43:56.702833187Z"
+generated: "2025-11-24T08:41:31.699496201Z"
