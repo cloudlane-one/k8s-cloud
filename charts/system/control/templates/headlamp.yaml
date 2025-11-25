@@ -1,0 +1,100 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: headlamp
+spec:
+  interval: 1h
+  url: https://kubernetes-sigs.github.io/headlamp/
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: oidc
+type: Opaque
+data:
+  clientID: {{ .Values.oidc_client.id | b64enc }}
+  issuerURL: {{ .Values.oidc_client.idp_url | b64enc }}
+  scopes: {{ "openid profile email groups" | b64enc }}
+  {{- $secretRef := .Values.oidc_client.secret }}
+  clientSecret: {{ get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: headlamp
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: headlamp
+      version: "^0.38.0"
+      sourceRef:
+        kind: HelmRepository
+        name: headlamp
+  timeout: '15m0s' # Account for slow performance of cluster on first setup.
+  values:
+    config:
+      oidc:
+        secret:
+          create: false
+        externalSecret:
+          enabled: true
+          name: oidc
+      enableHelm: false
+      pluginsDir: /build/plugins
+    pluginsManager:
+      enabled: true
+      configContent: |
+        plugins:
+          - name: cert-manager
+            source: https://artifacthub.io/packages/headlamp/headlamp-plugins/headlamp_cert-manager
+        installOptions:
+          parallel: true
+          maxConcurrent: 3
+    initContainers:
+      - command:
+          - /bin/sh
+          - -c
+          - mkdir -p /build/plugins && cp -r /plugins/* /build/plugins/ && chown -R 100:101 /build
+        image: ghcr.io/headlamp-k8s/headlamp-plugin-flux:latest
+        imagePullPolicy: Always
+        name: headlamp-plugins
+        securityContext:
+          runAsNonRoot: false
+          privileged: false
+          runAsUser: 0
+          runAsGroup: 0
+        volumeMounts:
+          - mountPath: /build/plugins
+            name: headlamp-plugins
+    persistentVolumeClaim:
+      accessModes:
+        - ReadWriteOnce
+      enabled: true
+      size: 1Gi
+    volumeMounts:
+      - mountPath: /build/plugins
+        name: headlamp-plugins
+    volumes:
+      - name: headlamp-plugins
+        persistentVolumeClaim:
+          claimName: headlamp
+    clusterRoleBinding:
+      create: false
+    resources:
+      limits:
+        cpu: 2
+        memory: 1Gi
+      requests:
+        cpu: 50m
+        memory: 128Mi
+    ingress:
+      enabled: true
+      annotations:
+        kubernetes.io/tls-acme: "true"
+      hosts:
+        - {{ .Values.host }}
+      tls:
+        - hosts:
+            - {{ .Values.host }}
+          secretName: k8s-dashboard-cert

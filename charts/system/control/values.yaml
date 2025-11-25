@@ -1,7 +1,12 @@
 host: ""
 
-cluster_name: ""
-
-oauth2_proxy_host: ""
+oidc_client:
+  # Only works with keycloak currently.
+  idp_url: ""
+  id: cluster-oidc
+  secret:
+    namespace: sso-system
+    name: cluster-oidc
+    key: secret
 
 admin_group: ""
