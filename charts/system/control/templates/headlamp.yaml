@@ -66,19 +66,16 @@ spec:
           runAsGroup: 0
         volumeMounts:
           - mountPath: /build/plugins
-            name: headlamp-plugins
-    persistentVolumeClaim:
-      accessModes:
-        - ReadWriteOnce
-      enabled: true
-      size: 1Gi
-    volumeMounts:
-      - mountPath: /build/plugins
-        name: headlamp-plugins
-    volumes:
-      - name: headlamp-plugins
-        persistentVolumeClaim:
-          claimName: headlamp
+            name: plugins-dir
+    # # Ideally, we would use a PVC to enable plugin persistence, but as of now, 
+    # # an emptyDir volume type is hard-coded into the Helm chart if pluginsManager is enabled.
+    # # This raises the question what the PVC chart option is even for...
+    # # TODO: Create an issue/PR to the Headlamp project to allow for managed-plugin persistence.
+    # persistentVolumeClaim:
+    #   accessModes:
+    #     - ReadWriteOnce
+    #   enabled: true
+    #   size: 1Gi
     clusterRoleBinding:
       create: false
     resources:
