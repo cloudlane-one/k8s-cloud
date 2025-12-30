@@ -126,6 +126,19 @@ entries:
     version: 0.1.1
   control:
   - apiVersion: v2
+    created: "2025-12-30T17:00:47.467817063Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Headlamp k8s control panel with plugins
+    digest: 9ef6a931bc4774505524ade5a7536b6bba2d6b65c7fa7deb751c1dd03f1db656
+    name: control
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/control-0.2.2/control-0.2.2.tgz
+    version: 0.2.2
+  - apiVersion: v2
     created: "2025-12-30T16:44:07.662522986Z"
     dependencies:
     - name: common
@@ -1561,4 +1574,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-0.1.6/vcluster-0.1.6.tgz
     version: 0.1.6
-generated: "2025-12-30T16:44:07.662685212Z"
+generated: "2025-12-30T17:00:47.468083703Z"
