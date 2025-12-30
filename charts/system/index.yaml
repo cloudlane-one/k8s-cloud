@@ -803,6 +803,19 @@ entries:
     version: 0.1.2
   storage:
   - apiVersion: v2
+    created: "2025-12-30T18:47:53.862262917Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Longhorn-based storage system
+    digest: c0ac46797a44571664743949da3d3b20cce99ae6f249745b379bd8563c733c56
+    name: storage
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/storage-0.3.3/storage-0.3.3.tgz
+    version: 0.3.3
+  - apiVersion: v2
     created: "2025-12-30T18:27:03.717074253Z"
     dependencies:
     - name: common
@@ -1626,4 +1639,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-0.1.6/vcluster-0.1.6.tgz
     version: 0.1.6
-generated: "2025-12-30T18:27:03.717593978Z"
+generated: "2025-12-30T18:47:53.862528573Z"
