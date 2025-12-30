@@ -36,7 +36,7 @@ cluster:
   backup:
     # Enable automatic backups of cluster state + volume content.
     enabled: true
-    
+
     # Required. S3 config for logs and backups storage.
     s3:
       endpoint: "" # Full URL of your S3 endpoint (minus credentials)
@@ -45,27 +45,9 @@ cluster:
       access_key_id: "" # Your S3 access key id
       # Put the access key secret in ./secrets.yaml
 
-    # Configure this cluster to be restored from an existing cluster backup.
-    restore:
-      # Set to true to enable restoring.
-      enabled: false
-      # The unique name of the Velero schedule
-      # to restore from. If specified, and backup_name is empty, Velero will
-      # restore from the most recent successful backup created from this schedule.
-      schedule_name: cluster-backup
-      # The unique name of the Velero backup to restore from.
-      backup_name: ""
-      # See https://velero.io/docs/v1.11/resource-filtering/#--include-resources.
-      included_resources:
-        - secrets
-        - pvcs
-        - pvs
-        - helmrepositories
-        - helmreleases
-
   # You can configure k3s to build a mesh based on Tailscale instead of raw Wireguard.
   # Tailscale enables you to use nodes which don't have a static public ip or no public ip at all.
-  # Please refer to the according [k3s setup guide](https://docs.k3s.io/installation/network-options#integration-with-the-tailscale-vpn-provider-experimental) 
+  # Please refer to the according [k3s setup guide](https://docs.k3s.io/installation/network-options#integration-with-the-tailscale-vpn-provider-experimental)
   # and perform steps 1 to 3 manually before deploying the cluster.
   tailscale:
     enabled: false
@@ -88,7 +70,7 @@ cluster:
   base_repo: https://github.com/cloudlane-one/k8s-cloud
   # Branch of repo to poll for updates.
   base_branch: main
-  
+
   # Helm repo to connect to for app updates.
   base_app_repo: https://cloudlane-one.github.io/k8s-cloud/charts/apps
   # Helm repo to connect to for config updates.
@@ -100,6 +82,6 @@ cluster:
   letsencrypt_staging: false
 
   # Force k3s agent and server daemons to not exceed their reserved resources.
-  # Warning: This feature is experimental, as its impact on k3s upgrades hasn't been sufficiently tested! 
+  # Warning: This feature is experimental, as its impact on k3s upgrades hasn't been sufficiently tested!
   # Use at own risk!
   enforce_kube_reserved: false

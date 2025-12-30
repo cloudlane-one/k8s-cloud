@@ -70,8 +70,9 @@ The following system / infrastructure components can be deployed via `setup.yaml
   - [AlertManager](https://github.com/prometheus/alertmanager)
   - Auto-provisioned dashboards and email alerts for common cases / faults
 - Backups:
-  - [Velero](https://github.com/vmware-tanzu/velero)
-  - Nightly full-cluster backups of all API resources and PV contents
+  - [K3s etcd snapshots with S3 upload](https://docs.k3s.io/cli/etcd-snapshot?etcdsnap=Multiple+Servers#s3-compatible-object-store-support)
+  - [Longhorn snapshots and backups](https://longhorn.io/docs/1.10.1/snapshots-and-backups/scheduling-backups-and-snapshots/)
+  - Nightly full-cluster backups of all API resources and PV contents (unless opted out)
   - Easy manual backing up and restoring
 - GitOps System:
   - [FluxCD](https://github.com/fluxcd/flux2)
@@ -214,7 +215,6 @@ For most cluster operations the Ansible playbook isn't required. You can instead
 - [kubectl](https://kubernetes.io/docs/reference/kubectl/)
 - [helm](https://helm.sh/docs/helm/)
 - [flux](https://fluxcd.io/flux/cmd/)
-- [velero](https://velero.io/)
 
 > Best just `ssh` into one of the control hosts and perform operations from the terminal there.
 

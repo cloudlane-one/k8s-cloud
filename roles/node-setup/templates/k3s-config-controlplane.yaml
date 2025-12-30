@@ -24,3 +24,7 @@ kube-scheduler-arg:
 tls-san: "{{ cluster.subdomains.k8s_api }}.{{ cluster.domain }}"
 kubelet-arg+:
   - "kube-reserved=cpu=1.8,memory=2.6Gi,ephemeral-storage=8Gi"
+{% if cluster.backup.enabled %}
+etcd-s3: true
+etcd-s3-config-secret: "etcd-s3-config"
+{% endif %}

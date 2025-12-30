@@ -141,7 +141,7 @@
           metadata:
             labels: "{{ {storage_key: '1'} }}"
 
-- name: Ensure GitOps via FluxCD is setup
+- name: Ensure GitOps via FluxCD is set up
   environment:
     K8S_AUTH_KUBECONFIG: "{{ kubeconfig }}"
     KUBECONFIG: "{{ kubeconfig }}"
@@ -166,25 +166,6 @@
         values:
           policies:
             create: false
-
-    - name: Ensure base GitRepository exists
-      kubernetes.core.k8s:
-        wait: true
-        definition:
-          apiVersion: source.toolkit.fluxcd.io/v1
-          kind: GitRepository
-          metadata:
-            name: base-repo
-            namespace: flux-system
-          spec:
-            interval: 1h
-            url: "{{ cluster.base_repo }}"
-            ref:
-              branch: "{{ cluster.base_branch }}"
-
-    - name: Reconcile base git repo
-      ansible.builtin.command: "flux reconcile source git base-repo -n flux-system"
-      changed_when: true
 
     - name: Ensure base config HelmRepository exists
       kubernetes.core.k8s:
@@ -334,105 +315,25 @@
   loop_control:
     label: "{{ item.key }}"
 
-- name: Ensure pre-restore infrastructure is fully set up
-  vars:
-    node_count: "{{ groups['storage'] | length }}"
-  block:
-    - name: Deploy storage-stack
-      ansible.builtin.include_tasks:
-        file: deploy-chart.yaml
-        apply:
-          vars:
-            chart:
-              release_name: storage-stack
-              chart_name: storage
-              namespace: longhorn-system
-              chart_values:
-                default_ha_replicas: "{{ [node_count | int, 2] | min }}"
-                host: "{{ cluster.subdomains.longhorn }}.{{ cluster.domain }}"
-                cluster_name: "{{ cluster_name }}"
-                oauth2_proxy_host: "{{ cluster.subdomains.oauth2_proxy }}.{{ cluster.domain }}"
-                admin_group: "cluster-admins"
-                s3: "{{ cluster.backup.s3 }}"
-                zones: "{{ zones }}"
-            kubeconfig: "{{ kubeconfig }}"
-
-    - name: Deploy backup-stack
-      when: "cluster.backup.enabled"
-      ansible.builtin.include_tasks:
-        file: deploy-chart.yaml
-        apply:
-          vars:
-            chart:
-              release_name: backup-stack
-              chart_name: backup
-              namespace: backup-system
-              chart_values:
-                s3: "{{ cluster.backup.s3 }}"
-            kubeconfig: "{{ kubeconfig }}"
-
-- name: Restore cluster from backup
-  when: "cluster.backup.restore.enabled"
-  vars:
-    restore_name: "{{ cluster.backup.restore.backup_name | ternary(backup.restore.backup_name, cluster.backup.restore.schedule_name) }}"
-  block:
-    - name: Wait for backup resource to be synced from s3
-      when: "backup.restore.backup_name"
-      kubernetes.core.k8s_info:
-        api_version: velero.io/v1
-        kind: Backup
-        namespace: backup-system
-        name: "{{ cluster.backup.restore.backup_name }}"
-      register: backup_get_result
-      retries: 10 # Velero may need time to load the backup from s3.
-      delay: 20
-      until: "backup_get_result.resources | length > 0"
-
-    - name: Check if restoration for given backup already exists
-      kubernetes.core.k8s_info:
-        api_version: velero.io/v1
-        kind: Restore
-        namespace: backup-system
-        name: "{{ restore_name }}"
-      register: existing_restore
-
-    - name: Apply backup restoration
-      when: "existing_restore.resources | length == 0"
-      environment:
-        KUBECONFIG: "{{ kubeconfig }}"
-      ansible.builtin.command:
-        argv:
-          - velero
-          - restore
-          - create
-          - "{{ restore_name }}"
-          - "--namespace=backup-system"
-          - "--from-schedule={{ cluster.backup.restore.backup_name | ternary('', cluster.backup.restore.schedule_name) }}"
-          - "--from-backup={{ cluster.backup.restore.backup_name }}"
-          - "--include-resources={{ cluster.backup.restore.included_resources | join(',') }}"
-          - "--restore-volumes=true"
-          - "--selector"
-          - "owner notin (helm)"
-          - "--wait"
-      changed_when: true
-
-- name: Ensure dns-stack is deployed
-  when: "cluster.dns.enabled"
-  ansible.builtin.include_tasks:
-    file: deploy-chart.yaml
-    apply:
-      vars:
-        chart:
-          release_name: dns-stack
-          chart_name: dns
-          name: dns-stack
-          namespace: dns-system
-          chart_values:
-            domain: "{{ registered_domain }}"
-            provider:
-              name: "{{ cluster.dns.provider }}"
-              extra_config: "{{ cluster.dns.extra_config }}"
-        kubeconfig: "{{ kubeconfig }}"
+- name: Store S3 secret for etcd backup
+  when: "cluster.backup.enabled"
+  environment:
+    K8S_AUTH_KUBECONFIG: "{{ kubeconfig }}"
+  kubernetes.core.k8s:
+    wait: true
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: etcd-s3-config
+        namespace: kube-system
+      type: Opaque
+      stringData:
+        etcd-s3-endpoint: "{{ cluster.backup.s3.endpoint }}"
+        etcd-s3-access-key: "{{ cluster.backup.s3.access_key_id }}"
+        etcd-s3-secret-key: "{{ cluster_secrets['backup-s3'].access_key_secret }}"
+        etcd-s3-bucket: "{{ cluster.backup.s3.bucket }}"
+        etcd-s3-region: "{{ cluster.backup.s3.region }}"
 
 - name: Ensure remaining infrastructure is fully set up
   ansible.builtin.include_tasks:
@@ -446,6 +347,28 @@
   vars:
     node_count: "{{ groups['cluster'] | length }}"
   loop:
+    - release_name: storage-stack
+      chart_name: storage
+      namespace: longhorn-system
+      chart_values:
+        default_ha_replicas: "{{ [node_count | int, 2] | min }}"
+        host: "{{ cluster.subdomains.longhorn }}.{{ cluster.domain }}"
+        cluster_name: "{{ cluster_name }}"
+        oauth2_proxy_host: "{{ cluster.subdomains.oauth2_proxy }}.{{ cluster.domain }}"
+        admin_group: "cluster-admins"
+        backup: "{{ cluster.backup }}"
+        zones: "{{ zones }}"
+
+    - release_name: dns-stack
+      chart_name: dns
+      name: dns-stack
+      namespace: dns-system
+      chart_values:
+        domain: "{{ registered_domain }}"
+        provider:
+          name: "{{ cluster.dns.provider }}"
+          extra_config: "{{ cluster.dns.extra_config }}"
+
     - release_name: k3s-auto-upgrade
       chart_name: upgrade
       namespace: upgrade-system
@@ -564,7 +487,7 @@
         namespace: sso-system
         name: cluster-oidc
       register: cluster_oidc_secret
-      retries: 10 # Velero may need time to load the backup from s3.
+      retries: 3
       delay: 20
       until: "cluster_oidc_secret.resources | length > 0"
 
@@ -649,7 +572,7 @@
         namespace: sso-system
         name: idp-admin
       register: idp_admin_secret
-      retries: 10 # Velero may need time to load the backup from s3.
+      retries: 3
       delay: 20
       until: "idp_admin_secret.resources | length > 0"
 
@@ -662,8 +585,14 @@
     - name: Download idp admin password
       ansible.builtin.fetch:
         src: /tmp/admin-password
-        dest: "{{ playbook_dir }}/admin-pw.{{ cluster_name }}.txt"
+        dest: "{{ playbook_dir }}/clusters/{{ cluster_name }}/idp-admin-pw.txt"
         flat: true
+
+- name: Ensure k3s server token file is available on local machine
+  ansible.builtin.fetch:
+    src: /var/lib/rancher/k3s/server/token
+    dest: "{{ playbook_dir }}/clusters/{{ cluster_name }}/k3s-server-token.txt"
+    flat: true
 
 - name: Reset kubectl context
   when: "host_cluster_name and default_ctx is defined"

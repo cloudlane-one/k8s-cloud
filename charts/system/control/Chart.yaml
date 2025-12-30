@@ -1,8 +1,8 @@
 apiVersion: v2
 name: control
-description: k8s-dashboard with proper config and extras
+description: Headlamp k8s control panel with plugins
 type: application
-version: "0.1.7"
+version: "0.2.0"
 dependencies:
   - name: common
     version: "^1"

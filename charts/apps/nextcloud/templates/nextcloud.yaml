@@ -96,10 +96,8 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: nextcloud
     {{- if not .Values.storage.auto_backup }}
-    velero.io/exclude-from-backup: "true"
     recurring-job.longhorn.io/source: enabled
-    recurring-job-group.longhorn.io/default: enabled
-    recurring-job.longhorn.io/snapshot-daily: enabled
+    recurring-job-group.longhorn.io/no-backup: enabled
     {{- end }}
   annotations:
     helm.sh/resource-policy: "keep"

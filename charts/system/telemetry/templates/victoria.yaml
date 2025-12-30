@@ -34,9 +34,8 @@ spec:
         storageMetadata:
           labels:
             recurring-job.longhorn.io/source: enabled
-            recurring-job-group.longhorn.io/default: enabled
-            recurring-job.longhorn.io/snap-delete-after-2: enabled
-            velero.io/exclude-from-backup: "true"
+            recurring-job-group.longhorn.io/no-backup: enabled
+            recurring-job.longhorn.io/snap-delete-after-2d: enabled
         storage:
             accessModes: ["ReadWriteOnce"]
             resources:
@@ -186,9 +185,8 @@ spec:
   storageMetadata:
     labels:
       recurring-job.longhorn.io/source: enabled
-      recurring-job-group.longhorn.io/default: enabled
-      recurring-job.longhorn.io/snap-delete-after-2: enabled
-      velero.io/exclude-from-backup: "true"
+    recurring-job-group.longhorn.io/no-backup: enabled
+      recurring-job.longhorn.io/snap-delete-after-2d: enabled
   storage:
     accessModes:
       - ReadWriteOnce
