@@ -1,8 +1,8 @@
 apiVersion: v2
 name: gitops
-description: FluxCD + Weave-Gitops Dashboard + extras
+description: FluxCD with some configuration
 type: application
-version: "0.1.7"
+version: "0.2.0"
 dependencies:
   - name: common
     version: "^1"
