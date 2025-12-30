@@ -40,8 +40,8 @@ spec:
         externalSecret:
           enabled: true
           name: oidc
-      enableHelm: false
-      pluginsDir: /build/plugins
+      enableHelm: true
+      watchPlugins: true
     pluginsManager:
       enabled: true
       configContent: |
