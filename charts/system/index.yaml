@@ -316,6 +316,19 @@ entries:
     version: 0.1.0
   gitops:
   - apiVersion: v2
+    created: "2025-12-30T21:05:13.423107545Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: FluxCD with some configuration
+    digest: 442da2128b9e117853d221f6f1949b0f18f5b9f9cd4751d2422c37a377090a5c
+    name: gitops
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/gitops-0.2.0/gitops-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
     created: "2025-11-24T08:43:04.416635608Z"
     dependencies:
     - name: common
@@ -1652,4 +1665,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-0.1.6/vcluster-0.1.6.tgz
     version: 0.1.6
-generated: "2025-12-30T18:57:33.379117607Z"
+generated: "2025-12-30T21:05:13.657877057Z"
