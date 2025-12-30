@@ -26,7 +26,7 @@ spec:
 {{- if not .Values.bootstrap }}
     defaultSettings:
       # See https://longhorn.io/docs/1.2.4/snapshots-and-backups/backup-and-restore/set-backup-target/#set-up-aws-s3-backupstore
-      backupTarget: {{ printf "s3://%s@%s/" .Values.s3.bucket .Values.s3.region }}
+      backupTarget: {{ printf "s3://%s@%s/" .Values.backup.s3.bucket .Values.backup.s3.region }}
       backupTargetCredentialSecret: s3-secret
       priorityClass: system-cluster-critical
       concurrentAutomaticEngineUpgradePerNodeLimit: 1
@@ -50,12 +50,12 @@ metadata:
   name: s3-secret
 type: Opaque
 data:
-  {{- $secretRef := .Values.s3.access_key_secret }}
+  {{- $secretRef := .Values.backup.s3.access_key_secret }}
   {{- $s3_secret := get ((lookup "v1" "Secret" (default .Release.Namespace $secretRef.namespace) $secretRef.name).data) $secretRef.key }}
   # See https://longhorn.io/docs/1.2.4/snapshots-and-backups/backup-and-restore/set-backup-target/#set-up-aws-s3-backupstore
-  AWS_ACCESS_KEY_ID: {{ .Values.s3.access_key_id | b64enc }}
+  AWS_ACCESS_KEY_ID: {{ .Values.backup.s3.access_key_id | b64enc }}
   AWS_SECRET_ACCESS_KEY: {{ $s3_secret }}
-  AWS_ENDPOINTS: {{ .Values.s3.endpoint | b64enc }}
+  AWS_ENDPOINTS: {{ .Values.backup.s3.endpoint | b64enc }}
   VIRTUAL_HOSTED_STYLE: dHJ1ZQ== # true
 ---
 apiVersion: monitoring.coreos.com/v1
