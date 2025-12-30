@@ -316,6 +316,9 @@ spec:
                 - "https://{{ .Values.hosts.authproxy }}/oauth2/callback"
                 - "http://localhost:8000"
                 - "http://localhost:18000"
+                # TODO: Find a way to pass Grafana and Headlamp hosts here or give them their own clients.
+                # - "https://kubectl.cloudlane.one/oidc-callback"
+                # - "https://grafana.cloudlane.one/login/generic_oauth"
               {{- range $uri := .Values.cluster_client.redirect_uris }}
                 - {{ $uri }}
               {{- end }}
