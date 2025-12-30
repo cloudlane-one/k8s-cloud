@@ -126,6 +126,19 @@ entries:
     version: 0.1.1
   control:
   - apiVersion: v2
+    created: "2025-12-30T16:32:37.015637066Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Headlamp k8s control panel with plugins
+    digest: a6db25828c1734437339a569b66d3d4f32cb1d113d9dbf6cdee96cc7c5ac59d9
+    name: control
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/control-0.2.0/control-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
     created: "2025-11-24T08:43:04.079477891Z"
     dependencies:
     - name: common
@@ -460,6 +473,16 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/ingress-0.2.1/ingress-0.2.1.tgz
     version: 0.2.1
+  secrets:
+  - apiVersion: v2
+    created: "2025-12-30T16:32:37.15568664Z"
+    description: external-secrets operator
+    digest: 81370ec5705bda1ff048e1ff998626e3129c650b6c9a5d3bf26c37713d588996
+    name: secrets
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/secrets-0.1.0/secrets-0.1.0.tgz
+    version: 0.1.0
   sso:
   - apiVersion: v2
     created: "2025-11-24T08:43:04.757048464Z"
@@ -728,6 +751,19 @@ entries:
     version: 0.1.2
   storage:
   - apiVersion: v2
+    created: "2025-12-30T16:32:37.313334525Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Longhorn-based storage system
+    digest: db91077d524301fe2e4bfcf0123536da59e7aa2bd244ee48bd88fb6e63304a6b
+    name: storage
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/storage-0.3.0/storage-0.3.0.tgz
+    version: 0.3.0
+  - apiVersion: v2
     created: "2025-11-24T08:43:04.920825043Z"
     dependencies:
     - name: common
@@ -811,6 +847,19 @@ entries:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/storage-0.2.1/storage-0.2.1.tgz
     version: 0.2.1
   telemetry:
+  - apiVersion: v2
+    created: "2025-12-30T16:32:37.473662029Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Prometheus + Loki + Grafana
+    digest: cb6531e368f2c2f60089acb78f1dc7d3aa952042aeeae71f2d39950bfc3572bb
+    name: telemetry
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/telemetry-0.5.0/telemetry-0.5.0.tgz
+    version: 0.5.0
   - apiVersion: v2
     created: "2025-11-24T08:43:05.103589671Z"
     dependencies:
@@ -1499,4 +1548,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-0.1.6/vcluster-0.1.6.tgz
     version: 0.1.6
-generated: "2025-11-24T08:43:05.276579632Z"
+generated: "2025-12-30T16:32:37.4740317Z"
