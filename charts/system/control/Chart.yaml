@@ -2,7 +2,7 @@ apiVersion: v2
 name: control
 description: Headlamp k8s control panel with plugins
 type: application
-version: "0.2.3"
+version: "0.2.4"
 dependencies:
   - name: common
     version: "^1"
