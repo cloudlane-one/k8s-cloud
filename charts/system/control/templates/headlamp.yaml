@@ -93,7 +93,10 @@ spec:
       annotations:
         kubernetes.io/tls-acme: "true"
       hosts:
-        - {{ .Values.host }}
+      - host: {{ .Values.host }}
+        paths:
+        - path: /
+          type: ImplementationSpecific
       tls:
         - hosts:
             - {{ .Values.host }}
