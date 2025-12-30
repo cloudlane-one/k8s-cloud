@@ -2,7 +2,7 @@ apiVersion: v2
 name: storage
 description: Longhorn-based storage system
 type: application
-version: "0.3.0"
+version: "0.3.1"
 dependencies:
   - name: common
     version: "^1"

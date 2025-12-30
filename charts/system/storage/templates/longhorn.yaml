@@ -75,7 +75,7 @@ spec:
     - port: manager
 ---
 # Filesystem trim job to avoid ever-growing volume sizes
-apiVersion: longhorn.io/v1beta1
+apiVersion: longhorn.io/v1beta2
 kind: RecurringJob
 metadata:
   name: fs-trim
@@ -87,7 +87,7 @@ spec:
     - no-backup
   task: filesystem-trim
 ---
-apiVersion: longhorn.io/v1beta1
+apiVersion: longhorn.io/v1beta2
 kind: RecurringJob
 metadata:
   name: backup-daily
@@ -99,7 +99,7 @@ spec:
     - default
   task: {{ .Values.backup.enabled | ternary "backup" "snapshot" }}
 ---
-apiVersion: longhorn.io/v1beta1
+apiVersion: longhorn.io/v1beta2
 kind: RecurringJob
 metadata:
   name: snapshot-daily
@@ -111,7 +111,7 @@ spec:
     - no-backup
   task: snapshot
 ---
-apiVersion: longhorn.io/v1beta1
+apiVersion: longhorn.io/v1beta2
 kind: RecurringJob
 metadata:
   name: snap-delete-after-2d
