@@ -28,6 +28,15 @@ entries:
     version: 0.1.0
   k3s-auto-upgrade-plan:
   - apiVersion: v2
+    created: "2025-12-30T16:32:40.886222542Z"
+    description: Plan CR for automatic, non-disruptive k3s upgrades
+    digest: 33d88586438466e0d6d815f9a45b7b6b54943b2dc4fd8c4e59c313b1f3e51ba1
+    name: k3s-auto-upgrade-plan
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/k3s-auto-upgrade-plan-0.1.2/k3s-auto-upgrade-plan-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
     appVersion: 0.1.1
     created: "2024-02-27T16:44:40.929319465Z"
     description: Plan CR for automatic, non-disruptive k3s upgrades
@@ -149,6 +158,16 @@ entries:
     type: application
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/nocodb-urls-0.1.0/nocodb-urls-0.1.0.tgz
+    version: 0.1.0
+  pw-secret-gen:
+  - apiVersion: v2
+    created: "2025-12-30T16:32:41.030637424Z"
+    description: Password Secret Generator based on External Secrets Operator
+    digest: 7e7143b53336377ce84275a1755c9770dca71f516d8560cb06f776a9c6de7198
+    name: pw-secret-gen
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/pw-secret-gen-0.1.0/pw-secret-gen-0.1.0.tgz
     version: 0.1.0
   rocketchat-mongodb-urls:
   - apiVersion: v2
@@ -331,4 +350,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-mariadb-endpoint-0.1.0/vcluster-mariadb-endpoint-0.1.0.tgz
     version: 0.1.0
-generated: "2025-07-20T16:11:49.856130138Z"
+generated: "2025-12-30T16:32:41.03069422Z"
