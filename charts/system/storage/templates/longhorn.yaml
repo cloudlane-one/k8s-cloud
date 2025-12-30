@@ -15,10 +15,14 @@ spec:
   chart:
     spec:
       chart: longhorn
-      version: "^1.6.0"
+      version: "^1.10.1"
       sourceRef:
         kind: HelmRepository
         name: longhorn
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
   timeout: '15m0s' # Account for slow performance of cluster on first setup.
   values:
     persistence:
