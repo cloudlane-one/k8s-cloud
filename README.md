@@ -105,18 +105,17 @@ The Ansible playbook code in here is meant to be run from a Linux workstation. O
 These system dependencies are to be installed on your local machine.
 
 - [Python](https://www.python.org/downloads/)
-- [Poetry](https://python-poetry.org)
+- [UV](https://docs.astral.sh/uv/)
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux)
 - [Kubelogin](https://github.com/int128/kubelogin)
 
 Clone the repo, `cd` to the cloned folder, and run following bash code to install all Python deps into a virtual environment:
 
 ```bash
-poetry install
-poetry shell
+uv sync
 ```
 
-Then run this to install Ansible-specific dependencies:
+Then run this inside the virtual environment to install Ansible-specific dependencies:
 
 ```bash
 ansible-galaxy install -r requirements.yaml

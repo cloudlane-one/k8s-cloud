@@ -1,25 +1,33 @@
-[tool.poetry]
+[project]
 name = "k8s-cloud"
 version = "0.1.0"
 description = ""
-authors = ["Lorenzo Wormer <l.wormer@pm.me>"]
-license = "MIT"
 readme = "README.md"
+requires-python = ">=3.13,<4.0"
+license = { text = "MIT" }
+authors = [
+	{ name = "Lorenzo Wormer", email = "l.wormer@mailbox.org" }
+]
+dependencies = [
+	"ansible>=13.5.0,<14",
+	"jmespath>=1.0.1,<2",
+	"psutil>=7.2.2,<8",
+	"kubernetes>=35.0.0,<36",
+	"tqdm>=4.67.1,<5",
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-ansible = "^10"
-jmespath = "^1.0.1"
-psutil = "^5.9.5"
-kubernetes = "^32.0.1"
-tqdm = "^4.67.1"
+[dependency-groups]
+dev = [
+	"ansible-lint>=6,<7; platform_system != 'Windows'",
+	"jupyter>=1.0.0,<2",
+	"pandas>=3.0.2,<4",
+	"openpyxl>=3.1.2,<4",
+]
 
-[tool.poetry.group.dev.dependencies]
-ansible-lint = { version = "^6", markers = "platform_system != 'Windows'" }
-jupyter = "^1.0.0"
-pandas = "^2.0.3"
-openpyxl = "^3.1.2"
+[tool.uv]
+package = false
+default-groups = ["dev"]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build>=0.9.5,<0.10.0"]
+build-backend = "uv_build"
