@@ -408,6 +408,21 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/grocy-0.1.0/grocy-0.1.0.tgz
     version: 0.1.0
+  immich:
+  - apiVersion: v2
+    appVersion: 2.7.5
+    created: "2026-05-31T17:22:45.799713848Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Immich with SSO, redis, ML, and postgres database.
+    digest: bc8ef660eaed1bf839c9112fb31592f9b1c9e28a4c79a5a18ed71185652cbafe
+    name: immich
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/immich-0.1.0/immich-0.1.0.tgz
+    version: 0.1.0
   mailuman:
   - apiVersion: v2
     created: "2025-11-24T08:41:30.788669911Z"
@@ -1716,4 +1731,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.0/wordpress-0.1.0.tgz
     version: 0.1.0
-generated: "2026-04-23T09:09:19.303522342Z"
+generated: "2026-05-31T17:22:45.799872159Z"
