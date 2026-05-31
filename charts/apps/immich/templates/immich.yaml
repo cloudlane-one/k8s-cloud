@@ -102,6 +102,31 @@ spec:
     valkey:
       enabled: true
     server:
+      controllers:
+        main:
+          containers:
+            main:
+              env:
+                DB_HOSTNAME:
+                  valueFrom:
+                    secretKeyRef:
+                      name: immich-app
+                      key: host
+                DB_USERNAME:
+                  valueFrom:
+                    secretKeyRef:
+                      name: immich-app
+                      key: user
+                DB_PASSWORD:
+                  valueFrom:
+                    secretKeyRef:
+                      name: immich-app
+                      key: password
+                DB_DATABASE_NAME:
+                  valueFrom:
+                    secretKeyRef:
+                      name: immich-app
+                      key: dbname
       ingress:
         main:
           enabled: false
