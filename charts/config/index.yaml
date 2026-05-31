@@ -194,6 +194,20 @@ entries:
   sso-clients:
   - apiVersion: v2
     appVersion: 6.4.0
+    created: "2026-05-31T19:32:20.574699366Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Deploy OIDC or SAML clients via keycloak-config-cli
+    digest: 78da7c58883548eb80cb3ebde4498f5bc766f408330c0fbbb6155abe1a6e904c
+    name: sso-clients
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/sso-clients-0.1.10/sso-clients-0.1.10.tgz
+    version: 0.1.10
+  - apiVersion: v2
+    appVersion: 6.4.0
     created: "2026-05-31T19:18:36.732867843Z"
     dependencies:
     - name: common
@@ -375,4 +389,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-mariadb-endpoint-0.1.0/vcluster-mariadb-endpoint-0.1.0.tgz
     version: 0.1.0
-generated: "2026-05-31T19:18:36.732933947Z"
+generated: "2026-05-31T19:32:20.574769476Z"
