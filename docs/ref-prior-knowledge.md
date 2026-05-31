@@ -34,12 +34,11 @@ To make proper use of this repository, you will need basic understanding of mult
 - [How to deploy and manage a simple web app with k8s](https://kubernetes.io/docs/tutorials/kubernetes-basics/)
 - [Which common k8s distributions exist](https://kubernetes.io/partners/#conformance)
 - [What is k3s and how is it different from other distributions](https://docs.k3s.io/)
-- [Which open standards is Kubernetes built on](https://medium.com/@seifeddinerajhi/the-state-of-kubernetes-open-standards-what-you-need-to-know-68eff64f6119)
 - [What is Helm and why is it useful for managing deployments in Kubernetes](https://helm.sh/)
 
 ## 6. DevOps
 
 - [What is Ansible and what is it used for](https://dev.to/grayhat/devops-101-introduction-to-ansible-1n64)
 - [How to use Ansible playbooks](https://www.tutorialworks.com/ansible-run-playbook/)
-- [What is GitOps](https://www.weave.works/technologies/gitops/)
+- [What is GitOps](https://about.gitlab.com/topics/gitops/)
 - [What is HA](https://k21academy.com/docker-kubernetes/high-availability-and-scalable-application-in-kubernetes/)

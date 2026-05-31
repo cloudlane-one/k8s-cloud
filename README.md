@@ -7,7 +7,7 @@ production-ready, provider-independent & easily manageable k8s cloud setup
 
 ## Purpose and scope
 
-This project is intended to help beginner-to-intermediate **Kubernetes hobbyists and freelancers** with the mammoth task of **setting up, maintaining and updating a production k8s cloud setup**.
+This project is intended to help beginner-to-intermediate **Kubernetes hobbyists and IT-admins** with the mammoth task of **setting up, maintaining and updating a production k8s cloud setup**.
 
 It builds on the idea that today you can find a tool for automating almost any given DevOps task. Therefore, the challenge lies less in learning to do any one of these tasks manually, and more in *finding the correct automation tools for the task at hand, separating the good from the bad, and making them work in unison*. Also, to be a functioning human in this automation loop, you should have a basic understanding of the underlying ideas and technologies at play.
 
@@ -38,12 +38,11 @@ The following system / infrastructure components can be deployed via `setup.yaml
 > Some of these can be disabled via the cluster config.
 
 - Kubernetes:
-  - [k3s](https://github.com/k3s-io/k3s) distribution
-  - CNI configured for dual-stack, wireguard-encrypted networking
-  - Alternatively: encrypted networking via [Tailscale](https://tailscale.com/) VPN to support nodes without static public IP
-  - HA via embedded [etcd](https://github.com/etcd-io/etcd)
-  - [Kubernetes-Dashboard](https://github.com/kubernetes/dashboard)
-  - Other production config for k3s: Secrets encryption, metrics, OIDC auth, reserved resources, ...
+  - [k0s](https://github.com/k3s-io/k3s) distribution
+    - encrypted networking via [Tailscale](https://tailscale.com/) VPN to support nodes without static public IP
+    - HA via embedded [etcd](https://github.com/etcd-io/etcd)
+    - [Headlamp-Dashboard](https://headlamp.dev/)
+    - Other production config for k3s: metrics, OIDC auth, reserved resources, ...
 - Storage:
   - [Longhorn](https://github.com/longhorn/longhorn) as storage provider
   - Multiple storage classes for different volume types
@@ -51,13 +50,12 @@ The following system / infrastructure components can be deployed via `setup.yaml
   - Optional encryption via LUKS
   - Backup to and restore from S3 storage
   - Web UI for storage management
-- Ingress:
-  - [Ingress-NGINX](https://github.com/kubernetes/ingress-nginx) as ingress controller
+- Ingress Gateways, LoadBalancer Services & Network Policies:
+  - [Cilium](https://github.com/kubernetes/ingress-nginx) as CNI + CCM for LoadBalancer services + Service Mesh + Gateway API provider
   - Expose services via configurable pool of ingress nodes
-  - Provides default ingress class
   - [CertManager](https://github.com/cert-manager/cert-manager) with preconfigured Letsencrypt ACME issuer to auto-provision (& renew) certificates
   - [External-DNS](https://github.com/kubernetes-sigs/external-dns) to auto-configure and continuously sync DNS records
-- Authentication:
+- Single Sign-On (SSO):
   - [Keycloak](https://github.com/keycloak/keycloak) as identity provider
   - Cluster-internal Single-Sign-On via OIDC or SAML
   - [OAuth2-Proxy](https://github.com/oauth2-proxy/oauth2-proxy) for proxy header auth
@@ -72,12 +70,13 @@ The following system / infrastructure components can be deployed via `setup.yaml
 - Backups:
   - [K3s etcd snapshots with S3 upload](https://docs.k3s.io/cli/etcd-snapshot?etcdsnap=Multiple+Servers#s3-compatible-object-store-support)
   - [Longhorn snapshots and backups](https://longhorn.io/docs/1.10.1/snapshots-and-backups/scheduling-backups-and-snapshots/)
-  - Nightly full-cluster backups of all API resources and PV contents (unless opted out)
   - Easy manual backing up and restoring
-- GitOps System:
-  - [FluxCD](https://github.com/fluxcd/flux2)
+- Continuous Deployment (CD):
+  - CD of k8s operators via [Operator-Controller](https://github.com/operator-framework/operator-controller)
+  - Helm- and Kustomize-based CD via [FluxCD](https://github.com/fluxcd/flux2)
   - Continuous, rolling updates of deployed apps based on semver ranges
-  - [Weave Gitops](https://github.com/weaveworks/weave-gitops) as Web UI
+  - GitOps well-supported, but not required
+  - integrated into Headlamp dashboard
 - Cluster Upgrades:
   - [System Upgrade Controller](https://github.com/rancher/system-upgrade-controller)
   - Automatic, non-disruptive upgrades from k3s stable channel
