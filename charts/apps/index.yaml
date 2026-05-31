@@ -411,6 +411,20 @@ entries:
   immich:
   - apiVersion: v2
     appVersion: 2.7.5
+    created: "2026-05-31T19:39:16.687324534Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: ^1
+    description: Immich with SSO, redis, ML, and postgres database.
+    digest: f883e0fb26438953cd4c78942154e773cbedddae93922caf0945a6184ae77169
+    name: immich
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/immich-0.1.4/immich-0.1.4.tgz
+    version: 0.1.4
+  - apiVersion: v2
+    appVersion: 2.7.5
     created: "2026-05-31T19:33:32.913511979Z"
     dependencies:
     - name: common
@@ -1773,4 +1787,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/wordpress-0.1.0/wordpress-0.1.0.tgz
     version: 0.1.0
-generated: "2026-05-31T19:33:32.913777663Z"
+generated: "2026-05-31T19:39:16.687637831Z"
