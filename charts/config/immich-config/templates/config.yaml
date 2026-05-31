@@ -9,7 +9,7 @@ kind: Secret
 metadata:
   name: immich-config
 type: Opaque
-textData:
+stringData:
   immich-config.yaml: |
     notifications:
       smtp:
