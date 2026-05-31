@@ -130,11 +130,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: keycloak-config-cli
-          image: bitnami/keycloak-config-cli:latest
-          command:
-            - java
-            - -jar
-            - /opt/bitnami/keycloak-config-cli/keycloak-config-cli.jar
+          image: adorsys/keycloak-config-cli:latest
           env:
             - name: KEYCLOAK_URL
               value: {{ .Values.keycloak.local_url }}
