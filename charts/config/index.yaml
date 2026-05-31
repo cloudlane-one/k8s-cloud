@@ -26,6 +26,17 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/default-snapshot-class-0.1.0/default-snapshot-class-0.1.0.tgz
     version: 0.1.0
+  immich-config:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2026-05-31T17:23:03.806046265Z"
+    description: Generate config file for immich.
+    digest: db1f027c8065adadbc96f43d9d9c1bf9fca8d298b00a92b94eec8213ce185f8a
+    name: immich-config
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/immich-config-0.1.0/immich-config-0.1.0.tgz
+    version: 0.1.0
   k3s-auto-upgrade-plan:
   - apiVersion: v2
     created: "2025-12-30T16:32:40.886222542Z"
@@ -350,4 +361,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-mariadb-endpoint-0.1.0/vcluster-mariadb-endpoint-0.1.0.tgz
     version: 0.1.0
-generated: "2025-12-30T16:32:41.03069422Z"
+generated: "2026-05-31T17:23:03.806093075Z"
