@@ -27,8 +27,8 @@ spec:
       id: immich
       redirect_uris:
         - "app.immich:///oauth-callback"
-        - {{ printf "https://%s/auth/login" .Values.hosts.nextcloud }}
-        - {{ printf "https://%s/user-settings" .Values.hosts.nextcloud }}
+        - {{ printf "https://%s/auth/login" .Values.host }}
+        - {{ printf "https://%s/user-settings" .Values.host }}
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
