@@ -20,6 +20,11 @@
     name: fs.inotify.max_user_instances
     value: '512'
 
+- name: Ensure required kernel modules are loaded
+  community.general.modprobe:
+    name: dm_crypt # Longhorn volume encryption
+    state: present
+
 - name: Ensure all required system packages are installed
   block:
     - name: Install packages via apt
@@ -27,8 +32,8 @@
       ansible.builtin.apt:
         state: present
         name:
-          - nfs-common
-          - wireguard
+          - nfs-common # Longhorn RWX volumes
+          - cryptsetup # Longhorn volume encryption
           - python3
           - python3-pip
           - unzip
@@ -40,8 +45,8 @@
       ansible.builtin.yum:
         state: present
         name:
-          - nfs-utils
-          - wireguard-tools
+          - nfs-utils # Longhorn RWX volumes
+          - cryptsetup # Longhorn volume encryption
           - python3
           - python3-pip
           - unzip
@@ -53,8 +58,8 @@
       community.general.apk:
         state: present
         name:
-          - nfs-utils
-          - wireguard-tools
+          - nfs-utils # Longhorn RWX volumes
+          - cryptsetup # Longhorn volume encryption
           - python3
           - py3-pip
           - unzip
@@ -66,8 +71,8 @@
       ansible.builtin.dnf:
         state: present
         name:
-          - nfs-utils
-          - wireguard-tools
+          - nfs-utils # Longhorn RWX volumes
+          - cryptsetup # Longhorn volume encryption
           - python3
           - python3-pip
           - unzip
@@ -79,8 +84,8 @@
       community.general.zypper:
         state: present
         name:
-          - nfs-utils
-          - wireguard-tools
+          - nfs-utils # Longhorn RWX volumes
+          - cryptsetup # Longhorn volume encryption
           - python3
           - python3-pip
           - unzip
@@ -92,8 +97,8 @@
       community.general.pacman:
         state: present
         name:
-          - nfs-utils
-          - wireguard-tools
+          - nfs-utils # Longhorn RWX volumes
+          - cryptsetup # Longhorn volume encryption
           - python
           - python-pip
           - unzip
