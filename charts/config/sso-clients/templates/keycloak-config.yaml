@@ -22,7 +22,7 @@ data:
         description: "Internal OIDC client"
         enabled: true
         clientAuthenticatorType: client-secret
-        secret: "$(env:OIDC_SECRET.{{ .Values.oidc.id }})"
+        secret: "$(env:OIDC_SECRET_{{ .Values.oidc.id }})"
         redirectUris: 
         {{- range $uri := .Values.oidc.redirect_uris }}
           - {{ $uri }}
@@ -51,7 +51,7 @@ data:
           - "*"
         frontchannelLogout: true
         attributes:
-          saml.signing.certificate: "$(env:SAML_CERT.{{ .Values.saml.id }})"
+          saml.signing.certificate: "$(env:SAML_CERT_{{ .Values.saml.id }})"
           saml.client.signature: "true"
           saml.force.post.binding: "false"
           saml.signature.algorithm: RSA_SHA256
@@ -152,14 +152,14 @@ spec:
             - name: LOGGING_LEVEL_HTTP
               value: "info"
             {{- if .Values.oidc.enabled }}
-            - name: OIDC_SECRET.{{ .Values.oidc.id }}
+            - name: OIDC_SECRET_{{ .Values.oidc.id }}
               valueFrom:
                 secretKeyRef:
                   name: {{ printf "oidc-client.%s" .Values.oidc.id }}
                   key: secret
             {{- end }}
             {{- if .Values.saml.enabled }}
-            - name: SAML_CERT.{{ .Values.saml.id }}
+            - name: SAML_CERT_{{ .Values.saml.id }}
               valueFrom:
                 secretKeyRef:
                   name: {{ printf "saml-cert.%s" .Values.saml.id }}
