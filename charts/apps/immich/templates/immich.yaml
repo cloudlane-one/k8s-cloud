@@ -46,7 +46,6 @@ spec:
         namespace: flux-system
   dependsOn:
     - name: sso-clients
-      kind: HelmRelease
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
@@ -84,7 +83,6 @@ spec:
   timeout: 20m0s
   dependsOn:
     - name: immich-config
-      kind: HelmRelease
   values:
     defaultPodOptions:
       nodeSelector:
