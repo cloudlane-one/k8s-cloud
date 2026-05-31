@@ -1,0 +1,31 @@
+host: ""
+
+org:
+  name: ""
+  default_locale: "en_US"
+  tagline: ""
+  logo_url: ""
+  default_phone_region: "" # ISO2 code: https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements
+
+smtp:
+  host: ""
+  port: ""
+  user: ""
+  password_secret:
+    namespace: kube-system
+    name: mail-smtp
+    key: password
+  from_address: ""
+
+ingress: true
+
+storage:
+  size: 10Gi
+  encrypted: false
+  auto_backup: true
+
+zone: "" # Specific zone to localize this release to (pods and volumes)
+
+snapshots:
+  enabled: true
+  class_name: snap

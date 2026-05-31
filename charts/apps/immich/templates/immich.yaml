@@ -1,0 +1,138 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: immich
+spec:
+  interval: 5m0s
+  url: oci://ghcr.io/immich-app/immich-charts/immich
+  ref:
+    semver: "^0.12.0"
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: sso-clients
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: sso-clients
+      version: "^0.1.4"
+      sourceRef:
+        kind: HelmRepository
+        name: base-config-repo
+        namespace: flux-system
+  values:
+    oidc:
+      id: immich
+      redirect_uris:
+        - "app.immich:///oauth-callback"
+        - {{ printf "https://%s/auth/login" .Values.hosts.nextcloud }}
+        - {{ printf "https://%s/user-settings" .Values.hosts.nextcloud }}
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: immich-config
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: immich-config
+      version: "^0.1.0"
+      sourceRef:
+        kind: HelmRepository
+        name: base-config-repo
+        namespace: flux-system
+  dependsOn:
+    - name: sso-clients
+      kind: HelmRelease
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: immich
+  labels:
+    app.kubernetes.io/component: app
+    app.kubernetes.io/instance: immich
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: immich
+    {{- if not .Values.storage.auto_backup }}
+    recurring-job.longhorn.io/source: enabled
+    recurring-job-group.longhorn.io/no-backup: enabled
+    {{- end }}
+  annotations:
+    helm.sh/resource-policy: "keep"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.storage.size }}
+  storageClassName: {{ not (eq .Values.zone "") | ternary (printf "ha-zone-%s" .Values.zone) "ha-backbone" }}{{ .Values.storage.encrypted | ternary "-enc" "" }}
+  volumeMode: Filesystem
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: nextcloud
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: immich
+  timeout: 20m0s
+  dependsOn:
+    - name: immich-config
+      kind: HelmRelease
+  values:
+    defaultPodOptions:
+      nodeSelector:
+        {{- if not (eq .Values.zone "") }}
+        topology.kubernetes.io/zone: {{ .Values.zone }}
+        {{- else }}
+        backbone: "1"
+        {{- end }}
+    immich:
+      metrics:
+        enabled: true
+      persistence:
+        library:
+          existingClaim: immich
+      configurationKind: Secret
+      existingConfiguration: immich-config
+    valkey:
+      enabled: true
+    server:
+      ingress:
+        main:
+          enabled: false
+          annotations:
+            # proxy-body-size is set to 0 to remove the body limit on file uploads
+            nginx.ingress.kubernetes.io/proxy-body-size: "0"
+            kubernetes.io/tls-acme: "true"
+          hosts:
+            - host: {{ .Values.host }}
+              paths:
+                - path: "/"
+                  service:
+                    identifier: main
+          tls:
+            - secretName: immich-tls
+              hosts:
+                - {{ .Values.host }}
+{{- if .Values.snapshots.enabled }}
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: {{ printf "immich-%s" (now | date "20060102150405") }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  source:
+    persistentVolumeClaimName: immich
+  {{- if .Values.snapshots.class_name }}
+  volumeSnapshotClassName: {{ .Values.snapshots.class_name }}
+  {{- end }}
+{{- end }}

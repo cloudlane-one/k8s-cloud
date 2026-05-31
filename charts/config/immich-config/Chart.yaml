@@ -1,0 +1,6 @@
+apiVersion: v2
+name: immich-config
+description: Generate config file for immich.
+type: application
+version: "0.1.0"
+appVersion: "0.1.0"

@@ -1,0 +1,20 @@
+host: ""
+
+smtp:
+  host: ""
+  port: ""
+  user: ""
+  password_secret:
+    namespace: kube-system
+    name: mail-smtp
+    key: password
+  from_address: ""
+
+oidc:
+  client_id: immich
+  issuer_secret:
+    name: keycloak-sso
+    key: url
+  client_secret:
+    name: oidc-client.immich
+    key: secret

@@ -1,0 +1,11 @@
+apiVersion: v2
+name: immich
+description: Immich with SSO, redis, ML, and postgres database.
+type: application
+version: "0.1.0"
+appVersion: "2.7.5"
+
+dependencies:
+  - name: common
+    version: "^1"
+    repository: https://charts.bitnami.com/bitnami
