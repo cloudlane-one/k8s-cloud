@@ -1,0 +1,9 @@
+apiVersion: v2
+name: databases
+description: Operators for managing databases in the cluster.
+type: application
+version: "0.1.0"
+dependencies:
+  - name: common
+    version: "^1"
+    repository: https://charts.bitnami.com/bitnami
