@@ -28,6 +28,6 @@ stringData:
       autoRegister: true
       clientId: {{ .Values.oidc.client_id }}
       clientSecret: "{{ $clientSecret }}"
-      issuerUrl: {{ $idpUrl }}
+      issuerUrl: "{{ $idpUrl }}"
     server:
       externalDomain: {{ .Values.host }}

@@ -46,6 +46,9 @@ spec:
         namespace: flux-system
   dependsOn:
     - name: sso-clients
+  values:
+    host: {{ .Values.host }}
+    smtp: {{ .Values.smtp | toYaml | nindent 6 }}
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
