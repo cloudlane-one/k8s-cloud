@@ -12,7 +12,7 @@ spec:
         backbone: "1"
         {{- end }}
   storage:
-    size: 1Gi
+    size: 4Gi
     storageClass: single
   imageName: ghcr.io/cloudnative-pg/postgresql:18-standard-trixie
   postgresql:
