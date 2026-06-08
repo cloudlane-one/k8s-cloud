@@ -28,6 +28,15 @@ entries:
     version: 0.1.0
   immich-config:
   - apiVersion: v2
+    created: "2026-06-08T17:03:54.784025967Z"
+    description: Generate config file for immich.
+    digest: 1cad659f1476ae6701648a30dfef4b1e73ed48babd2122435ca90bc10bfde4cc
+    name: immich-config
+    type: application
+    urls:
+    - https://github.com/cloudlane-one/k8s-cloud/releases/download/immich-config-0.1.2/immich-config-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
     created: "2026-05-31T19:37:21.32630273Z"
     description: Generate config file for immich.
     digest: 6c8deaee2f9a3637554aaae956e3a3658b7d32cb1da2511caa676b9c96fe378b
@@ -398,4 +407,4 @@ entries:
     urls:
     - https://github.com/cloudlane-one/k8s-cloud/releases/download/vcluster-mariadb-endpoint-0.1.0/vcluster-mariadb-endpoint-0.1.0.tgz
     version: 0.1.0
-generated: "2026-05-31T19:37:21.326352784Z"
+generated: "2026-06-08T17:03:54.784072417Z"
