@@ -132,7 +132,7 @@ spec:
                       key: dbname
       ingress:
         main:
-          enabled: false
+          enabled: true
           annotations:
             # proxy-body-size is set to 0 to remove the body limit on file uploads
             nginx.ingress.kubernetes.io/proxy-body-size: "0"
