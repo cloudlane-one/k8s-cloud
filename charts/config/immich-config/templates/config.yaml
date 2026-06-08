@@ -1,5 +1,5 @@
-{{- $idpRef := .Values.oidc.issuer_secret }}
-{{- $idpUrl := get ((lookup "v1" "Secret" (default .Release.Namespace $idpRef.namespace) $idpRef.name).data) $idpRef.key | b64dec }}
+{{- $idpRef := .Values.oidc.issuer_cm }}
+{{- $idpUrl := get ((lookup "v1" "ConfigMap" (default .Release.Namespace $idpRef.namespace) $idpRef.name).data) $idpRef.key | b64dec }}
 {{- $clientSecretRef := .Values.oidc.client_secret }}
 {{- $clientSecret := get ((lookup "v1" "Secret" (default .Release.Namespace $clientSecretRef.namespace) $clientSecretRef.name).data) $clientSecretRef.key | b64dec }}
 {{- $passRef := .Values.smtp.password_secret }}

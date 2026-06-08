@@ -2,4 +2,4 @@ apiVersion: v2
 name: immich-config
 description: Generate config file for immich.
 type: application
-version: "0.1.2"
+version: "0.1.3"

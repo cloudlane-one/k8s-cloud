@@ -12,8 +12,8 @@ smtp:
 
 oidc:
   client_id: immich
-  issuer_secret:
-    name: keycloak-sso
+  issuer_cm:
+    name: sso-keycloak
     key: url
   client_secret:
     name: oidc-client.immich
